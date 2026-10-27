@@ -423,6 +423,39 @@ table.kv td{padding:3px 0;font-size:13px}
   .panel[data-p="cmd"]>.cmdgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
   .d-phy .grid2{grid-template-columns:1fr}
 }
+
+/* ===== bandeau catégorisé ===== */
+.band{display:flex;gap:6px;background:none;border:0;border-radius:0;overflow:visible;margin:0}
+.bg{--gc:var(--accent);flex:var(--n) 1 0;min-width:0;border:1px solid color-mix(in srgb,var(--gc) 30%,var(--line));border-radius:7px;background:color-mix(in srgb,var(--gc) 5%,var(--panel));overflow:hidden}
+.bg[data-g="core"]{--gc:var(--c-react)}.bg[data-g="prim"]{--gc:var(--c-pzr)}.bg[data-g="sec"]{--gc:var(--c-turb)}.bg[data-g="saf"]{--gc:var(--c-prot)}
+.bgh{font:700 9.5px/1 var(--f-disp);letter-spacing:.16em;text-transform:uppercase;color:var(--gc);padding:4px 8px 1px}
+.bgc{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr))}
+.band .rd{background:none;padding:2px 8px 6px;border-left:1px solid color-mix(in srgb,var(--gc) 16%,var(--line));min-width:0}
+.band .rd:first-child{border-left:0}
+.band .rd .k{font-size:9.5px;letter-spacing:.06em;color:var(--mute)}
+.band .rd .v{font-size:17px;line-height:1.15}
+.band .rd .v small{font-size:10px;margin-left:3px}
+.band .sb{font:10.5px/1.25 var(--f-num);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gz{position:relative;height:4px;border-radius:2px;background:color-mix(in srgb,var(--fg) 10%,transparent);margin-top:4px}
+.gz .n{position:absolute;top:0;bottom:0;border-radius:2px;background:color-mix(in srgb,var(--ok) 45%,transparent)}
+.gz .t{position:absolute;top:-2px;bottom:-2px;width:2px;margin-left:-1px;background:var(--crit);border-radius:1px}
+.gz b{position:absolute;top:-3px;width:3px;height:10px;margin-left:-1.5px;border-radius:1px;background:var(--fg);box-shadow:0 0 0 1.5px var(--bg);transition:left .25s}
+.band .rd.warn .gz b{background:var(--warn)}.band .rd.crit .gz b{background:var(--crit)}
+.band .rd.warn .v{color:var(--warn)}.band .rd.crit .v{color:var(--crit)}
+.bandt{display:none}
+@media (min-width:761px) and (max-width:1279px){.band{flex-wrap:wrap}.bg{flex-basis:calc(var(--n) * 96px)}}
+@media (max-width:760px){
+  .bandt{display:inline-flex}
+  .band{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .bg,.bgc{display:contents}.bgh{display:none}
+  .band .rd{background:var(--panel);border-left:0;border-top:2px solid color-mix(in srgb,var(--gc) 70%,transparent);padding:3px 6px 5px}
+  .band .rd:not(.mb){display:none}
+  body.bandfull .band .rd:not(.mb){display:block}
+  body.bandfull .band .sb{display:block}
+  .band .sb{display:none}
+  .band .rd .v{font-size:14px}
+  .gz{margin-top:3px;height:3px}
+}
 </style>
 </head>
 <body>
@@ -434,24 +467,12 @@ table.kv td{padding:3px 0;font-size:13px}
       <button data-v="1">×1</button><button data-v="2">×2</button><button data-v="5">×5</button><button data-v="10">×10</button><button data-v="60">×60</button><button data-v="300">×300</button>
     </div>
     <select id="spdSel" class="spdsel" aria-label="Vitesse de simulation"><option value="1">×1</option><option value="2">×2</option><option value="5">×5</option><option value="10">×10</option><option value="60">×60</option><option value="300">×300</option></select>
+    <button class="ib bandt" id="bandBtn" aria-label="Afficher le bandeau détaillé" aria-expanded="false">▾</button>
     <button class="ib" id="pauseBtn" aria-label="Pause">❚❚</button>
     <button class="ib" id="menuBtn" aria-label="Menu">☰<span class="lab"> Menu</span></button>
   </div>
 </div>
-<div class="wrap bandw"><section class="band" id="band">
-    <div class="rd" id="rd-pn"><div class="k">P nucl.</div><div class="v"><span id="b-pn">—</span><small>%</small></div></div>
-    <div class="rd" id="rd-pe"><div class="k">P élec.</div><div class="v"><span id="b-pe">—</span><small>MWe</small></div></div>
-    <div class="rd" id="rd-tm"><div class="k">Tmoy · écart</div><div class="v"><span id="b-tm">—</span><small id="b-tr">—</small></div></div>
-    <div class="rd" id="rd-pp"><div class="k">P pressu</div><div class="v"><span id="b-pp">—</span><small>bar</small></div></div>
-    <div class="rd" id="rd-lg"><div class="k">Niv. GV</div><div class="v"><span id="b-lg">—</span><small>%</small></div></div>
-    <div class="rd" id="rd-lp"><div class="k">Niv. pressu</div><div class="v"><span id="b-lp">—</span><small>%</small></div></div>
-    <div class="rd" id="rd-cb"><div class="k">Bore</div><div class="v"><span id="b-cb">—</span><small>ppm</small></div></div>
-    <div class="rd" id="rd-td"><div class="k">ρ · Td</div><div class="v"><span id="b-rho">—</span><small id="b-td">—</small></div></div>
-    <div class="rd xb" id="rd-th"><div class="k">Tch · Tfr</div><div class="v"><span id="b-th">—</span><small id="b-tc">—</small></div></div>
-    <div class="rd xb" id="rd-psg"><div class="k">P GV</div><div class="v"><span id="b-psg">—</span><small>bar</small></div></div>
-    <div class="rd xb" id="rd-rg"><div class="k">R · GCP</div><div class="v"><span id="b-r">—</span><small id="b-g">—</small></div></div>
-    <div class="rd xb" id="rd-di"><div class="k">ΔI · écart</div><div class="v"><span id="b-di">—</span><small id="b-die">—</small></div></div>
-  </section>
+<div class="wrap bandw"><section class="band" id="band" aria-label="Grandeurs principales"></section>
 <div class="alb" id="alb" hidden><span class="lamp" id="alb-l"></span><span class="alb-n" id="alb-n"></span><span class="alb-t" id="alb-t"></span><button class="ib" id="alb-see">Voir</button><button class="ib" id="alb-ack">Acquitter</button></div></div>
 </header>
 
@@ -1749,15 +1770,7 @@ function updateUI(){
   T('clock',hms(s.t));
   const st=s.is?'IS':s.tripped?'AAR':s.ilot?'Îlotage':s.coupled?'Puissance':(s.n>1e-7?'Critique':'Sous-crit.');
   T('b-state',st); lamp('b-lamp',s.is||s.tripped?'r':s.ilot||s.limitNow?'a':'g');
-  T('b-pn',s.n<0.001?fmt(s.n*100,3):fmt(s.n*100,1));
-  T('b-pe',fmt(s.Qt*K.MWE,0));
-  T('b-tm',fmt(s.Tavg,1)); T('b-tr',s.coupled?' '+sgn(s.Tavg-s.Tref,1):' —');
-  T('b-pp',fmt(s.Ppzr,1)); T('b-th',fmt(s.Thot,1)); T('b-tc',' '+fmt(s.Tcold,1)); T('b-psg',fmt(s.Psg,1)); T('b-r',fmt(s.rods.R.p,0)); T('b-g',' '+fmt(s.rods.G.p,0)); T('b-di',fmt(s.DI,1)); T('b-die',' '+sgn(s.DI+1.5*s.n,1)); cls('rd-di','warn',!s.tripped&&s.n>0.15&&Math.abs(s.DI+1.5*s.n)>5); cls('rd-rg','warn',!s.tripped&&s.coupled&&(s.rods.R.p<150||s.rods.R.p>215)); T('b-lp',fmt(s.Lpzr,0)); cls('rd-lp','warn',Math.abs(s.Lpzr-s.Lref)>5); T('b-lg',fmt(s.Lsg,0)); T('b-cb',fmt(s.Cb,0));
-  T('b-rho',sgn(s.rho.tot,0)); T('b-td',Number.isFinite(s.Td)&&s.Td<9999?' · '+fmt(s.Td,0)+' s':' · ∞');
-  cls('rd-pn','warn',s.n>1.03); cls('rd-tm','warn',s.coupled&&Math.abs(s.Tavg-s.Tref)>1.5);
-  cls('rd-pp','warn',s.Ppzr>157.5||s.Ppzr<152); cls('rd-pp','crit',s.Ppzr>164||s.Ppzr<132);
-  cls('rd-lg','warn',s.Lsg>60||s.Lsg<40); cls('rd-lg','crit',s.Lsg<20||s.Lsg>75);
-  cls('rd-td','warn',s.Td<30); cls('rd-td','crit',s.Td<12);
+  updateBand(s);
   /* synoptique */
   T('m-pn',(s.n<0.001?fmt(s.n*100,3):fmt(s.n*100,1))+' %');
   T('m-tavg','Tmoy '+fmt(s.Tavg,1)+' °C');
@@ -2123,6 +2136,43 @@ function openHelp(k){
 function closeHelp(){ $('#help').hidden=true; if(A.s) A.paused=helpWasPaused; syncAll(); }
 
 
+
+/* ================= Bandeau ================= */
+const TdS=s=>Number.isFinite(s.Td)&&s.Td<9999?fmt(s.Td,0)+' s':(s.rate<-1e-4?'décroiss.':'∞');
+const BG=[
+ {g:'core',t:'Cœur',c:[
+  {id:'pn',k:'P nucléaire',u:'%',m:1,v:s=>s.n<0.001?fmt(s.n*100,3):fmt(s.n*100,1),sb:s=>s.coupled?'turb. '+fmt(s.Qt*100,0)+' %':(s.tripped?'résid. '+fmt(s.Qdh*100,1)+' %':'découplée'),gz:{min:0,max:120,lo:0,hi:103,tr:[109],x:s=>s.n*100},st:s=>s.n>1.09?'crit':s.n>1.03?'warn':''},
+  {id:'td',vid:'rho',k:'Réactivité',u:'pcm',m:1,v:s=>sgn(s.rho.tot,0),sb:s=>'Td '+TdS(s),st:s=>s.tripped?'':s.Td<12?'crit':s.Td<30?'warn':''},
+  {id:'rg',vid:'r',k:'Groupe R · GCP',u:'pas',v:s=>fmt(s.rods.R.p,0),sb:s=>'GCP '+fmt(s.rods.G.p,0),gz:{min:0,max:225,lo:150,hi:215,x:s=>s.rods.R.p},st:s=>!s.tripped&&s.coupled&&(s.rods.R.p<130)?'crit':!s.tripped&&s.coupled&&(s.rods.R.p<150||s.rods.R.p>215)?'warn':''},
+  {id:'di',k:'ΔI',u:'% PN',v:s=>fmt(s.DI,1),sb:s=>'écart '+sgn(s.DI+1.5*s.n,1),gz:{min:-10,max:10,lo:-5,hi:5,x:s=>s.DI+1.5*s.n},st:s=>!s.tripped&&s.n>0.15&&Math.abs(s.DI+1.5*s.n)>5?'warn':''},
+  {id:'cb',k:'Bore',u:'ppm',m:1,v:s=>fmt(s.Cb,0),sb:s=>'α '+fmt(s.rho.am,1)}]},
+ {g:'prim',t:'Primaire',c:[
+  {id:'tm',k:'Tmoy',u:'°C',m:1,v:s=>fmt(s.Tavg,1),sb:s=>s.coupled?'écart '+sgn(s.Tavg-s.Tref,1):'pas de Tref',gz:{min:-5,max:5,lo:-1.5,hi:1.5,x:s=>s.coupled?s.Tavg-s.Tref:0},st:s=>s.coupled&&!s.tripped&&Math.abs(s.Tavg-s.Tref)>3?'crit':s.coupled&&!s.tripped&&Math.abs(s.Tavg-s.Tref)>1.5?'warn':''},
+  {id:'th',k:'Tch · Tfr',u:'°C',v:s=>fmt(s.Thot,1),sb:s=>'Tfr '+fmt(s.Tcold,1)},
+  {id:'pp',k:'Pression pressu',u:'bar',m:1,v:s=>fmt(s.Ppzr,1),sb:s=>s.sebim?'SEBIM !':'cons. 155',gz:{min:125,max:170,lo:152,hi:157.5,tr:[131,165],x:s=>s.Ppzr},st:s=>s.Ppzr>164||s.Ppzr<132?'crit':s.Ppzr>157.5||s.Ppzr<152?'warn':''},
+  {id:'lp',k:'Niveau pressu',u:'%',m:1,v:s=>fmt(s.Lpzr,0),sb:s=>'réf. '+fmt(s.Lref,0)+' %',gz:{min:0,max:100,lo:s=>s.Lref-5,hi:s=>s.Lref+5,tr:[14,92],x:s=>s.Lpzr},st:s=>s.Lpzr<15||s.Lpzr>90?'crit':Math.abs(s.Lpzr-s.Lref)>5?'warn':''}]},
+ {g:'sec',t:'Secondaire',c:[
+  {id:'pe',k:'P électrique',u:'MWe',m:1,v:s=>fmt(s.Qt*K.MWE,0),sb:s=>s.ilot?'îlotage':s.coupled?(Math.abs(s.LtSet-s.Lt)>0.002?'→ '+fmt(s.LtSet*100,0)+' %':'charge '+fmt(s.Lt*100,0)+' %'):'découplée'},
+  {id:'psg',k:'Pression GV',u:'bar',v:s=>fmt(s.Psg,1),sb:s=>s.qa>0.005?'GCT-a ouvert':'GCT-c '+fmt(s.gct/0.85*100,0)+' %'},
+  {id:'lg',k:'Niveau GV',u:'%',m:1,v:s=>fmt(s.Lsg,0),sb:s=>fmt((s.Wf+s.Wasg)*100,0)+' / '+fmt(s.Wst*100,0)+' %',gz:{min:0,max:100,lo:40,hi:60,tr:[15,80],x:s=>s.Lsg},st:s=>s.Lsg<20||s.Lsg>75?'crit':s.Lsg<40||s.Lsg>60?'warn':''}]},
+ {g:'saf',t:'Sûreté',c:[
+  {id:'dtm',k:'Marge ΔT',u:'%',v:s=>s.tripped?'—':fmt(s.dtMargin,1),sb:s=>'seuil '+fmt(Math.min(s.OTsp,s.OPsp),0)+' %',gz:{min:0,max:30,lo:5,hi:30,tr:[0],x:s=>s.tripped?30:s.dtMargin},st:s=>s.tripped?'':s.dtMargin<3?'crit':s.dtMargin<5?'warn':''},
+  {id:'sat',k:'Marge saturation',u:'°C',v:s=>fmt(s.satMargin,1),sb:s=>'Tsat '+fmt(tsat(s.Ppzr),1),gz:{min:0,max:50,lo:20,hi:50,x:s=>s.satMargin},st:s=>s.satMargin<10?'crit':s.satMargin<20?'warn':''}]},
+];
+function buildBand(){
+  $('#band').innerHTML=BG.map(g=>'<div class="bg" data-g="'+g.g+'" style="--n:'+g.c.length+'"><div class="bgh">'+g.t+'</div><div class="bgc">'+g.c.map(c=>'<div class="rd'+(c.m?' mb':'')+'" id="rd-'+c.id+'"><div class="k">'+c.k+'</div><div class="v"><span id="b-'+(c.vid||c.id)+'">—</span><small>'+c.u+'</small></div><div class="sb" id="s-'+c.id+'"></div>'+(c.gz?'<div class="gz" id="g-'+c.id+'"><i class="n"></i>'+(c.gz.tr||[]).map(()=>'<i class="t"></i>').join('')+'<b></b></div>':'')+'</div>').join('')+'</div></div>').join('');
+  for(const g of BG) for(const c of g.c) if(c.gz){ const z=c.gz, el=document.getElementById('g-'+c.id), pc=v=>clamp((v-z.min)/(z.max-z.min)*100,0,100); [...el.querySelectorAll('.t')].forEach((t,i)=>t.style.left=pc(z.tr[i])+'%'); }
+}
+function updateBand(s){
+  for(const g of BG) for(const c of g.c){
+    T('b-'+(c.vid||c.id),c.v(s)); if(c.sb) T('s-'+c.id,c.sb(s));
+    const st=c.st?c.st(s):''; const cell=document.getElementById('rd-'+c.id); cell.classList.toggle('warn',st==='warn'); cell.classList.toggle('crit',st==='crit');
+    if(c.gz){ const z=c.gz, el=document.getElementById('g-'+c.id), pc=v=>clamp((v-z.min)/(z.max-z.min)*100,0,100);
+      const lo=typeof z.lo==='function'?z.lo(s):z.lo, hi=typeof z.hi==='function'?z.hi(s):z.hi, n=el.firstChild;
+      n.style.left=pc(lo)+'%'; n.style.width=Math.max(0,pc(hi)-pc(lo))+'%'; el.lastChild.style.left=pc(z.x(s))+'%'; }
+  }
+}
+
 /* ================= Carte « En cours » ================= */
 function runItems(s){
   const L=[]; const it=(k,t,b)=>L.push({k,t,b});
@@ -2249,7 +2299,10 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 addEventListener('resize',()=>{ drawCharts(); drawDI(); });
-readCols(); buildCharts(); buildMini(); initFold(); setTab('synop'); buildAnn(); syncAll(); openMenu();
+buildBand(); readCols(); buildCharts(); buildMini(); initFold();
+{ if(store('bandfull')) document.body.classList.add('bandfull'); }
+$('#bandBtn').onclick=()=>{ const on=document.body.classList.toggle('bandfull'); store('bandfull',on); $('#bandBtn').textContent=on?'▴':'▾'; $('#bandBtn').setAttribute('aria-expanded',String(on)); };
+if(document.body.classList.contains('bandfull')) $('#bandBtn').textContent='▴'; setTab('synop'); buildAnn(); syncAll(); openMenu();
 requestAnimationFrame(frame);
 </script>
 </body>
