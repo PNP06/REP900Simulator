@@ -1,8 +1,12 @@
 # Simulateur REP 900
 
-Simulateur pédagogique de conduite d'un réacteur à eau pressurisée de 900 MWe (trois boucles, palier CPY, pilotage en mode G), jouable dans le navigateur sur ordinateur et téléphone.
+Simulateur pédagogique de conduite d'un réacteur à eau pressurisée de 900 MWe générique (trois boucles, pilotage en mode G), jouable dans le navigateur sur ordinateur et téléphone.
 
 **Jouer :** https://pnp06.github.io/REP900Simulator/
+
+## Avertissement
+
+Simulateur pédagogique d'un REP **générique**. Aucun document interne d'entreprise (exploitant, constructeur ou autorité) n'a été utilisé : il repose uniquement sur des connaissances publiques (physique des réacteurs, ouvrages d'enseignement, informations publiques). Les valeurs, seuils, automatismes et conduites sont génériques et simplifiés et ne reproduisent aucune installation réelle ni ses procédures. Projet personnel et indépendant.
 
 ## Contenu
 

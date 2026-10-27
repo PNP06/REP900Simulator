@@ -633,11 +633,19 @@ body.bandfocus .band .rd:not(.mb){display:block}
 .fbc.own{border-left-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,transparent)}
 .fbch{font-size:12px;color:var(--mute);margin-bottom:2px}
 .ready a.btn{text-decoration:none;display:inline-block}
+
+.about{max-width:900px;margin-inline:auto}
+.abg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:4px 26px}
+.abg h3{color:var(--accent);margin:12px 0 4px}
+.abg p{margin:0;line-height:1.55}
+.abg b{color:var(--fg)}
+.abn{margin:14px 0 0;padding-top:10px;border-top:1px solid var(--line);color:var(--mute);font-size:13.5px}
+#about{z-index:80}
 </style>
 </head>
 <body>
 <header class="top"><div class="wrap hdr">
-  <div class="bc"><div class="brand">REP 900 <small>T1 · CPY</small></div><div class="clock" id="clock">00:00:00</div></div>
+  <div class="bc"><div class="brand">REP 900 <small>générique</small></div><div class="clock" id="clock">00:00:00</div></div>
   <div class="st"><span class="lamp g" id="b-lamp"></span><span id="b-state">—</span></div>
   <div class="hdr-r">
     <div class="seg spdseg" data-key="speed" aria-label="Vitesse de simulation">
@@ -934,15 +942,15 @@ body.bandfocus .band .rd:not(.mb){display:block}
 <div class="ov" id="menu"><div class="box wrap">
   <div class="hero">
     <h1>Simulateur <span>REP 900</span></h1>
-    <p>Prenez le quart en salle de commande d'une tranche REP de 900 MWe à trois boucles. Apprenez avec le tutoriel, entraînez-vous aux manœuvres d'exploitation, puis gérez les aléas.</p>
-    <div class="row" style="margin-top:12px"><button class="btn pri" data-tourgo="0">Découvrir la centrale</button><button class="btn" id="lexBtn">Lexique des termes</button><button class="btn" data-fbopen="new">Retours et suggestions</button></div>
+    <p>Prenez le quart en salle de commande d'un REP générique de 900 MWe à trois boucles. Apprenez avec le tutoriel, entraînez-vous aux manœuvres d'exploitation, puis gérez les aléas.</p>
+    <div class="row" style="margin-top:12px"><button class="btn pri" data-tourgo="0">Découvrir la centrale</button><button class="btn" id="lexBtn">Lexique des termes</button><button class="btn" data-fbopen="new">Retours et suggestions</button><button class="btn" data-about="1">À propos</button></div>
     <div class="spec"><span>2 785 MWth</span><span>155 bar</span><span>Tmoy 286 → 304,5 °C</span><span>β = 600 pcm</span><span>mode G</span></div>
   </div>
   <div id="menuCards"></div>
   <div class="sec">Apparence</div><div class="row"><div class="seg" data-key="theme"><button data-v="auto">Automatique</button><button data-v="light">Clair</button><button data-v="dark">Sombre</button></div></div>
   <div class="sec">Son</div><div class="sndset"><label class="chk"><input type="checkbox" id="sndOn"> Sons activés</label><label class="chk"><input type="checkbox" id="sndAmb"> Ambiance des machines</label><label class="chk"><input type="checkbox" id="sndCnt"> Comptage neutronique audible (gamme source)</label></div>
   <label class="chk"><input type="checkbox" id="rndAlea"> Déclencher des aléas aléatoires en pilotage libre</label>
-  <p class="foot">Modèle pédagogique : cinétique ponctuelle à 6 groupes de neutrons retardés, contre-réactions Doppler et modérateur (fonction du bore), chaîne iode-xénon, efficacités intégrales des grappes, thermohydraulique primaire et secondaire en paramètres concentrés, gonflement/contraction GV, régulations (température, GCP en mode G, pressuriseur, RCV, ARE, GCT) et protections RPR simplifiées. Les valeurs sont représentatives d'un palier CPY mais simplifiées : ce n'est pas un outil de formation agréé.</p>
+  <p class="foot">Modèle pédagogique : cinétique ponctuelle à 6 groupes de neutrons retardés, contre-réactions Doppler et modérateur (fonction du bore), chaîne iode-xénon, efficacités intégrales des grappes, thermohydraulique primaire et secondaire en paramètres concentrés, gonflement/contraction GV, régulations (température, GCP en mode G, pressuriseur, RCV, ARE, GCT) et protections RPR simplifiées. Les valeurs sont des ordres de grandeur d'un REP générique de 900 MWe, simplifiés : ce n'est pas un outil de formation agréé.</p>
 </div></div>
 
 <div class="ov" id="brief" hidden><div class="box wrap"><div class="brief" id="briefBox"></div></div></div>
@@ -958,6 +966,18 @@ body.bandfocus .band .rd:not(.mb){display:block}
   <div class="tf"><button class="btn" id="tvPrev">Précédent</button><div class="tdots" id="tdots"></div><button class="btn" id="tvAuto">Lecture auto</button><button class="btn pri" id="tvNext">Suivant</button></div>
  </div>
 </div>
+<div class="ov" id="about" hidden role="dialog" aria-labelledby="abT"><div class="box wrap"><div class="brief about">
+  <h2>Avant de commencer</h2>
+  <div class="t" id="abT">Un simulateur pédagogique de REP générique</div>
+  <div class="abg">
+   <section><h3>Le sens</h3><p>Faire comprendre de l'intérieur comment fonctionne et se pilote un réacteur à eau pressurisée : la physique du cœur, les circuits, les régulations, les protections et la manière de raisonner d'un opérateur. On apprend en manipulant, et l'on peut se tromper sans conséquence : c'est souvent en provoquant un arrêt automatique qu'on comprend pourquoi il existe.</p></section>
+   <section><h3>Le principe</h3><p>Un modèle physique simplifié est calculé en temps réel dans votre navigateur : cinétique du cœur avec les neutrons retardés, contre-réactions, xénon, échanges de chaleur entre circuits, régulations et protections. Il reproduit les ordres de grandeur et les comportements d'un REP de 900 MWe à trois boucles, sans chercher à imiter une installation particulière.</p></section>
+   <section><h3>Les sources</h3><p><b>Aucun document interne d'entreprise</b>, d'exploitant, de constructeur ou d'autorité, n'a été utilisé pour le concevoir. Il repose uniquement sur des connaissances publiques : physique des réacteurs, ouvrages d'enseignement et informations diffusées publiquement. Les valeurs, seuils, automatismes, conduites et écrans sont <b>génériques et simplifiés</b> : ils ne reproduisent ni une centrale réelle, ni ses procédures, ni ses consignes de conduite.</p></section>
+   <section><h3>Les limites</h3><p>Ce n'est pas un simulateur de formation agréé ni une référence d'exploitation. Les conduites proposées illustrent des principes ; les vraies procédures sont plus complètes et propres à chaque installation. C'est un projet personnel et indépendant, sans lien avec un exploitant ou un constructeur.</p></section>
+  </div>
+  <p class="abn">Une erreur, une incohérence ou une idée ? Le bouton « Retours et suggestions » du menu permet de le signaler ; l'auteur y répond.</p>
+  <div class="row" style="margin-top:14px"><button class="btn pri" id="abOk">J'ai compris, commencer</button><button class="btn" id="abTour">Découvrir la centrale</button></div>
+ </div></div></div>
 <div class="ov fb" id="fb" hidden><div class="box wrap"><div class="brief">
   <div class="row" style="justify-content:space-between"><h2 style="margin:0">Retours et suggestions</h2><button class="ib" id="fbClose" aria-label="Fermer">✕</button></div>
   <div class="t">Aidez à améliorer le simulateur</div>
@@ -1908,6 +1928,7 @@ twoStep($('#isBtn'),'IS manuelle','Confirmer l\'IS',()=>act('is'));
 document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('g')){ e.preventDefault(); showGloss(+e.target.dataset.g); } if(e.key==='Escape') $('#gpop').hidden=true; });
 document.addEventListener('click',e=>{
   if(e.target.closest('button,.seg button,.bank')&&!e.target.closest('#ackBtn,#alb-ack,#tour')) SFX.tick();
+  if(e.target.closest('[data-about]')){ $('#about').hidden=false; return; }
   const fo=e.target.closest('[data-fbopen]'); if(fo){ openFB(fo.dataset.fbopen); return; }
   const ft=e.target.closest('[data-fbt]'); if(ft){ fbTab(ft.dataset.fbt); return; }
   const ff=e.target.closest('[data-fbf]'); if(ff){ FB.filter=ff.dataset.fbf; fbRender(); return; }
@@ -2962,6 +2983,9 @@ if(window.matchMedia) matchMedia('(prefers-color-scheme: light)').addEventListen
 buildBand(); readCols(); buildCharts(); buildMini(); initFold();
 { if(store('bandfull')) document.body.classList.add('bandfull'); }
 themeApply();
+$('#abOk').onclick=()=>{ store('about',1); $('#about').hidden=true; };
+$('#abTour').onclick=()=>{ store('about',1); $('#about').hidden=true; openTour(0); };
+if(store('about')!==1) $('#about').hidden=false;
 $('#bandBtn').onclick=()=>{ const on=document.body.classList.toggle('bandfull'); store('bandfull',on); $('#bandBtn').textContent=on?'▴':'▾'; $('#bandBtn').setAttribute('aria-expanded',String(on)); };
 if(document.body.classList.contains('bandfull')) $('#bandBtn').textContent='▴'; setTab('synop'); buildAnn(); syncAll(); openMenu();
 requestAnimationFrame(frame);
