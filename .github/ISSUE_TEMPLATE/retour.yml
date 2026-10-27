@@ -1,0 +1,55 @@
+name: Retour sur le simulateur
+description: Signaler une erreur, une incohérence, un manque ou proposer une amélioration
+title: "[Retour] "
+labels: ["retour"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci d'aider à améliorer le simulateur REP 900. Un retour précis, avec la situation et ce que vous attendiez, est le plus utile. L'auteur répond directement ici.
+  - type: dropdown
+    id: niveau
+    attributes:
+      label: Niveau d'importance
+      options:
+        - "Critique — résultat faux, ou qui enseignerait une mauvaise pratique"
+        - "Incohérence — comportement physique ou de conduite douteux"
+        - "Manquant — notion, système ou situation absente"
+        - "Amélioration — ergonomie, pédagogie, clarté"
+        - "Détail — coquille, affichage"
+    validations:
+      required: true
+  - type: dropdown
+    id: partie
+    attributes:
+      label: Partie concernée
+      options:
+        - Visite de la centrale
+        - Tutoriel
+        - Leçons guidées
+        - Exercices
+        - Aléas
+        - Modèle physique
+        - Interface
+        - Aide, lexique
+        - Autre
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Ce que vous avez constaté, dans quelle situation.
+    validations:
+      required: true
+  - type: textarea
+    id: attendu
+    attributes:
+      label: Ce qui serait attendu
+      description: Le comportement ou le contenu attendu, avec une source si possible (cours, document, retour d'expérience).
+  - type: textarea
+    id: contexte
+    attributes:
+      label: Contexte de simulation
+      description: Rempli automatiquement par le simulateur.
+      render: text

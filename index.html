@@ -47,17 +47,17 @@ header.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;pad
 .btn{background:var(--panel-2);border:1px solid var(--line-2);border-radius:6px;padding:7px 11px;font:600 14px/1.1 var(--f-disp);letter-spacing:.05em;text-transform:uppercase;color:var(--fg);min-height:34px}
 .btn:hover{border-color:var(--accent)}
 .btn:active{transform:translateY(1px)}
-.btn.pri{background:var(--accent);color:#0d1418;border-color:var(--accent)}
-.btn.red{background:#5a1f1c;border-color:var(--crit);color:#ffd9d6}
+.btn.pri{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn.red{background:var(--al-r-bg);border-color:var(--crit);color:var(--al-r-fg)}
 .btn.red.armed{background:var(--crit);color:#fff;animation:blink .5s steps(2) infinite}
 .btn.amber{border-color:var(--warn);color:var(--warn)}
 .btn.sm{padding:5px 8px;min-height:30px;font-size:13px}
 .btn[disabled]{opacity:.4;cursor:not-allowed}
-.btn.on{background:var(--accent);color:#0d1418;border-color:var(--accent)}
+.btn.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 .seg{display:inline-flex;border:1px solid var(--line-2);border-radius:6px;overflow:hidden;flex-wrap:wrap}
 .seg button{background:var(--panel-2);border:0;border-right:1px solid var(--line);padding:6px 10px;font:600 13px/1.1 var(--f-disp);letter-spacing:.05em;text-transform:uppercase;min-height:32px}
 .seg button:last-child{border-right:0}
-.seg button.on{background:var(--accent);color:#0d1418}
+.seg button.on{background:var(--accent);color:var(--on-accent)}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .row+.row{margin-top:8px}
 .lbl{font:600 12px var(--f-disp);letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
@@ -164,7 +164,7 @@ table.kv tr.tot td{border-bottom:0;font-weight:600;color:var(--fg);padding-top:7
 .note{font-size:12.5px;color:var(--mute);margin-top:8px}
 .sl{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-top:8px}
 .sl output{font:500 13px var(--f-num);min-width:58px;text-align:right}
-.danger{border-color:#5a2a27}
+.danger{border-color:color-mix(in srgb,var(--crit) 35%,var(--line))}
 
 /* tendances */
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
@@ -179,9 +179,9 @@ table.kv tr.tot td{border-bottom:0;font-weight:600;color:var(--fg);padding-top:7
 /* alarmes */
 .ann{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:5px}
 .an{border:1px solid var(--line);border-radius:5px;padding:6px 7px;font:600 11.5px/1.2 var(--f-disp);letter-spacing:.04em;text-transform:uppercase;color:var(--dim);background:var(--bg);min-height:44px;display:flex;align-items:center}
-.an.on.a{background:#4a3712;color:#ffd590;border-color:var(--warn)}
-.an.on.r{background:#4c1915;color:#ffc9c4;border-color:var(--crit)}
-.an.on.i{background:#173543;color:#c9ebf6;border-color:var(--accent)}
+.an.on.a{background:var(--al-a-bg);color:var(--al-a-fg);border-color:var(--warn)}
+.an.on.r{background:var(--al-r-bg);color:var(--al-r-fg);border-color:var(--crit)}
+.an.on.i{background:var(--al-i-bg);color:var(--al-i-fg);border-color:var(--accent)}
 .an.on.nack{animation:blink 0.8s steps(2) infinite}
 @keyframes blink{50%{filter:brightness(1.7)}}
 .log{max-height:280px;overflow:auto;font:12.5px/1.45 var(--f-num);border:1px solid var(--line);border-radius:6px;background:var(--bg);padding:6px 8px}
@@ -190,7 +190,7 @@ table.kv tr.tot td{border-bottom:0;font-weight:600;color:var(--fg);padding-top:7
 .log .op{color:var(--accent)} .log .auto{color:var(--warn)} .log .alarm{color:var(--mute)}
 
 /* overlays */
-.ov{position:fixed;inset:0;z-index:60;background:#0a0f12ee;overflow:auto;padding-block:calc(20px + env(safe-area-inset-top,0px)) calc(24px + env(safe-area-inset-bottom,0px))}
+.ov{position:fixed;inset:0;z-index:60;background:var(--ovbg);overflow:auto;padding-block:calc(20px + env(safe-area-inset-top,0px)) calc(24px + env(safe-area-inset-bottom,0px))}
 .ov .box{max-width:980px;margin:0 auto}
 .hero{padding:10px 0 18px;border-bottom:1px solid var(--line);margin-bottom:18px}
 .hero h1{font:700 clamp(34px,7vw,58px)/.95 var(--f-disp);letter-spacing:.02em;text-transform:uppercase;margin:0;text-wrap:balance}
@@ -341,9 +341,9 @@ table.kv td{padding:3px 0;font-size:13px}
 .rd.warn .up,.rd.warn .dn{color:var(--warn)}.rd.crit .up,.rd.crit .dn{color:var(--crit)}
 .rd .v span{transition:color .2s}
 .alb{display:flex;align-items:center;gap:8px;margin-top:6px;padding:5px 6px 5px 10px;border-radius:7px;border:1px solid var(--line);background:var(--panel);font:600 12.5px/1.25 var(--f-disp);letter-spacing:.04em;text-transform:uppercase;min-width:0}
-.alb.r{background:#4c1915;border-color:var(--crit);color:#ffd3cf}
-.alb.a{background:#46340f;border-color:var(--warn);color:#ffe0a6}
-.alb.i{background:#163240;border-color:var(--accent);color:#cdebf5}
+.alb.r{background:var(--al-r-bg);border-color:var(--crit);color:var(--al-r-fg)}
+.alb.a{background:var(--al-a-bg);border-color:var(--warn);color:var(--al-a-fg)}
+.alb.i{background:var(--al-i-bg);border-color:var(--accent);color:var(--al-i-fg)}
 .alb.nack{animation:blink 1s steps(2) infinite}
 .alb-n{white-space:nowrap;font-family:var(--f-num);font-size:11.5px;opacity:.85}
 .alb-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -366,7 +366,7 @@ table.kv td{padding:3px 0;font-size:13px}
 .obj li.done .why{display:none}
 
 /* ===== vue d'ensemble, repli, accompagnement ===== */
-.card[data-c="crv"]{--cc:var(--c-trend)}.card[data-c="run"]{--cc:#9fb7ff}
+.card[data-c="crv"]{--cc:var(--c-trend)}.card[data-c="pt"]{--cc:var(--c-di)}.card[data-c="run"]{--cc:var(--c-run)}
 .d-syn,.d-crv,.d-run,.d-phy,.d-al{display:grid;gap:10px;align-content:start;min-width:0}
 .xb{display:block}
 @media (max-width:760px){.xb{display:none}}
@@ -394,7 +394,7 @@ table.kv td{padding:3px 0;font-size:13px}
 .runa{display:grid;gap:3px}
 .ra{font:600 11.5px/1.3 var(--f-disp);letter-spacing:.04em;text-transform:uppercase;padding:4px 7px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:var(--mute)}
 .ra .tm{font:500 11px var(--f-num);color:var(--dim);margin-right:8px;letter-spacing:0}
-.ra.r{background:#4c1915;border-color:var(--crit);color:#ffc9c4}.ra.a{background:#4a3712;border-color:var(--warn);color:#ffd590}.ra.i{background:#173543;border-color:var(--accent);color:#c9ebf6}
+.ra.r{background:var(--al-r-bg);border-color:var(--crit);color:var(--al-r-fg)}.ra.a{background:var(--al-a-bg);border-color:var(--warn);color:var(--al-a-fg)}.ra.i{background:var(--al-i-bg);border-color:var(--accent);color:var(--al-i-fg)}
 .ra.nack{animation:blink .8s steps(2) infinite}
 .ra.none,.ra.more{text-transform:none;font:13px var(--f-body);letter-spacing:0}
 .runlog{max-height:none}
@@ -466,7 +466,7 @@ body.bandfocus .band .rd:not(.mb){display:block}
 .ptr{position:fixed;z-index:85;transform:translateX(-50%);pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;filter:drop-shadow(0 4px 10px #000c)}
 .ptr .pa2{font:700 26px/1 var(--f-num);color:var(--accent);animation:bob 0.9s ease-in-out infinite}
 .ptr.pb{flex-direction:column-reverse}
-.ptr .pl{font:700 12px/1 var(--f-disp);letter-spacing:.07em;text-transform:uppercase;background:var(--accent);color:#0d1418;border-radius:12px;padding:5px 10px;white-space:nowrap}
+.ptr .pl{font:700 12px/1 var(--f-disp);letter-spacing:.07em;text-transform:uppercase;background:var(--accent);color:var(--on-accent);border-radius:12px;padding:5px 10px;white-space:nowrap}
 .ptr .pl:empty{display:none}
 .ptr.down,.ptr.tab{flex-direction:column-reverse}
 @keyframes bob{50%{transform:translateY(6px)}}
@@ -566,6 +566,73 @@ body.bandfocus .band .rd:not(.mb){display:block}
 @keyframes fbn{0%,30%,100%{opacity:.45}8%,22%{opacity:1}}
 .chartx.fb .arw{stroke:var(--accent);stroke-width:2.5}
 @media (prefers-reduced-motion:reduce){.focus,.focus-sm,.ptr .pa2,.plant .fl,.plant .core,.plant .plume,.plant.rodsmove .rodsg,.chartx.fb .fbn{animation:none}}
+
+/* ===== thème clair ===== */
+:root{--al-r-bg:#4c1915;--al-r-fg:#ffc9c4;--al-a-bg:#4a3712;--al-a-fg:#ffd590;--al-i-bg:#173543;--al-i-fg:#c9ebf6;--on-accent:#0d1418;--ovbg:#0a0f12ee;--c-run:#9fb7ff}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#eef2f4; --bg-2:#e2e8ec; --panel:#ffffff; --panel-2:#f1f4f6; --line:#d3dbe0; --line-2:#b9c5cc;
+  --fg:#15222b; --mute:#4f616c; --dim:#7f8f99;
+  --accent:#0e7aa1; --hot:#cf5326; --cold:#2a6fbf; --steam:#4a82c2; --feed:#24935a; --bore:#7552c2;
+  --ok:#1f8f4c; --warn:#b06f00; --crit:#cc2d24; --chg:#0071b0;
+  --c-synop:#1f86ab;--c-instr:#9a7c00;--c-react:#c2611a;--c-di:#5a8a1a;--c-rods:#bd3f78;--c-bore:#7552c2;--c-turb:#3b68c0;--c-are:#1f8f55;--c-pzr:#cc4a33;--c-prot:#cc2d24;--c-trend:#178f82;--c-alarm:#8f6f30;--c-log:#5f6e78;--c-mis:#1f86ab;--c-run:#4057c8;
+  --al-r-bg:#fde3e0;--al-r-fg:#8e1b14;--al-a-bg:#fff1d2;--al-a-fg:#744800;--al-i-bg:#dcf0f7;--al-i-fg:#0b5470;--on-accent:#ffffff;--ovbg:#e9eef1f2;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  color-scheme:light;
+  --bg:#eef2f4; --bg-2:#e2e8ec; --panel:#ffffff; --panel-2:#f1f4f6; --line:#d3dbe0; --line-2:#b9c5cc;
+  --fg:#15222b; --mute:#4f616c; --dim:#7f8f99;
+  --accent:#0e7aa1; --hot:#cf5326; --cold:#2a6fbf; --steam:#4a82c2; --feed:#24935a; --bore:#7552c2;
+  --ok:#1f8f4c; --warn:#b06f00; --crit:#cc2d24; --chg:#0071b0;
+  --c-synop:#1f86ab;--c-instr:#9a7c00;--c-react:#c2611a;--c-di:#5a8a1a;--c-rods:#bd3f78;--c-bore:#7552c2;--c-turb:#3b68c0;--c-are:#1f8f55;--c-pzr:#cc4a33;--c-prot:#cc2d24;--c-trend:#178f82;--c-alarm:#8f6f30;--c-log:#5f6e78;--c-mis:#1f86ab;--c-run:#4057c8;
+  --al-r-bg:#fde3e0;--al-r-fg:#8e1b14;--al-a-bg:#fff1d2;--al-a-fg:#744800;--al-i-bg:#dcf0f7;--al-i-fg:#0b5470;--on-accent:#ffffff;--ovbg:#e9eef1f2;
+}}
+:root[data-theme="dark"]{color-scheme:dark}
+.thm svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:520px){.thm{display:none}}
+.card[data-c="run"]{--cc:var(--c-run)}
+/* domaine P-T */
+.ptc{width:100%;height:220px;display:block;background:var(--bg);border:1px solid var(--line);border-radius:6px}
+.ptst{font-family:var(--f-num);font-size:11.5px}
+.ptst.bad{color:var(--warn)}
+/* retours */
+.fb .brief{position:relative}
+.lvl{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px}
+.lvo{--lc:var(--mute);display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:center;padding:8px 10px;border:1px solid var(--line-2);border-left:4px solid var(--lc);border-radius:7px;background:var(--bg);cursor:pointer}
+.lvo.crit{--lc:var(--crit)}.lvo.warn{--lc:var(--warn)}.lvo.bore{--lc:var(--bore)}.lvo.ok{--lc:var(--ok)}.lvo.mute{--lc:var(--mute)}
+.lvo input{accent-color:var(--lc);width:16px;height:16px;margin:0}
+.lvo .lvt{font:700 14px var(--f-disp);letter-spacing:.05em;text-transform:uppercase;color:var(--lc)}
+.lvo .lvd{grid-column:2;font-size:12.5px;color:var(--mute);line-height:1.3}
+.lvo:has(input:checked){background:color-mix(in srgb,var(--lc) 12%,var(--panel));border-color:var(--lc)}
+.fgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:10px;margin-top:12px}
+@media (max-width:640px){.fgrid{grid-template-columns:1fr}}
+.fl{display:grid;gap:4px;margin-top:10px}
+.fl>span{font:600 12px var(--f-disp);letter-spacing:.07em;text-transform:uppercase;color:var(--mute)}
+.fl input,.fl select,.fl textarea,.ctx{width:100%;background:var(--bg);border:1px solid var(--line-2);border-radius:6px;padding:8px 10px;color:var(--fg);font:14px var(--f-body);min-width:0}
+.fl textarea{resize:vertical}
+.ctx{font:12px/1.45 var(--f-num);color:var(--mute);margin-top:6px;resize:vertical}
+.err{color:var(--crit);font-size:13px}
+.ready{margin-top:12px;padding:10px 12px;border-radius:8px;border:1px solid color-mix(in srgb,var(--ok) 45%,var(--line));background:color-mix(in srgb,var(--ok) 8%,var(--bg))}
+.ready p{margin:0 0 8px}
+.chip.lvc.crit.on{border-color:var(--crit);color:var(--crit)}.chip.lvc.warn.on{border-color:var(--warn);color:var(--warn)}.chip.lvc.bore.on{border-color:var(--bore);color:var(--bore)}.chip.lvc.ok.on{border-color:var(--ok);color:var(--ok)}
+#fbItems{display:grid;gap:8px;margin-top:8px}
+.fbi{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg)}
+.fbi.closed{opacity:.75}
+.fbh{display:flex;gap:8px;align-items:center;font:600 11.5px var(--f-disp);letter-spacing:.06em;text-transform:uppercase}
+.lvb{padding:2px 7px;border-radius:4px;color:var(--on-accent);background:var(--mute)}
+.lvb.crit{background:var(--crit)}.lvb.warn{background:var(--warn)}.lvb.bore{background:var(--bore)}.lvb.ok{background:var(--ok)}
+.fbst{color:var(--mute)}.fbn{margin-left:auto;color:var(--dim);font-family:var(--f-num)}
+.fbt{font:600 16px/1.25 var(--f-disp);margin-top:6px}
+.fbp{font-size:12px;color:var(--mute);margin-top:2px}
+.fbd{font-size:13.5px;margin-top:6px;white-space:pre-wrap;color:var(--fg)}
+.fbf{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px;font-size:12px;color:var(--mute)}
+.fbf>span:first-child{margin-right:auto}
+.fbf a.btn{text-decoration:none;display:inline-flex;align-items:center}
+.fbcm{margin-top:8px;display:grid;gap:6px}
+.fbc{border-left:3px solid var(--line-2);padding:4px 10px;font-size:13.5px}
+.fbc.own{border-left-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.fbch{font-size:12px;color:var(--mute);margin-bottom:2px}
+.ready a.btn{text-decoration:none;display:inline-block}
 </style>
 </head>
 <body>
@@ -578,6 +645,7 @@ body.bandfocus .band .rd:not(.mb){display:block}
     </div>
     <select id="spdSel" class="spdsel" aria-label="Vitesse de simulation"><option value="1">×1</option><option value="2">×2</option><option value="5">×5</option><option value="10">×10</option><option value="60">×60</option><option value="300">×300</option></select>
     <button class="ib bandt" id="bandBtn" aria-label="Afficher le bandeau détaillé" aria-expanded="false">▾</button>
+    <button class="ib thm" id="themeBtn" aria-label="Thème"></button>
     <button class="ib snd" id="sndBtn" aria-label="Couper le son"></button>
     <button class="ib" id="pauseBtn" aria-label="Pause">❚❚</button>
     <button class="ib" id="menuBtn" aria-label="Menu">☰<span class="lab"> Menu</span></button>
@@ -677,6 +745,11 @@ body.bandfocus .band .rd:not(.mb){display:block}
       <div class="card" data-c="di">
         <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M12 6H6M12 10H3M12 14h7M12 18h4"/></svg></i>Diagramme de pilotage ΔI<button class="qm" data-help="di" aria-label="Aide : Diagramme de pilotage ΔI">?</button></h2>
         <canvas class="dic" id="c-di"></canvas>
+      </div>
+      <div class="card" data-c="pt">
+        <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 20V5"/><path d="M5 20h15"/><path d="M8 17c1-5 2-8 5-9 3-1 5 1 6 4"/></svg></i>Chaussette P-T<div class="seg mseg" data-key="ptz"><button data-v="0">Complet</button><button data-v="1">Zoom</button></div><button class="qm" data-help="pt" aria-label="Aide : domaine P-T">?</button></h2>
+        <canvas class="ptc" id="c-pt"></canvas>
+        <div class="note ptst" id="pt-st">—</div>
       </div>
 
         <div class="card" data-c="instr">
@@ -862,10 +935,11 @@ body.bandfocus .band .rd:not(.mb){display:block}
   <div class="hero">
     <h1>Simulateur <span>REP 900</span></h1>
     <p>Prenez le quart en salle de commande d'une tranche REP de 900 MWe à trois boucles. Apprenez avec le tutoriel, entraînez-vous aux manœuvres d'exploitation, puis gérez les aléas.</p>
-    <div class="row" style="margin-top:12px"><button class="btn pri" data-tourgo="0">Découvrir la centrale</button><button class="btn" id="lexBtn">Lexique des termes</button></div>
+    <div class="row" style="margin-top:12px"><button class="btn pri" data-tourgo="0">Découvrir la centrale</button><button class="btn" id="lexBtn">Lexique des termes</button><button class="btn" data-fbopen="new">Retours et suggestions</button></div>
     <div class="spec"><span>2 785 MWth</span><span>155 bar</span><span>Tmoy 286 → 304,5 °C</span><span>β = 600 pcm</span><span>mode G</span></div>
   </div>
   <div id="menuCards"></div>
+  <div class="sec">Apparence</div><div class="row"><div class="seg" data-key="theme"><button data-v="auto">Automatique</button><button data-v="light">Clair</button><button data-v="dark">Sombre</button></div></div>
   <div class="sec">Son</div><div class="sndset"><label class="chk"><input type="checkbox" id="sndOn"> Sons activés</label><label class="chk"><input type="checkbox" id="sndAmb"> Ambiance des machines</label><label class="chk"><input type="checkbox" id="sndCnt"> Comptage neutronique audible (gamme source)</label></div>
   <label class="chk"><input type="checkbox" id="rndAlea"> Déclencher des aléas aléatoires en pilotage libre</label>
   <p class="foot">Modèle pédagogique : cinétique ponctuelle à 6 groupes de neutrons retardés, contre-réactions Doppler et modérateur (fonction du bore), chaîne iode-xénon, efficacités intégrales des grappes, thermohydraulique primaire et secondaire en paramètres concentrés, gonflement/contraction GV, régulations (température, GCP en mode G, pressuriseur, RCV, ARE, GCT) et protections RPR simplifiées. Les valeurs sont représentatives d'un palier CPY mais simplifiées : ce n'est pas un outil de formation agréé.</p>
@@ -884,6 +958,30 @@ body.bandfocus .band .rd:not(.mb){display:block}
   <div class="tf"><button class="btn" id="tvPrev">Précédent</button><div class="tdots" id="tdots"></div><button class="btn" id="tvAuto">Lecture auto</button><button class="btn pri" id="tvNext">Suivant</button></div>
  </div>
 </div>
+<div class="ov fb" id="fb" hidden><div class="box wrap"><div class="brief">
+  <div class="row" style="justify-content:space-between"><h2 style="margin:0">Retours et suggestions</h2><button class="ib" id="fbClose" aria-label="Fermer">✕</button></div>
+  <div class="t">Aidez à améliorer le simulateur</div>
+  <p>Erreur de physique, consigne de conduite discutable, notion manquante, idée d'ergonomie : chaque retour est publié sur la page GitHub du projet, où l'auteur répond. La lecture est libre ; publier demande un compte GitHub gratuit.</p>
+  <div class="row"><div class="seg"><button data-fbt="new">Nouveau retour</button><button data-fbt="list">Retours publiés</button></div></div>
+  <form id="fbNew" novalidate>
+   <h3>Niveau d'importance</h3>
+   <div class="lvl" id="fbLv"></div>
+   <div class="fgrid">
+    <label class="fl"><span>Partie concernée</span><select id="fbPart"></select></label>
+    <label class="fl"><span>Titre</span><input id="fbTitle" type="text" maxlength="120" placeholder="Ex. : la pression monte trop vite avec les chaufferettes forcées"></label>
+   </div>
+   <label class="fl"><span>Description</span><textarea id="fbDesc" rows="4" placeholder="Ce que vous avez constaté, dans quelle situation."></textarea></label>
+   <label class="fl"><span>Ce qui serait attendu, avec une source si possible</span><textarea id="fbExp" rows="3" placeholder="Valeur ou comportement attendu, document de référence, retour d'expérience…"></textarea></label>
+   <label class="chk"><input type="checkbox" id="fbCtxOn" checked> Joindre l'état de la simulation</label>
+   <textarea id="fbCtx" rows="5" readonly class="ctx" aria-label="État de la simulation joint"></textarea>
+   <div class="row" style="margin-top:12px"><button class="btn pri" type="submit">Préparer le retour sur GitHub</button><span class="err" id="fbErr"></span></div>
+   <div class="ready" id="fbReady" hidden><p id="fbReadyT">Votre retour est prêt : ouvrez-le sur GitHub, vérifiez-le et cliquez sur « Create » pour le publier.</p><a class="btn pri" id="fbGo" href="#" target="_blank" rel="noopener" hidden>Ouvrir sur GitHub</a></div>
+  </form>
+  <div id="fbList" hidden>
+   <div class="row" style="justify-content:space-between;margin-top:12px"><div class="chips" id="fbFilt"></div><button class="btn sm" id="fbRef">Actualiser</button></div>
+   <div id="fbItems"></div>
+  </div>
+ </div></div></div>
 <div class="gpop" id="gpop" hidden role="dialog" aria-label="Définition"></div>
 
 <script>
@@ -1155,7 +1253,7 @@ function step(s){
   s.t+=dt;
   if(s.t>=s.histNext){
     s.histNext=s.t+1;
-    s.hist.push({t:s.t,pn:n*100,pt:Qt*100,ta:s.Tavg,tr:s.Tref,pp:s.Ppzr,lp:s.Lpzr,lg:s.Lsg,r:R.R.p,g:R.G.p,cb:s.Cb,xe:rp.xe,di:s.DI,dr:-1.5*n});
+    s.hist.push({t:s.t,th:s.Thot,pn:n*100,pt:Qt*100,ta:s.Tavg,tr:s.Tref,pp:s.Ppzr,lp:s.Lpzr,lg:s.Lsg,r:R.R.p,g:R.G.p,cb:s.Cb,xe:rp.xe,di:s.DI,dr:-1.5*n});
     if(s.hist.length>30000) s.hist.splice(0,2000);
   }
 }
@@ -1660,7 +1758,7 @@ function launch(id){
   setSpeed(scn.speed||1);
   logEv(A.s,'auto','Prise de quart — '+(mystery?'aléa mystère':scn.title));
   buildAnn(); syncAll(); updateUI(); drawCharts();
-  $('#menu').hidden=true; $('#debrief').hidden=true;
+  $('#menu').hidden=true; $('#debrief').hidden=true; $('#fb').hidden=true; if(!$('#tour').hidden){ $('#tour').hidden=true; cancelAnimationFrame(tourRAF); clearTimeout(TV.tm); }
   showBrief();
 }
 function showBrief(){
@@ -1810,6 +1908,11 @@ twoStep($('#isBtn'),'IS manuelle','Confirmer l\'IS',()=>act('is'));
 document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('g')){ e.preventDefault(); showGloss(+e.target.dataset.g); } if(e.key==='Escape') $('#gpop').hidden=true; });
 document.addEventListener('click',e=>{
   if(e.target.closest('button,.seg button,.bank')&&!e.target.closest('#ackBtn,#alb-ack,#tour')) SFX.tick();
+  const fo=e.target.closest('[data-fbopen]'); if(fo){ openFB(fo.dataset.fbopen); return; }
+  const ft=e.target.closest('[data-fbt]'); if(ft){ fbTab(ft.dataset.fbt); return; }
+  const ff=e.target.closest('[data-fbf]'); if(ff){ FB.filter=ff.dataset.fbf; fbRender(); return; }
+  const fc=e.target.closest('[data-fbc]'); if(fc){ fbComments(+fc.dataset.fbc); return; }
+  if(e.target.id==='fb'){ closeFB(); return; }
   const tg=e.target.closest('[data-tourgo]'); if(tg){ openTour(+tg.dataset.tourgo); return; }
   const tv=e.target.closest('[data-tv]'); if(tv){ TV.auto=false; tourGo(+tv.dataset.tv); return; }
   const pt=e.target.closest('#ptr'); if(pt){ if(pt._tab) setTab(pt._tab); if(pt._el) pt._el.scrollIntoView({behavior:'smooth',block:'center'}); return; }
@@ -1828,6 +1931,8 @@ document.addEventListener('click',e=>{
     if(key==='speed') setSpeed(+v);
     else if(key==='win'){ A.win=+v; syncAll(); drawCharts(); }
     else if(key==='mwin'){ A.mwin=+v; syncAll(); drawCharts(); }
+    else if(key==='ptz'){ A.ptZoom=v==='1'; syncAll(); drawPT(); }
+    else if(key==='theme'){ themeApply(v); }
     else act(key,v);
     return; }
   const bank=e.target.closest('.bank'); if(bank){ act('rodSel',bank.dataset.bank); return; }
@@ -1853,7 +1958,7 @@ function setTab(t){ A.tab=t; document.body.dataset.tab=t; $$('#tabs button').for
 function syncSeg(key,val){ $$('.seg[data-key="'+key+'"] button').forEach(b=>b.classList.toggle('on',b.dataset.v===String(val))); }
 function syncAll(){
   const s=A.s;
-  syncSeg('speed',A.speed); syncSeg('win',A.win); syncSeg('mwin',A.mwin);
+  syncSeg('speed',A.speed); syncSeg('win',A.win); syncSeg('mwin',A.mwin); syncSeg('ptz',A.ptZoom?'1':'0');
   $('#pauseBtn').innerHTML=A.paused?'▶<span class="lab"> Reprendre</span>':'❚❚<span class="lab"> Pause</span>'; $('#pauseBtn').setAttribute('aria-label',A.paused?'Reprendre':'Pause'); $('#pauseBtn').classList.toggle('on',A.paused); $('#spdSel').value=String(A.speed);
   if(!s) return;
   syncSeg('modeR',s.modeR); syncSeg('modeG',s.modeG);
@@ -2048,7 +2153,7 @@ function finish(){
   }
   const ops=s.log.filter(l=>l.type==='op').slice(-14);
   if(ops.length) h+='<h3>Vos dernières actions</h3><div class="log" style="max-height:200px">'+ops.map(l=>'<div><span class="tm">'+hms(l.t)+'</span><span class="op">'+l.txt+'</span></div>').join('')+'</div>';
-  h+='<div class="row" style="margin-top:16px"><button class="btn pri" id="dRe">Rejouer</button><button class="btn" id="dCont">Continuer en libre</button><button class="btn" id="dMenu">Menu</button></div>';
+  h+='<div class="row" style="margin-top:16px"><button class="btn pri" id="dRe">Rejouer</button><button class="btn" data-fbopen="new">Signaler un problème</button><button class="btn" id="dCont">Continuer en libre</button><button class="btn" id="dMenu">Menu</button></div>';
   $('#debriefBox').innerHTML=h; $('#debrief').hidden=false; glossDom($('#debriefBox'));
   $('#dRe').onclick=()=>launch(scn.mystery?'myst':scn.id);
   $('#dMenu').onclick=()=>openMenu();
@@ -2065,7 +2170,7 @@ function openMenu(){
   const best=store('best')||{}, done=store('done')||{};
   const card=x=>'<button class="sc" data-scn="'+x.id+'"><span class="t">'+x.title+'</span><span class="d">'+x.desc+'</span><span class="m"><span>'+(x.kind==='lecon'?'Leçon · '+(x.speed>=60?'longue (×300)':'15 à 25 min'):x.diff?'Difficulté '+'●'.repeat(x.diff)+'○'.repeat(3-x.diff):'Sans évaluation')+'</span>'+(done[x.id]?'<span class="done-tag">✓ terminé</span>':'')+(best[x.id]!=null?'<span class="stars">'+'★'.repeat(best[x.id])+'☆'.repeat(3-best[x.id])+'</span>':'')+'</span></button>';
   const grp=(t,f)=>'<div class="sec">'+t+'</div><div class="cards">'+SCN.filter(f).map(card).join('')+'</div>';
-  $('#menuCards').innerHTML=(A.s&&!A.done?'<div class="row" style="margin-bottom:6px"><button class="btn pri" id="resume">Reprendre le quart en cours</button></div>':'')+'<div class="sec">Apprendre</div><div class="cards"><button class="sc tourc" data-tourgo="0"><span class="t">Découvrir la centrale</span><span class="d">Visite illustrée, sans manipulation : fission, réaction en chaîne, circuits, pilotage, xénon, sûreté.</span><span class="m"><span>18 chapitres · 15 à 20 min</span>'+(done.tour?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'+SCN.filter(x=>x.kind==='tuto').map(card).join('')+'</div>'+grp('Comprendre — leçons guidées',x=>x.kind==='lecon')+grp("S'entraîner",x=>x.kind==='exo')+grp('Gérer un aléa',x=>x.kind==='alea')+grp('Pilotage libre',x=>x.kind==='libre');
+  $('#menuCards').innerHTML=(A.s&&!A.done?'<div class="row" style="margin-bottom:6px"><button class="btn pri" id="resume">Reprendre le quart en cours</button></div>':'')+'<div class="sec">Apprendre</div><div class="cards"><button class="sc tourc" data-tourgo="0"><span class="t">Découvrir la centrale</span><span class="d">Visite illustrée, sans manipulation : fission, réaction en chaîne, circuits, pilotage, xénon, sûreté.</span><span class="m"><span>19 chapitres · 15 à 20 min</span>'+(done.tour?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'+SCN.filter(x=>x.kind==='tuto').map(card).join('')+'</div>'+grp('Comprendre — leçons guidées',x=>x.kind==='lecon')+grp("S'entraîner",x=>x.kind==='exo')+grp('Gérer un aléa',x=>x.kind==='alea')+grp('Pilotage libre',x=>x.kind==='libre');
   $('#menu').hidden=false; $('#debrief').hidden=true; $('#brief').hidden=true;
   const r=$('#resume'); if(r) r.onclick=()=>{ $('#menu').hidden=true; A.paused=false; syncAll(); };
 }
@@ -2123,6 +2228,11 @@ const HELP={
 <h3>Pourquoi c'est important</h3><p>Les protections couvrent les grands risques : excursion de puissance (haut flux), crise d'ébullition (ΔT surtempérature, basse pression), surpression du circuit (haute pression), perte de refroidissement (niveau GV, débit primaire). Les <b>permissifs</b> P6, P7 et P10 adaptent ces protections au niveau de puissance.</p>
 <h3>Ordres de grandeur</h3><ul><li>Haut flux 109 % (25 % tant que P10 n'est pas atteint), gamme source 10⁵ c/s.</li><li>Pression 165 / 131 bar, niveau pressu 92 %, niveau GV 15 %.</li><li>IS à 119 bar ; arrêt possible au-dessus de 140 bar, avec un niveau pressu supérieur à 20 % et une marge à la saturation supérieure à 20 °C.</li></ul>
 <h3>Pièges fréquents</h3><ul><li>Arrêter l'IS trop tôt : si la fuite continue, la pression rechute.</li><li>Hésiter à faire un AAR manuel quand une situation échappe au contrôle : c'est l'action la plus sûre.</li></ul>`},
+ pt:{t:'Domaine P-T « chaussette »',l:null,h:`<h3>En bref</h3><p>Le diagramme pression-température du circuit primaire, que l'on appelle souvent « la chaussette » à cause de sa forme. Il délimite les couples (température, pression) dans lesquels le primaire a le droit de se trouver. Le point blanc est l'état actuel (température de branche chaude, pression pressuriseur), la trace grise montre la dernière heure.</p>
+<h3>Les limites qui dessinent la chaussette</h3><ul><li><b>À droite, la saturation</b> (rouge) : au-delà, l'eau bout. On exige une <b>marge</b> d'au moins 20 °C (pointillés orange) : c'est la marge à la saturation du bandeau.</li><li><b>En haut à gauche, la rupture brutale</b> (violet) : à basse température, l'acier de la cuve devient fragile ; une forte pression pourrait la rompre sans déformation préalable. La pression permise est donc faible à froid et ne remonte qu'en chauffant.</li><li><b>En bas, la pression minimale des pompes primaires</b> (bleu) : leurs joints ont besoin d'environ 25 bar pour fonctionner.</li><li><b>En haut, la pression maximale</b> : soupapes du pressuriseur (pointillés) et limite de sûreté (172 bar ici).</li></ul>
+<h3>Pourquoi c'est important</h3><p>Toutes les montées et descentes en température et pression (démarrage, refroidissement pour un arrêt) doivent rester dans la chaussette. La forme impose l'ordre des opérations : on ne met en pression qu'après avoir chauffé, et l'on dépressurise avant de trop refroidir. En puissance, le point reste dans le petit rectangle bleu du fonctionnement normal (155 bar, 286 à 325 °C).</p>
+<h3>Ordres de grandeur</h3><ul><li>Fonctionnement : 155 bar ; Tch 323 °C à 100 %, soit ~22 °C de marge à la saturation.</li><li>Arrêt à froid : quelques dizaines de bar et moins de 90 °C.</li></ul>
+<h3>Attention</h3><p>Le simulateur ne couvre que les états chauds (arrêt à chaud et puissance) : le point reste dans le coin supérieur droit, que le bouton « Zoom » agrandit. Les limites à basse température sont indicatives : les valeurs réelles dépendent de chaque tranche et de son vieillissement.</p>`},
  run:{t:'En cours',l:null,h:`<h3>En bref</h3><p>La carte de suivi de quart : ce qui est en train de se passer sur la tranche, qu'il s'agisse de vos actions ou des automatismes.</p><h3>Ce que vous voyez</h3><ul><li><b>Actions en cours</b> : rampe de charge, mouvements de grappes, appoints, modes manuels, isolements, équipements de secours. Le point indique l'origine : bleu pour une action de l'opérateur, ambre pour un automatisme, rouge pour une sauvegarde. Un bouton permet souvent d'arrêter ou de revenir en automatique directement.</li><li><b>Alarmes actives</b>, de la plus grave à la moins grave.</li><li><b>Journal</b> : les trois dernières entrées.</li></ul><h3>Pourquoi c'est important</h3><p>Un opérateur doit toujours savoir ce qu'il a lancé et ce qui tourne en manuel. Une dilution oubliée ou un groupe laissé en manuel sont des causes classiques d'écart.</p>`},
  trend:{t:'Tendances',l:null,h:`<h3>En bref</h3><p>Un chiffre dit où l'on est, une courbe dit où l'on va. Les tendances enregistrent chaque seconde les grandeurs principales pour voir les dérives lentes et la forme des transitoires.</p>
 <h3>Ce que vous voyez</h3><ul><li>Les puces choisissent les courbes ; la fenêtre va de 5 minutes à 8 heures.</li><li>Le point au bout de chaque courbe est la valeur actuelle ; les pointillés sont des références (Tref, ΔI de référence).</li></ul>
@@ -2219,6 +2329,8 @@ const GLOSS=[
  ['KRT','KRT',0,"Chaînes de mesure de la radioactivité (air, eau, vapeur). Une hausse d'activité dans l'enceinte signale une fuite primaire."],
  ['Réarmement','réarmement|réarmer|réarmez',1,"Remise en service de la logique d'AAR après un arrêt, une fois les causes disparues : condition pour pouvoir extraire de nouveau les grappes."],
  ['Dispatching','dispatching',1,"Centre de conduite du réseau électrique qui demande aux centrales de moduler leur production selon la consommation."],
+ ['Chaussette (domaine P-T)','chaussette|domaine P-T',1,"Diagramme pression-température du circuit primaire, à la forme de chaussette, qui délimite les états autorisés : marge à la saturation à droite, risque de rupture brutale de la cuve à froid en haut à gauche, pression minimale des pompes primaires en bas."],
+ ['Rupture brutale','rupture brutale',1,"Rupture d'un acier devenu fragile à basse température, sans déformation préalable. Elle limite la pression admissible dans la cuve tant que le circuit est froid."],
  ['Cuve','cuve',1,"Récipient en acier de ~ 20 cm d'épaisseur qui contient le cœur et l'eau du primaire."],
 ];
 const GRE=GLOSS.map(([k,p,ci,d])=>({k,d,re:new RegExp('(?<![\\p{L}\\p{N}_])(?:'+p+')(?![\\p{L}\\p{N}_])','u'+(ci?'i':''))}));
@@ -2430,6 +2542,7 @@ const TOUR=[
  {k:'Physique',t:'Le réacteur se stabilise tout seul',inset:'feedback',h:`<p>Un REP est conçu pour être naturellement stable. Si la puissance augmente, deux effets la freinent aussitôt :</p><ul><li>l'<b>effet Doppler</b> : le combustible chauffe et l'uranium 238 capture davantage de neutrons. L'effet est immédiat ;</li><li>l'<b>effet modérateur</b> : l'eau chauffe, ralentit moins bien les neutrons. L'effet suit en quelques secondes.</li></ul><p>Ces <b>contre-réactions</b> ramènent la réactivité vers zéro : la puissance se stabilise un peu plus haut, sans aucune action. Inversement, si la turbine prend plus de vapeur, le primaire se refroidit et la puissance du réacteur monte d'elle-même.</p><p>Le prix à payer : monter en puissance « consomme » de la réactivité (le <b>défaut de puissance</b>, ~ 1 400 pcm ici), qu'il faut compenser avec les grappes.</p>`},
  {k:'Circuits',t:'Le circuit primaire',hl:['pl-cuve','pl-prim','pl-pump','pl-gv','pl-pzr'],h:`<p>L'eau du <b>circuit primaire</b> traverse le cœur de bas en haut, s'y échauffe d'environ 37 °C (de 286 à 323 °C à pleine puissance), puis cède sa chaleur dans les générateurs de vapeur avant de revenir vers la cuve.</p><p>Elle est maintenue à <b>155 bar</b>, environ 150 fois la pression atmosphérique. À cette pression, l'eau ne bout qu'à 345 °C : elle reste donc liquide dans tout le circuit. C'est le sens de « réacteur à eau <b>pressurisée</b> ».</p><p>Trois <b>pompes primaires</b> d'environ 6 MW chacune font circuler l'eau : une piscine olympique toutes les 7 secondes. Le circuit forme la <b>deuxième barrière</b> : il est fermé et l'eau qu'il contient est radioactive.</p>`},
  {k:'Circuits',t:'Le pressuriseur',hl:['pl-pzr'],h:`<p>Le <b>pressuriseur</b> est un grand réservoir relié à la branche chaude, à moitié rempli d'eau et à moitié de vapeur. Comme dans une cocotte-minute, la pression est fixée par la température de cette eau à saturation.</p><ul><li>Pour monter la pression, des <b>chaufferettes</b> électriques vaporisent un peu d'eau.</li><li>Pour la baisser, l'<b>aspersion</b> pulvérise de l'eau plus froide dans la vapeur, qui se condense.</li></ul><p>C'est aussi le vase d'expansion du circuit : quand le primaire chauffe, l'eau se dilate et monte dans le pressuriseur. Son niveau est donc un excellent témoin de la température et des éventuelles fuites.</p>`},
+ {k:'Circuits',t:'La chaussette : le domaine pression-température',inset:'chaussette',h:`<p>Le circuit primaire ne peut pas être à n'importe quelle pression pour une température donnée. Le diagramme pression-température, surnommé « la <b>chaussette</b> » à cause de sa forme, délimite la zone autorisée.</p><ul><li>À droite, la <b>saturation</b> : l'eau ne doit pas bouillir. On garde une marge d'au moins 20 °C.</li><li>En haut à gauche, la <b>rupture brutale</b> : à froid, l'acier de la cuve est plus fragile ; on y limite donc la pression.</li><li>En bas, la pression minimale des <b>pompes primaires</b> (~ 25 bar), indispensable à leurs joints.</li></ul><p>L'animation montre un démarrage : depuis l'arrêt à froid, on chauffe d'abord à basse pression, puis on monte la pression à mesure que la température le permet, jusqu'à l'arrêt à chaud (286 °C, 155 bar), puis la puissance. Tout le chemin doit rester dans la chaussette. Les limites à froid sont indicatives.</p>`},
  {k:'Circuits',t:'Les générateurs de vapeur',hl:['pl-gv','pl-are'],h:`<p>Dans chaque <b>générateur de vapeur</b>, l'eau primaire circule dans environ 3 300 tubes en U. L'eau du circuit <b>secondaire</b> les entoure et se met à bouillir.</p><p>Les deux circuits ne se mélangent jamais : la vapeur envoyée à la turbine n'est pas radioactive. Les tubes, très fins, font partie de la deuxième barrière : leur étanchéité est surveillée en permanence.</p><p>La vapeur sort à environ 57 bar à pleine puissance. L'<b>eau alimentaire</b> (ARE) remplace en continu l'eau évaporée : le niveau dans le GV doit rester stable, ni trop bas (le GV ne refroidirait plus le primaire), ni trop haut (de l'eau partirait vers la turbine).</p>`},
  {k:'Production',t:'Turbine et alternateur',hl:['pl-vap','pl-turb','pl-alt','pl-reseau'],h:`<p>La vapeur se détend dans la <b>turbine</b> : d'abord dans le corps haute pression (HP), puis dans les corps basse pression (BP). Elle fait tourner l'arbre à 1 500 tours par minute.</p><p>L'<b>alternateur</b>, sur le même arbre, transforme la rotation en électricité à 50 Hz. Un transformateur élève la tension à 400 000 V pour le réseau.</p><p>Si la turbine ne peut pas prendre la vapeur (démarrage, arrêt, perte du réseau), des vannes de <b>contournement</b> l'envoient directement au condenseur (GCT-c) ou à l'atmosphère (GCT-a).</p>`},
  {k:'Production',t:'Le condenseur et la source froide',hl:['pl-cond','pl-froid','pl-are'],h:`<p>En sortie de turbine, la vapeur est envoyée dans le <b>condenseur</b>, où elle redevient liquide au contact de milliers de tubes parcourus par l'eau froide d'un fleuve ou de la mer. L'eau condensée repart vers les GV grâce aux pompes alimentaires : le circuit secondaire est une boucle fermée.</p><p>Le condenseur est indispensable : c'est en refroidissant la vapeur qu'on crée l'écart de pression qui la fait traverser la turbine. Il rejette environ 1 900 MW de chaleur, les deux tiers de la puissance du cœur.</p><p>Sur certains sites, un <b>réfrigérant</b> (la grande tour) évacue une partie de cette chaleur dans l'air. Le panache blanc est de la vapeur d'eau du circuit de refroidissement, sans lien avec le réacteur.</p>`},
@@ -2489,11 +2602,17 @@ function tourCanvas(kind){
   const cv=document.createElement('canvas'); cv.className='tcv'; const box=$('#tinset'); box.appendChild(cv);
   const t0=performance.now();
   const loop=now=>{ const w=cv.clientWidth,h=cv.clientHeight; if(!w){ tourRAF=requestAnimationFrame(loop); return; } const dpr=devicePixelRatio||1; if(cv.width!==Math.round(w*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); }
-    const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h); ANIM[kind](g,w,h,(now-t0)/1000); tourRAF=requestAnimationFrame(loop); };
+    const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h); ANIM[kind](g,w,h,Math.max(0,(now-t0)/1000)); tourRAF=requestAnimationFrame(loop); };
   tourRAF=requestAnimationFrame(loop);
 }
 const rnd=(i)=>{ const x=Math.sin(i*127.1+311.7)*43758.5453; return x-Math.floor(x); };
 const ANIM={
+ chaussette(g,w,h,t){
+  const path=[[50,27,'Arrêt à froid'],[110,27,'Chauffage par les pompes primaires, basse pression'],[170,29,'Chauffage par les pompes primaires, basse pression'],[185,45,'Mise en pression à mesure que la température monte'],[215,75,'Mise en pression à mesure que la température monte'],[250,110,'Mise en pression à mesure que la température monte'],[286,155,'Arrêt à chaud : 286 °C, 155 bar'],[286,155,'Arrêt à chaud : 286 °C, 155 bar'],[323,155,'En puissance : la branche chaude monte à 323 °C'],[323,155,'En puissance : la branche chaude monte à 323 °C']];
+  const T=(t%12)/12*(path.length-1), i=Math.min(path.length-2,Math.floor(T)), f=T-i, a=path[i], b=path[i+1], x=a[0]+(b[0]-a[0])*f, y=a[1]+(b[1]-a[1])*f;
+  const tr=[]; for(let k=0;k<=i;k++) tr.push([path[k][0],path[k][1]]); tr.push([x,y]);
+  drawPTon(g,w,h,{zoom:false,labels:true,trace:tr,pt:[x,y],ptc:COL.accent,ptl:(f<0.5?a:b)[2]});
+ },
  fission(g,w,h,t){
   const T=t%5, cx=w*0.42, cy=h*0.48, R=Math.min(w,h)*0.13, F=getComputedStyle(document.body).getPropertyValue('--f-disp');
   const txt=(s,x,y,c,sz,al)=>{ g.fillStyle=c; g.font='600 '+(sz||13)+'px '+F; g.textAlign=al||'center'; g.fillText(s,x,y); };
@@ -2569,6 +2688,131 @@ function tourTimer(){
   TV.tm=setTimeout(()=>tourGo(TV.i+1),d);
 }
 
+/* ================= Domaine P-T (« chaussette ») ================= */
+const PTG=(()=>{
+  const frac=[[10,32],[60,36],[90,45],[110,58],[130,80],[150,110],[170,145],[185,172]];
+  const sub=[]; for(let T=204;T<=333;T+=3) sub.push([T,psat(T+20)]); sub.push([333,172]);
+  const sat=[]; for(let T=100;T<=350;T+=3) sat.push([T,psat(T)]);
+  const poly=[[10,25],...frac,...sub.slice().reverse(),[204,25]];
+  return {frac,sub,sat,poly};
+})();
+function ptInside(T,P){ if(P<25||P>172) return false; let fr=PTG.frac.find((p,i)=>T<=p[0]); let pmax=172; for(let i=1;i<PTG.frac.length;i++){ const a=PTG.frac[i-1],b=PTG.frac[i]; if(T<=b[0]){ pmax=T<=a[0]?a[1]:a[1]+(b[1]-a[1])*(T-a[0])/(b[0]-a[0]); break; } } if(T<10) pmax=32; return P<=pmax&&P>=psat(T+20); }
+function drawPTon(g,w,h,o){
+  const z=o.zoom, x0=z?240:0,x1=z?350:350,y0=z?100:0,y1=z?180:180;
+  const L=40,R=8,Tp=10,B=26, X=v=>L+(v-x0)/(x1-x0)*(w-L-R), Y=v=>Tp+(1-(v-y0)/(y1-y0))*(h-Tp-B);
+  const F=getComputedStyle(document.body).getPropertyValue('--f-num');
+  g.save(); g.beginPath(); g.rect(L,Tp,w-L-R,h-Tp-B); g.clip();
+  g.fillStyle=COL.ok; g.globalAlpha=.13; g.beginPath(); PTG.poly.forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]))); g.closePath(); g.fill(); g.globalAlpha=1;
+  const line=(pts,c,wd,dash)=>{ g.strokeStyle=c; g.lineWidth=wd; g.setLineDash(dash||[]); g.beginPath(); pts.forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]))); g.stroke(); g.setLineDash([]); };
+  line(PTG.sat,COL.crit,2); line(PTG.sub,COL.warn,1.5,[5,4]); line(PTG.frac,COL.bore,2); line([[185,172],[350,172]],COL.crit,1.5);
+  line([[0,166.6],[350,166.6]],COL.mute,1,[3,4]); line([[0,25],[204,25]],COL.cold,1.5); line([[0,131],[350,131]],COL.mute,1,[2,5]);
+  g.fillStyle=COL.accent; g.globalAlpha=.18; g.fillRect(X(286),Y(158),X(325)-X(286),Y(152)-Y(158)); g.globalAlpha=1;
+  if(o.trace&&o.trace.length>1){ g.strokeStyle=COL.mute; g.lineWidth=1.2; g.beginPath(); o.trace.forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]))); g.stroke(); }
+  g.restore();
+  g.font='10px '+F; g.fillStyle=COL.mute; g.textAlign='right';
+  for(const v of (z?[100,120,140,160,180]:[0,50,100,150])) { g.fillText(v,L-4,Y(v)+3); g.strokeStyle=COL.line; g.globalAlpha=.35; g.beginPath(); g.moveTo(L,Y(v)); g.lineTo(w-R,Y(v)); g.stroke(); g.globalAlpha=1; }
+  g.textAlign='center'; for(const v of (z?[250,275,300,325,350]:[0,100,200,300])) g.fillText(v+(v===(z?350:300)?' °C':''),X(v),h-12);
+  g.save(); g.translate(10,(Tp+h-B)/2); g.rotate(-Math.PI/2); g.fillText('bar',0,0); g.restore();
+  if(o.labels){ g.font='600 11px '+getComputedStyle(document.body).getPropertyValue('--f-disp'); g.textAlign='left';
+    const lab=(t,x,y,c)=>{ g.fillStyle=c; g.fillText(t,X(x),Y(y)); };
+    if(!z){ lab('saturation',318,92,COL.crit); lab('marge 20 °C',222,58,COL.warn); lab('rupture brutale',32,62,COL.bore); lab('P mini pompes primaires',20,20,COL.cold); lab('domaine autorisé',120,105,COL.ok); lab('soupapes',8,170,COL.mute); }
+    else { lab('saturation',312,108,COL.crit); lab('marge 20 °C',246,118,COL.warn); lab('fonctionnement',288,163,COL.accent); lab('AAR basse pression',244,128,COL.mute); }
+  }
+  if(o.pt){ const [T,P]=o.pt; const px=X(clamp(T,x0,x1)),py=Y(clamp(P,y0,y1)); g.fillStyle=o.ptc||COL.fg; g.strokeStyle=COL.bg; g.lineWidth=2; g.beginPath(); g.arc(px,py,5,0,7); g.fill(); g.stroke(); if(o.ptl){ g.font='600 12px '+getComputedStyle(document.body).getPropertyValue('--f-disp'); g.fillStyle=COL.fg; g.textAlign=px>w*0.6?'right':'left'; g.fillText(o.ptl,px+(px>w*0.6?-10:10),py-8); } }
+}
+A.ptZoom=false;
+function drawPT(){
+  const s=A.s; if(!s) return; const cv=$('#c-pt'); if(!cv) return; const P=prepCanvas(cv); if(!P) return;
+  const H0=s.hist, tr=[]; for(let i=Math.max(0,H0.length-3600);i<H0.length;i+=10) if(H0[i].th!=null) tr.push([H0[i].th,H0[i].pp]);
+  const inside=ptInside(s.Thot,s.Ppzr);
+  drawPTon(P.g,P.w,P.h,{zoom:A.ptZoom,trace:tr,pt:[s.Thot,s.Ppzr],ptc:inside?(s.satMargin<20?COL.warn:COL.fg):COL.crit,labels:true});
+  T('pt-st',(inside?'Dans le domaine':'Hors domaine')+' · Tch '+fmt(s.Thot,1)+' °C · '+fmt(s.Ppzr,1)+' bar · marge saturation '+fmt(s.satMargin,1)+' °C');
+  const e=$('#pt-st'); if(e) e.classList.toggle('bad',!inside||s.satMargin<20);
+}
+
+/* ================= Retours ================= */
+const FB={repo:'PNP06/REP900Simulator',list:null,loading:false,filter:'all',
+  lv:[['critique','Critique','Résultat faux, ou qui enseignerait une mauvaise pratique','crit'],['incohérence','Incohérence','Comportement physique ou de conduite douteux','warn'],['manquant','Manquant','Notion, système ou situation absente','bore'],['amélioration','Amélioration','Ergonomie, pédagogie, clarté','ok'],['détail','Détail','Coquille, affichage','mute']],
+  parts:['Visite de la centrale','Tutoriel','Leçons guidées','Exercices','Aléas','Modèle physique','Interface','Aide, lexique','Autre']};
+function fbContext(){
+  const s=A.s; if(!s) return 'Aucune simulation en cours.';
+  const sc=A.scn; return ['Scénario : '+(sc?(sc.mystery?'aléa mystère ('+sc.realTitle+')':sc.title):'—')+(sc&&sc.steps&&A.ctx?' · étape '+(A.ctx.step+1):''),'Temps simulé : '+hms(s.t),
+   'P nucléaire '+fmt(s.n*100,2)+' % · charge '+fmt(s.Lt*100,1)+' % · '+(s.tripped?'AAR':s.coupled?'couplé':'découplé'),
+   'Tmoy '+fmt(s.Tavg,2)+' °C · Tref '+fmt(s.Tref,2)+' · Tch '+fmt(s.Thot,1)+' · Tfr '+fmt(s.Tcold,1),
+   'P pressu '+fmt(s.Ppzr,2)+' bar · niveau '+fmt(s.Lpzr,1)+' % · GV '+fmt(s.Lsg,1)+' % / '+fmt(s.Psg,1)+' bar',
+   'Bore '+fmt(s.Cb,1)+' ppm · R '+fmt(s.rods.R.p,1)+' · GCP '+fmt(s.rods.G.p,1)+' · ρ '+fmt(s.rho.tot,1)+' pcm · Xe '+fmt(s.rho.xe,0)+' pcm',
+   'Navigateur : '+navigator.userAgent.slice(0,120)].join('\n');
+}
+function openFB(tab){
+  if(A.s&&$('#fb').hidden){ FB.wasPaused=A.paused; A.paused=true; syncAll(); }
+  $('#fb').hidden=false; fbTab(tab||'new');
+}
+function closeFB(){ $('#fb').hidden=true; if(A.s&&!A.done&&$('#menu').hidden){ A.paused=FB.wasPaused; syncAll(); } }
+function fbTab(t){
+  $$('#fb [data-fbt]').forEach(b=>b.classList.toggle('on',b.dataset.fbt===t));
+  $('#fbNew').hidden=t!=='new'; $('#fbList').hidden=t!=='list';
+  if(t==='new'){ $('#fbCtx').value=fbContext(); if(A.scn&&!$('#fbPart').dataset.touched){ const k=A.scn.kind; $('#fbPart').value={tuto:'Tutoriel',lecon:'Leçons guidées',exo:'Exercices',alea:'Aléas'}[k]||'Interface'; } }
+  else fbLoad();
+}
+function fbSubmit(e){
+  e.preventDefault();
+  const lv=($('input[name="fblv"]:checked')||{}).value, ti=$('#fbTitle').value.trim(), de=$('#fbDesc').value.trim();
+  const err=[]; if(!lv) err.push('le niveau d\'importance'); if(!ti) err.push('un titre'); if(!de) err.push('la description');
+  if(err.length){ $('#fbErr').textContent='Il manque '+err.join(', ')+'.'; return; }
+  $('#fbErr').textContent='';
+  const L=FB.lv.find(x=>x[0]===lv);
+  const q=new URLSearchParams({template:'retour.yml',title:'['+L[1]+'] '+ti,labels:'retour,'+lv,niveau:L[1]+' — '+L[2].charAt(0).toLowerCase()+L[2].slice(1),partie:$('#fbPart').value,description:de,attendu:$('#fbExp').value.trim(),contexte:$('#fbCtxOn').checked?$('#fbCtx').value:''});
+  const url='https://github.com/'+FB.repo+'/issues/new?'+q.toString();
+  const a=$('#fbGo'); a.href=url; a.hidden=false; $('#fbReady').hidden=false;
+  try{ const w=window.open(url,'_blank','noopener'); if(w) $('#fbReadyT').textContent='La page GitHub s\'est ouverte avec votre retour prérempli : vérifiez-le et cliquez sur « Create » pour le publier.'; }catch(x){}
+}
+function fbParse(body){ const g=k=>{ const m=(body||'').match(new RegExp('### '+k+'\\s+([\\s\\S]*?)(?=\\n### |$)')); return m?m[1].trim():''; };
+  const nv=g("Niveau d'importance"); const lv=FB.lv.find(x=>nv.startsWith(x[1]));
+  return {lv:lv?lv[0]:null,part:g('Partie concernée'),desc:g('Description').replace(/^_No response_$/,'')}; }
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function fbLoad(force){
+  const box=$('#fbItems');
+  if(FB.list&&!force){ fbRender(); return; }
+  if(FB.loading) return; FB.loading=true; box.innerHTML='<p class="note">Chargement des retours…</p>';
+  try{
+    const r=await fetch('https://api.github.com/repos/'+FB.repo+'/issues?state=all&per_page=100',{headers:{Accept:'application/vnd.github+json'}});
+    if(!r.ok) throw new Error(r.status===403?'Limite de consultation GitHub atteinte, réessayez dans une heure.':'Erreur '+r.status);
+    const js=await r.json(); FB.list=js.filter(i=>!i.pull_request).map(i=>Object.assign(fbParse(i.body),{n:i.number,title:i.title.replace(/^\[[^\]]+\]\s*/,''),state:i.state,cm:i.comments,url:i.html_url,user:i.user&&i.user.login,date:i.created_at,labels:(i.labels||[]).map(l=>l.name)}));
+    FB.list.forEach(x=>{ if(!x.lv){ const l=FB.lv.find(v=>x.labels.includes(v[0])); if(l) x.lv=l[0]; } });
+    fbRender();
+  }catch(e){ box.innerHTML='<p class="note">Impossible de charger les retours ('+esc(e.message||'réseau')+'). Vous pouvez les consulter directement sur <a href="https://github.com/'+FB.repo+'/issues" target="_blank" rel="noopener">GitHub</a>.</p>'; }
+  FB.loading=false;
+}
+function fbRender(){
+  const L=FB.list||[], f=FB.filter, box=$('#fbItems');
+  const cnt=k=>L.filter(x=>x.lv===k).length;
+  $('#fbFilt').innerHTML='<button class="chip'+(f==='all'?' on':'')+'" data-fbf="all">Tous · '+L.length+'</button>'+FB.lv.map(v=>'<button class="chip lvc '+v[3]+(f===v[0]?' on':'')+'" data-fbf="'+v[0]+'">'+v[1]+' · '+cnt(v[0])+'</button>').join('')+'<button class="chip'+(f==='open'?' on':'')+'" data-fbf="open">Ouverts</button>';
+  const S=L.filter(x=>f==='all'||(f==='open'?x.state==='open':x.lv===f));
+  if(!S.length){ box.innerHTML='<p class="note">'+(L.length?'Aucun retour dans cette catégorie.':'Aucun retour publié pour l\'instant. Soyez le premier !')+'</p>'; return; }
+  const rk={critique:0,'incohérence':1,manquant:2,'amélioration':3,'détail':4};
+  S.sort((a,b)=>(a.state===b.state?0:a.state==='open'?-1:1)||(rk[a.lv]??5)-(rk[b.lv]??5)||b.n-a.n);
+  box.innerHTML=S.map(x=>{ const v=FB.lv.find(l=>l[0]===x.lv);
+    return '<div class="fbi'+(x.state==='closed'?' closed':'')+'"><div class="fbh">'+(v?'<span class="lvb '+v[3]+'">'+v[1]+'</span>':'<span class="lvb mute">Sans niveau</span>')+'<span class="fbst">'+(x.state==='open'?'Ouvert':'Résolu')+'</span><span class="fbn">#'+x.n+'</span></div><div class="fbt">'+esc(x.title)+'</div>'+(x.part?'<div class="fbp">'+esc(x.part)+'</div>':'')+(x.desc?'<div class="fbd">'+esc(x.desc.slice(0,280))+(x.desc.length>280?'…':'')+'</div>':'')+
+      '<div class="fbf"><span>'+esc(x.user||'')+' · '+new Date(x.date).toLocaleDateString('fr-FR')+'</span>'+(x.cm?'<button class="btn sm" data-fbc="'+x.n+'">'+x.cm+' réponse'+(x.cm>1?'s':'')+'</button>':'<span class="note" style="margin:0">Pas encore de réponse</span>')+'<a class="btn sm" href="'+x.url+'" target="_blank" rel="noopener">Ouvrir sur GitHub</a></div><div class="fbcm" id="fbcm-'+x.n+'" hidden></div></div>'; }).join('');
+}
+async function fbComments(n){
+  const el=$('#fbcm-'+n); if(!el) return; if(!el.hidden){ el.hidden=true; return; } el.hidden=false; el.innerHTML='<p class="note">Chargement…</p>';
+  try{ const r=await fetch('https://api.github.com/repos/'+FB.repo+'/issues/'+n+'/comments?per_page=50'); if(!r.ok) throw new Error(r.status); const js=await r.json();
+    el.innerHTML=js.map(c=>'<div class="fbc'+(c.user&&c.user.login===FB.repo.split('/')[0]?' own':'')+'"><div class="fbch"><b>'+esc(c.user?c.user.login:'')+'</b>'+(c.user&&c.user.login===FB.repo.split('/')[0]?' · réponse de l\'auteur':'')+' · '+new Date(c.created_at).toLocaleDateString('fr-FR')+'</div><div>'+esc(c.body).replace(/\n/g,'<br>')+'</div></div>').join('')||'<p class="note">Aucune réponse.</p>';
+  }catch(e){ el.innerHTML='<p class="note">Impossible de charger les réponses.</p>'; }
+}
+
+/* ================= Thème ================= */
+function themeApply(m){
+  m=m||store('theme')||'auto'; store('theme',m);
+  if(m==='auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',m);
+  const dark=m==='dark'||(m==='auto'&&!(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches));
+  const mt=document.querySelector('meta[name="theme-color"]'); if(mt) mt.content=dark?'#10161a':'#e4eaee';
+  $$('.seg[data-key="theme"] button').forEach(b=>b.classList.toggle('on',b.dataset.v===m));
+  const tb=$('#themeBtn'); if(tb){ tb.innerHTML=dark?'<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>':'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'; tb.setAttribute('aria-label','Thème : '+{auto:'automatique',light:'clair',dark:'sombre'}[m]+' (changer)'); }
+  readCols(); drawCharts(); drawDI(); drawPT();
+}
+
 /* ================= Carte « En cours » ================= */
 function runItems(s){
   const L=[]; const it=(k,t,b)=>L.push({k,t,b});
@@ -2624,7 +2868,7 @@ function initFold(){
     if(F[cd.dataset.c]) cd.classList.add('folded');
   });
 }
-function toggleFold(cd){ cd.classList.toggle('folded'); const F=store('fold')||{}; F[cd.dataset.c]=cd.classList.contains('folded')?1:0; store('fold',F); if(!cd.classList.contains('folded')){ setTimeout(()=>{ drawCharts(); drawDI(); },30); } }
+function toggleFold(cd){ cd.classList.toggle('folded'); const F=store('fold')||{}; F[cd.dataset.c]=cd.classList.contains('folded')?1:0; store('fold',F); if(!cd.classList.contains('folded')){ setTimeout(()=>{ drawCharts(); drawDI(); drawPT(); },30); } }
 
 /* ================= Tendances ================= */
 let COL={};
@@ -2692,7 +2936,7 @@ function frame(now){
   }
   uiAcc+=rd; chAcc+=rd;
   if(A.s&&uiAcc>0.1){ uiAcc=0; updateUI(); }
-  if(A.s&&chAcc>0.5){ chAcc=0; drawCharts(); drawDI(); updateRun(); }
+  if(A.s&&chAcc>0.5){ chAcc=0; drawCharts(); drawDI(); drawPT(); updateRun(); }
   ptAcc+=rd; if(ptAcc>0.15){ ptAcc=0; updPtr(); }
   const live=A.s&&!A.paused&&$('#menu').hidden&&$('#tour').hidden&&$('#brief').hidden;
   if(SND.ctx){ sndAmbient(A.s||{Wst:0,pumps:[]},!!live);
@@ -2700,17 +2944,24 @@ function frame(now){
     if(live&&ALM.some(([id,,sev])=>sev==='r'&&A.s.alarms[id]&&A.s.alarms[id].on&&!A.s.alarms[id].ack)&&now-SND.lastRed>3200){ SND.lastRed=now; SFX.red(); } }
   requestAnimationFrame(frame);
 }
-addEventListener('resize',()=>{ drawCharts(); drawDI(); });
+addEventListener('resize',()=>{ drawCharts(); drawDI(); drawPT(); });
 $('#tvPrev').onclick=()=>{ TV.auto=false; tourGo(TV.i-1); };
 $('#tvNext').onclick=()=>{ if(TV.i>=TOUR.length-1){ const d=store('done')||{}; d.tour=1; store('done',d); closeTour(); } else tourGo(TV.i+1); };
 $('#tvAuto').onclick=()=>{ TV.auto=!TV.auto; tourTimer(); };
 $('#tvClose').onclick=closeTour;
-document.addEventListener('keydown',e=>{ if($('#tour').hidden) return; if(e.key==='ArrowRight'){ TV.auto=false; tourGo(TV.i+1); } else if(e.key==='ArrowLeft'){ TV.auto=false; tourGo(TV.i-1); } else if(e.key==='Escape') closeTour(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#fb').hidden){ closeFB(); return; } if($('#tour').hidden) return; if(e.key==='ArrowRight'){ TV.auto=false; tourGo(TV.i+1); } else if(e.key==='ArrowLeft'){ TV.auto=false; tourGo(TV.i-1); } else if(e.key==='Escape') closeTour(); });
 $('#sndBtn').onclick=()=>{ sndInit(); SND.pref.on=!SND.pref.on; sndApply(); if(SND.pref.on) setTimeout(SFX.ack,80); };
 [['sndOn','on'],['sndAmb','amb'],['sndCnt','cnt']].forEach(([id,k])=>{ const e=document.getElementById(id); if(e) e.addEventListener('change',()=>{ sndInit(); SND.pref[k]=e.checked; sndApply(); }); });
 sndApply();
+$('#fbLv').innerHTML=FB.lv.map(v=>'<label class="lvo '+v[3]+'"><input type="radio" name="fblv" value="'+v[0]+'"><span class="lvt">'+v[1]+'</span><span class="lvd">'+v[2]+'</span></label>').join('');
+$('#fbPart').innerHTML=FB.parts.map(x=>'<option>'+x+'</option>').join(''); $('#fbPart').addEventListener('change',()=>$('#fbPart').dataset.touched=1);
+$('#fbNew').addEventListener('submit',fbSubmit); $('#fbClose').onclick=closeFB; $('#fbRef').onclick=()=>fbLoad(true);
+$('#fbCtxOn').addEventListener('change',e=>$('#fbCtx').hidden=!e.target.checked);
+$('#themeBtn').onclick=()=>{ const m=store('theme')||'auto'; const dark=m==='dark'||(m==='auto'&&!matchMedia('(prefers-color-scheme: light)').matches); themeApply(dark?'light':'dark'); };
+if(window.matchMedia) matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{ if((store('theme')||'auto')==='auto') themeApply('auto'); });
 buildBand(); readCols(); buildCharts(); buildMini(); initFold();
 { if(store('bandfull')) document.body.classList.add('bandfull'); }
+themeApply();
 $('#bandBtn').onclick=()=>{ const on=document.body.classList.toggle('bandfull'); store('bandfull',on); $('#bandBtn').textContent=on?'▴':'▾'; $('#bandBtn').setAttribute('aria-expanded',String(on)); };
 if(document.body.classList.contains('bandfull')) $('#bandBtn').textContent='▴'; setTab('synop'); buildAnn(); syncAll(); openMenu();
 requestAnimationFrame(frame);

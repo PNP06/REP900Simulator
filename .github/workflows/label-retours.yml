@@ -1,0 +1,25 @@
+name: Étiqueter les retours
+on:
+  issues:
+    types: [opened, edited]
+permissions:
+  issues: write
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || '';
+            const m = body.match(/### Niveau d'importance\s+([^\n]+)/);
+            if (!m) return;
+            const map = {Critique:'critique', 'Incohérence':'incohérence', Manquant:'manquant', 'Amélioration':'amélioration', 'Détail':'détail'};
+            const key = Object.keys(map).find(k => m[1].trim().startsWith(k));
+            if (!key) return;
+            const all = Object.values(map);
+            const cur = (context.payload.issue.labels || []).map(l => l.name);
+            for (const l of cur.filter(x => all.includes(x) && x !== map[key])) {
+              await github.rest.issues.removeLabel({...context.repo, issue_number: context.issue.number, name: l}).catch(() => {});
+            }
+            await github.rest.issues.addLabels({...context.repo, issue_number: context.issue.number, labels: ['retour', map[key]]});
