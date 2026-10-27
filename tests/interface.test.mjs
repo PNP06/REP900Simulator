@@ -68,6 +68,10 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
     const cb = document.querySelector('#sndPop [data-snd="amb"]'); const before = SND.pref.amb; cb.click(); const changed = SND.pref.amb === !before && document.querySelector('#menu [data-snd="amb"]').checked === SND.pref.amb; cb.click();
     document.body.click(); return open && changed && document.querySelector('#sndPop').hidden; });
   check('Pictogramme son : réglages d\'ambiance accessibles depuis le cockpit', sp);
+  const dm = await pg.evaluate(() => DEMO_IDS.map(id => { demoStart(id, true); const s = A.s, c = A.ctx, scn = A.scn; let n = 0;
+    while (!A.done && n < 8 * 3600 / DT) { step(s); evalAlarms(s); tick(s, c); demoTick(); n++; }
+    const ko = scn.evaluate.call(scn, s, c).filter(x => !x.ok).map(x => x.t); demoStop(); A.done = false; return [id, A.s && ko.length === 0 && n < 8 * 3600 / DT, ko.join(', ')]; }));
+  for (const [id, ok, ko] of dm) check('Correction commentée ' + id + ' : tous les critères atteints', ok, ko);
   check('Leçons : aucune erreur JavaScript', errs.length === 0, errs.slice(0, 2).join(' | ')); }
 await browser.close();
 console.log(fails ? `\n${fails} test(s) en échec` : '\nTous les tests passent');

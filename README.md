@@ -19,6 +19,7 @@ Le simulateur repose sur des sources publiques, listées dans la rubrique « Sou
 - **8 leçons guidées** : cinétique et temps de doublement, contre-réactions et mode G, ΔI et diagramme de pilotage, xénon 135, pressuriseur et RCV, générateurs de vapeur et eau alimentaire, protections et permissifs, divergence guidée.
 - **4 exercices notés** : divergence, couplage et montée en charge, suivi de charge et xénon, mise à l'arrêt à chaud.
 - **9 aléas** avec débriefing : perte de TPA, îlotage, chute de grappe, aspersion bloquée ouverte, fuite sur la décharge RCV, défaillance de la régulation ARE, dilution intempestive, retrait incontrôlé à puissance nulle, déclenchement d'une pompe primaire. Plus un aléa mystère et le pilotage libre.
+- **13 corrections commentées** : le pilote automatique joue chaque aléa et chaque exercice noté en temps réel, déplace un pointeur, clique au bon endroit et explique chaque action ; accessibles depuis le menu et depuis le débriefing (« Voir la correction »).
 - Diagramme pression-température du primaire (« chaussette ») en direct.
 - Aide « ? » sur chaque carte, lexique de 98 termes, bandeau catégorisé avec jauges.
 - Deux niveaux d'explication : « Débutant » ajoute à chaque consigne une explication simple (« En clair ») et un plan pas à pas pour les exercices ; « Confirmé » garde le seul texte technique.
