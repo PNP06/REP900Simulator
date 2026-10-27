@@ -37,4 +37,7 @@ Thème clair et sombre (automatique selon le système, ou au choix). Un seul fic
 
 ## Tests
 
-`node tests/physique.test.mjs` vérifie les grandeurs de référence du modèle (états stables à 100 % et 50 %, AAR, puissance résiduelle, xénon, criticité à l'arrêt à chaud, perte de pompe primaire). Aucune dépendance n'est nécessaire.
+`npm test` lance les deux suites ; elles tournent aussi à chaque modification du dépôt (action GitHub « Tests »).
+
+- `node tests/physique.test.mjs` vérifie les grandeurs de référence du modèle (états stables à 100 % et 50 %, AAR, puissance résiduelle, xénon, criticité à l'arrêt à chaud, perte de pompe primaire). Aucune dépendance n'est nécessaire.
+- `node tests/interface.test.mjs` ouvre la page dans Chromium à 320, 390 et 1 440 px, en thème clair et sombre, parcourt scénarios, visite et retours, et déroule six leçons de bout en bout (nécessite Playwright : `npm install` puis `npx playwright install chromium`).

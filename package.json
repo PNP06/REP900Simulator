@@ -1,0 +1,11 @@
+{
+  "name": "rep900-simulator",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/physique.test.mjs && node tests/interface.test.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.48.2"
+  }
+}

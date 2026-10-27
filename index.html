@@ -1337,7 +1337,7 @@ function evalAlarms(s){ let nw=null; const rk={r:0,a:1,i:2};
 const Cr=(t,ok,d='')=>({t,ok:!!ok,d});
 function common(s,c){ return [Cr('Aucune limite de sûreté dépassée',s.limits.size===0,[...s.limits].join(' ; ')),Cr("Pas d'injection de sécurité",c.st.isT==null)]; }
 const P100={P:1,xe:1,R:180,G:225,coupled:true,modeR:'auto',modeG:'auto'};
-const INTRO_ALEA="<p>La tranche fonctionne de façon stable, régulations en automatique. Un aléa va survenir dans les prochaines minutes. Repérez-le grâce aux alarmes, au synoptique et aux tendances, puis appliquez la conduite adaptée. Le bouton <kbd>Indice</kbd> donne une piste (noté au débriefing).</p>";
+const INTRO_ALEA="<p>La tranche fonctionne de façon stable, régulations en automatique. Un aléa va survenir dans les prochaines minutes. Repérez-le grâce aux alarmes, au synoptique et aux tendances, puis appliquez la conduite adaptée. Si vous êtes bloqué, le bouton <kbd>Indice</kbd> donne jusqu'à trois pistes successives : le symptôme, le système en cause, puis l'action. Seule la dernière retire une étoile.</p>";
 
 const SCN=[
 {id:'tuto',kind:'tuto',title:'Tutoriel de prise de quart',desc:"Découvrir la salle de commande, la réactivité, les régulations et l'AAR.",diff:1,speed:1,
@@ -1467,8 +1467,9 @@ const SCN=[
  {t:'Divergez par pas de 2',tab:'cmd',h:"<p>Extrayez par <kbd>+1</kbd> ou <kbd>+2</kbd> en attendant chaque fois. Quand le comptage ne se stabilise plus et qu'un <b>temps de doublement constant</b> apparaît, le réacteur est critique, légèrement surcritique. Visez un Td de 60 à 120 s, jamais sous 20 s.</p>",
   ok:(s,c,k)=>{ if(s.Td<300&&s.Td>15&&s.n>2e-8) k.st=(k.st||0)+DT; else k.st=0; return k.st>30; }},
  {t:'Inhibez la gamme source à P6',tab:'cmd',h:"<p>Quand l'alarme <b>P6</b> apparaît (GI > 10⁻¹⁰ A), appuyez sur <kbd>Inhiber GS</kbd> dans Protection. Sinon l'AAR tombera à 10⁵ c/s.</p>",ok:s=>s.srInhib},
- {t:'Stabilisez entre 1 et 3 %',h:"<p>Laissez la puissance monter. Vers 1 %, le Doppler apparaît et ralentit la montée. Ajustez R de 1 ou 2 pas pour stabiliser entre 1 et 3 % (Td infini) pendant une minute.</p>",
-  ok:(s,c,k)=>{ if(s.n>=0.01&&s.n<=0.03&&Math.abs(s.rate)<Math.LN2/600) k.st=(k.st||0)+DT; else k.st=0; return k.st>60; }},
+ {t:'Stabilisez entre 1 et 3 %',h:"<p>Laissez la puissance monter. Vers 1 %, le Doppler apparaît et ralentit la montée. Ajustez R de 1 ou 2 pas pour stabiliser entre 1 et 3 % : un temps de doublement de plus de 5 minutes, ou une décroissance aussi lente, suffit. Tenez 30 secondes.</p><p>Astuce : laissez agir le Doppler entre deux corrections ; chaque pas de R vaut ici environ 5 pcm.</p>",
+  ok:(s,c,k)=>{ if(s.n>=0.01&&s.n<=0.03&&Math.abs(s.rate)<Math.LN2/300) k.st=(k.st||0)+DT; else k.st=0; return k.st>30; },
+  sub:[['Puissance entre 1 et 3 %',s=>s.n>=0.01&&s.n<=0.03],['Évolution lente (|Td| > 5 min)',s=>Math.abs(s.rate)<Math.LN2/300],['30 s tenues',(s,c,k)=>(k.st||0)>30]]},
  {t:'Leçon terminée',h:"<p>Vous avez réalisé une divergence complète. Tentez maintenant l'exercice <b>Divergence</b> non guidé, qui est noté.</p>",last:true}
  ]},
 {id:'div',kind:'exo',title:'Divergence',desc:"Approche sous-critique et premier critique depuis l'arrêt à chaud.",diff:2,speed:5,
@@ -1531,53 +1532,53 @@ const SCN=[
  evaluate(s,c){ return [Cr('Charge réduite à 5 %',c.o.l5),Cr('Turbine découplée',c.o.dec),Cr('Réacteur sous-critique',c.o.sub),Cr("Marge d'arrêt ≥ 3 000 pcm",c.o.mar,fmt(-s.rho.tot,0)+' pcm'),Cr('Tmoy stabilisée',c.o.tm),Cr('Arrêt contrôlé sans AAR',!c.st.aar,c.st.aar?c.st.aar.cause:''),...common(s,c)]; },
  expected:"Baisser la charge à 5–10 %/min, découpler sous 6 %, insérer GCP puis R en manuel jusqu'à la sous-criticité (la puissance décroît avec une période de −80 s), puis borer. La marge d'arrêt doit couvrir la disparition du xénon dans les jours suivants et un éventuel refroidissement : on borre au-delà du strict nécessaire."},
 {id:'tpa',kind:'alea',title:"Perte d'une turbopompe alimentaire",desc:"À 100 %, une TPA déclenche : la capacité d'alimentation tombe à 58 %.",diff:3,speed:1,init:P100,
- fire:s=>{s.tpa[1]=false;},hint:"Débit d'eau alimentaire limité : il faut réduire très vite la charge turbine (vitesse 30 %/min) et renforcer l'alimentation.",
+ fire:s=>{s.tpa[1]=false;},hints:["Le niveau GV baisse et l'alarme « écart débit ARE / vapeur » apparaît : l'eau qui entre ne compense plus la vapeur qui sort.","C'est l'eau alimentaire : regardez les voyants des turbopompes dans la carte « Eau alimentaire »."],hint:"Débit d'eau alimentaire limité : il faut réduire très vite la charge turbine (vitesse 30 %/min) et renforcer l'alimentation.",
  update(s,c){ if(c.fired&&c.k.red==null&&s.Lt<=0.60) c.k.red=s.t; },
  end:(s,c)=>c.fired&&((s.t-c.fired>600)||(c.st.aar&&s.t-c.st.aar.t>60)),
  evaluate(s,c){ return [Cr("Pas d'AAR",!c.st.aar,c.st.aar?c.st.aar.cause:''),Cr('Charge réduite sous 60 % en moins de 3 min',c.k.red!=null&&c.k.red-c.fired<=180,c.k.red!=null?'En '+dur(c.k.red-c.fired):'Non réalisé'),Cr('Niveau GV resté au-dessus de 20 %',c.af.minLsg>20,'Minimum '+fmt(c.af.minLsg,1)+' %'),Cr('Motopompe APD démarrée',s.apd),...common(s,c)]; },
  expected:"Sur perte d'une TPA à pleine puissance, l'ARE ne peut plus fournir que ~58 % du débit nominal. Il faut réduire immédiatement la charge (baisse rapide 30 %/min vers 50–55 %) et démarrer la motopompe APD. La contraction du niveau GV lors de la baisse de charge aggrave la baisse de niveau : chaque seconde compte. Les groupes en automatique suivent la baisse."},
 {id:'ilot',kind:'alea',title:'Îlotage sur perte du réseau',desc:'Le réseau disparaît : la turbine se cale sur les auxiliaires.',diff:3,speed:1,init:P100,
- fire:(s,c)=>{s.grid=false; if(s.coupled) s.ilot=true; c.k.back=s.t+360;},hint:"La vapeur part au condenseur par le GCT-c pendant que les groupes s'insèrent. Surveillez pression pressu et Tmoy, borez pour soulager R, puis recouplez au retour du réseau.",
+ fire:(s,c)=>{s.grid=false; if(s.coupled) s.ilot=true; c.k.back=s.t+360;},hints:["La charge turbine chute brutalement vers 5 % alors que vous n'avez rien demandé ; le GCT-c s'ouvre.","C'est le réseau électrique : regardez le disjoncteur et l'état « Îlotage » dans le synoptique et l'alarme correspondante."],hint:"La vapeur part au condenseur par le GCT-c pendant que les groupes s'insèrent. Surveillez pression pressu et Tmoy, borez pour soulager R, puis recouplez au retour du réseau.",
  update(s,c){ if(c.k.back&&!s.grid&&s.t>=c.k.back){ s.grid=true; logEv(s,'auto','Réseau de nouveau disponible'); } },
  end:(s,c)=>c.fired&&((c.acts.recouple&&s.t-c.acts.recouple>240)||s.t-c.fired>1500||(c.st.aar&&s.t-c.st.aar.t>60)),
  evaluate(s,c){ return [Cr("Pas d'AAR",!c.st.aar,c.st.aar?c.st.aar.cause:''),Cr('Pas d\'ouverture de soupape SEBIM',!c.st.sebim),Cr('Recouplage au réseau effectué',c.acts.recouple!=null),Cr('Tmoy recalée (±2 °C) en fin d\'essai',s.coupled&&Math.abs(s.Tavg-s.Tref)<2),...common(s,c)]; },
  expected:"La perte du réseau provoque un îlotage : la turbine se cale sur les auxiliaires (~5 %). Le GCT-c s'ouvre pour évacuer l'excédent de vapeur pendant que GCP et R s'insèrent. Surveiller l'aspersion (la pression monte), Tmoy et le niveau GV. Une fois stabilisé, borer pour remonter R au-dessus de sa limite basse. Au retour du réseau, recoupler puis reprendre la charge progressivement."},
 {id:'drop',kind:'alea',title:'Chute de grappe',desc:'Une grappe chute en cœur à pleine puissance.',diff:2,speed:5,init:P100,
- fire:s=>{s.dropped=true;},hint:"−280 pcm, extraction bloquée. Recalez Tmoy en réduisant la charge, puis repliez sous 50 % PN.",
+ fire:s=>{s.dropped=true;},hints:["La puissance chute d'un coup, Tmoy passe sous Tref, la pression baisse ; l'extraction des grappes est bloquée.","C'est une grappe : regardez l'alarme rouge et le bilan de réactivité (ligne Grappes)."],hint:"−280 pcm, extraction bloquée. Recalez Tmoy en réduisant la charge, puis repliez sous 50 % PN.",
  update(s,c){ if(!c.fired) return; const d=Math.abs(s.Tavg-s.Tref); if(d>1.5) c.k.dev=true; if(c.k.tok==null&&s.t-c.fired>30&&d<1.0&&(c.k.dev||s.t-c.fired>120)) c.k.tok=s.t; if(c.k.p50==null&&s.n<0.5) c.k.p50=s.t; },
  end:(s,c)=>c.fired&&((c.k.p50&&s.t-c.k.p50>120)||s.t-c.fired>2400||(c.st.aar&&s.t-c.st.aar.t>60)),
  evaluate(s,c){ return [Cr("Pas d'AAR",!c.st.aar,c.st.aar?c.st.aar.cause:''),Cr('Tmoy recalée sous 10 min',c.k.tok!=null&&c.k.tok-c.fired<=600,c.k.tok!=null?'En '+dur(c.k.tok-c.fired):'Non réalisé'),Cr('Repli sous 50 % PN en moins de 30 min',c.k.p50!=null&&c.k.p50-c.fired<=1800,c.k.p50!=null?'En '+dur(c.k.p50-c.fired):'Non réalisé'),...common(s,c)]; },
  expected:"La chute d'une grappe apporte environ −280 pcm : la puissance baisse, Tmoy passe sous Tref, la pression pressu diminue. L'extraction des groupes est bloquée, la régulation ne peut pas recaler la température. Réduire la charge turbine pour ramener Tmoy sur Tref, puis replier sous 50 % PN (déséquilibre radial de puissance) en attendant le diagnostic et la récupération de la grappe."},
 {id:'spray',kind:'alea',title:'Aspersion bloquée ouverte',desc:'Une vanne d\'aspersion du pressuriseur reste ouverte.',diff:2,speed:1,init:P100,
- fire:s=>{s.sprayStuck=true;},hint:"La pression baisse malgré le chauffage. Regardez l'aspersion dans Commandes › Pressuriseur.",
+ fire:s=>{s.sprayStuck=true;},hints:["La pression pressuriseur baisse régulièrement alors que les chaufferettes sont à fond.","C'est dans le pressuriseur : regardez l'ouverture de l'aspersion dans sa carte."],hint:"La pression baisse malgré le chauffage. Regardez l'aspersion dans Commandes › Pressuriseur.",
  end:(s,c)=>c.fired&&((c.acts.sprayIsol&&s.t-c.acts.sprayIsol>180)||s.t-c.fired>900||(c.st.aar&&s.t-c.st.aar.t>60)),
  evaluate(s,c){ return [Cr('Aspersion isolée',s.sprayIsol,c.acts.sprayIsol!=null?'En '+dur(c.acts.sprayIsol-c.fired):''),Cr('Pression restée au-dessus de 140 bar',c.af.minPp>140,'Minimum '+fmt(c.af.minPp,1)+' bar'),Cr("Pas d'AAR",!c.st.aar,c.st.aar?c.st.aar.cause:''),...common(s,c)]; },
  expected:"Une vanne d'aspersion restée ouverte condense la vapeur du pressuriseur plus vite que les chaufferettes ne la produisent : la pression chute d'environ 7 bar/min. Identifier l'aspersion anormale (ouverture à 100 % malgré une pression basse) et isoler la ligne avant l'AAR. À pleine puissance, c'est la protection ΔT surtempérature qui déclenche la première, vers 137 bar, car son seuil baisse avec la pression ; le seuil basse pression de 131 bar ne serait atteint qu'ensuite. Les chaufferettes de secours remontent ensuite la pression."},
 {id:'leak',kind:'alea',title:'Fuite sur la décharge RCV',desc:'Fuite de 30 m³/h sur la ligne de décharge.',diff:2,speed:2,init:P100,
- fire:s=>{s.leakQ=30;s.leakType='letdown';},hint:"La charge RCV compense une perte d'eau. La fuite est-elle sur une ligne qu'on peut isoler ?",
+ fire:s=>{s.leakQ=30;s.leakType='letdown';},hints:["Le niveau pressuriseur baisse sans variation de température, le débit de charge monte et l'activité enceinte augmente.","C'est une perte d'eau du primaire : comparez charge et décharge dans la carte « Pressuriseur — RCV »."],hint:"La charge RCV compense une perte d'eau. La fuite est-elle sur une ligne qu'on peut isoler ?",
  end:(s,c)=>c.fired&&((c.acts.ldIsol&&s.t-c.acts.ldIsol>240)||s.t-c.fired>1500||(c.st.aar&&s.t-c.st.aar.t>60)),
  evaluate(s,c){ return [Cr('Décharge isolée en moins de 6 min',c.acts.ldIsol!=null&&c.acts.ldIsol-c.fired<=360,c.acts.ldIsol!=null?'En '+dur(c.acts.ldIsol-c.fired):'Non réalisé'),Cr('Niveau pressu resté au-dessus de 14 %',c.af.minLp>14,'Minimum '+fmt(c.af.minLp,1)+' %'),Cr("Pas d'AAR",!c.st.aar,c.st.aar?c.st.aar.cause:''),...common(s,c)]; },
  expected:"Une fuite sur la ligne de décharge RCV se traduit par un débit de charge anormalement élevé, une baisse du niveau pressu et une activité enceinte qui monte. La fuite étant en aval des vannes d'isolement, isoler la décharge la supprime. La régulation de charge réduit ensuite le débit pour tenir le niveau."},
 {id:'are',kind:'alea',title:'Défaillance de la régulation ARE',desc:'La régulation d\'eau alimentaire ouvre en grand.',diff:2,speed:1,init:P100,
- fire:s=>{s.areFail=true;},hint:"Le débit d'eau alimentaire dépasse le débit vapeur. Reprenez la main sur l'ARE.",
+ fire:s=>{s.areFail=true;},hints:["Le niveau GV monte régulièrement, au-delà de 60 %.","C'est l'eau alimentaire : comparez le débit ARE et le débit vapeur dans la carte « Eau alimentaire »."],hint:"Le débit d'eau alimentaire dépasse le débit vapeur. Reprenez la main sur l'ARE.",
  end:(s,c)=>c.fired&&((c.acts.areMan&&s.t-c.acts.areMan>300)||s.t-c.fired>900||(c.st.turbTrip!=null&&s.t-c.st.turbTrip>60)),
  evaluate(s,c){ return [Cr('ARE passée en manuel',c.acts.areMan!=null,c.acts.areMan!=null?'En '+dur(c.acts.areMan-c.fired):''),Cr('Niveau GV resté sous 75 %',c.af.maxLsg<75,'Maximum '+fmt(c.af.maxLsg,1)+' %'),Cr("Pas de déclenchement turbine ni d'AAR",c.st.turbTrip==null&&!c.st.aar),...common(s,c)]; },
  expected:"La régulation ARE défaillante ouvre les vannes en grand : le niveau GV monte vers le seuil très haut (80 %) qui isole l'ARE et déclenche la turbine, donc le réacteur. Passer l'ARE en manuel et régler un débit inférieur au débit vapeur, puis égal quand le niveau est revenu vers 50 %."},
 {id:'dil',kind:'alea',title:'Dilution intempestive',desc:"Une vanne d'eau d'appoint reste ouverte sans demande.",diff:3,speed:5,init:P100,
- fire:s=>{s.dilFault=true;},hint:"R descend alors que la charge ne bouge pas. D'où vient la réactivité ajoutée ?",
+ fire:s=>{s.dilFault=true;},hints:["Le groupe R descend lentement alors que la charge ne bouge pas.","C'est le bore : regardez sa concentration dans le bandeau et l'information « Appoint REA en service »."],hint:"R descend alors que la charge ne bouge pas. D'où vient la réactivité ajoutée ?",
  update(s,c){ if(c.acts.reaIsol!=null&&c.k.rb==null&&s.rods.R.p>=170) c.k.rb=s.t; },
  end:(s,c)=>c.fired&&((c.k.rb&&s.t-c.k.rb>60)||s.t-c.fired>5400||(c.st.aar&&s.t-c.st.aar.t>60)),
  evaluate(s,c){ return [Cr('Dilution isolée',c.acts.reaIsol!=null,c.acts.reaIsol!=null?'En '+dur(c.acts.reaIsol-c.fired):''),Cr('R jamais sous 130 pas',!c.st.rVeryLow),Cr('R ramené au-dessus de 170 pas',c.k.rb!=null),Cr("Pas d'AAR",!c.st.aar),...common(s,c)]; },
  expected:"Une dilution non demandée ajoute de la réactivité lentement (environ 10 pcm/min ici). En automatique, R s'insère pour compenser et descend vers ses limites. Indices : 'Appoint REA en service' sans demande, bore qui baisse, R qui descend sans variation de charge. Isoler l'appoint REA, puis borer pour remonter R dans sa bande."},
 {id:'rodwd',kind:'alea',title:'Retrait incontrôlé à puissance nulle',desc:'Le groupe R s\'extrait seul juste après la divergence.',diff:3,speed:1,
  init:{P:1e-5,critR:110,R:110,G:'cal',coupled:false,xe:0,modeR:'man',modeG:'man'},
- fire:s=>{s.rodWd=true;},hint:"Le temps de doublement s'effondre et le groupe R bouge sans commande. Le passage en manuel ne suffira pas.",
+ fire:s=>{s.rodWd=true;},hints:["Le temps de doublement raccourcit vite, la puissance monte sans que vous ayez rien touché.","Ce sont les grappes : regardez la position du groupe R dans la carte « Grappes de commande »."],hint:"Le temps de doublement s'effondre et le groupe R bouge sans commande. Le passage en manuel ne suffira pas.",
  update(s,c){ if(c.fired&&c.k.al==null&&s.Td<20) c.k.al=s.t; },
  end:(s,c)=>c.st.aar&&s.t-c.st.aar.t>30,
  evaluate(s,c){ const a=c.st.aar; return [Cr('AAR manuel avant la protection automatique',a&&a.src==='op',a?(a.src==='op'?'Réaction en '+dur(a.t-(c.k.al||c.fired))+' après l\'alarme':a.cause):''),Cr('Puissance maximale sous 25 % PN',c.st.maxN<0.25,'Maximum '+fmt(c.st.maxN*100,2)+' %'),...common(s,c)]; },
  expected:"Un défaut du système de commande extrait le groupe R en continu (environ 8 pcm/s). Le passage en manuel est sans effet. À puissance nulle il n'y a pas encore de contre-réaction Doppler : le temps de doublement chute en quelques dizaines de secondes vers le prompt-critique. La seule parade est l'AAR manuel immédiat, avant le seuil bas haut flux (25 %)."},
 {id:'gmpp',kind:'alea',title:"Déclenchement d'une pompe primaire",desc:'Une GMPP déclenche à pleine puissance : AAR puis stabilisation.',diff:2,speed:2,init:P100,
- fire:s=>{s.pumps[1]=false;},hint:"L'AAR est automatique. Vérifiez sa bonne exécution puis stabilisez : Tmoy, niveau GV, pressu. Réarmez l'AAR.",
+ fire:s=>{s.pumps[1]=false;},hints:["Le réacteur s'arrête automatiquement : lisez la cause de l'AAR dans le journal.","C'est le circuit primaire : regardez les voyants des pompes primaires et le débit dans le synoptique."],hint:"L'AAR est automatique. Vérifiez sa bonne exécution puis stabilisez : Tmoy, niveau GV, pressu. Réarmez l'AAR.",
  ok(s){ return Math.abs(s.Tavg-287)<3&&s.Lsg>35&&s.Lsg<65&&s.Ppzr>150&&s.Ppzr<158&&!s.tripped; },
  end(s,c){ return c.fired&&((s.t-c.fired>120&&this.ok(s))||s.t-c.fired>900); },
  evaluate(s,c){ return [Cr('Tmoy stabilisée entre 284 et 290 °C',Math.abs(s.Tavg-287)<3,fmt(s.Tavg,1)+' °C'),Cr('Niveau GV entre 35 et 65 %',s.Lsg>35&&s.Lsg<65,fmt(s.Lsg,1)+' %'),Cr('Pression pressu entre 150 et 158 bar',s.Ppzr>150&&s.Ppzr<158,fmt(s.Ppzr,1)+' bar'),Cr('AAR réarmé',!s.tripped),...common(s,c)]; },
@@ -2129,8 +2130,8 @@ function renderMission(force){
     foot='<button class="btn" id="mEnd">Terminer et débriefer</button>';
   } else if(scn.kind==='alea'){
     if(c.fired==null) body='<p>Fonctionnement normal. Surveillez la tranche : un aléa va survenir.</p>';
-    else body='<p><b>Aléa en cours.</b> Identifiez-le, mettez la tranche en sécurité puis stabilisez.</p><p>Méthode : dans le journal, repérez la <b>première</b> alarme apparue, souvent la cause ; dans le bandeau, regardez quels paramètres varient (en gras, avec une flèche) et vers quel seuil ils vont ; puis cherchez quel équipement l\'explique.</p>'+(c.hint?'<p>Indice : '+scn.hint+'</p>':'');
-    foot=(c.fired!=null&&!c.hint?'<button class="btn" id="mHint">Indice</button>':'')+'<button class="btn" id="mEnd">Terminer et débriefer</button>';
+    else body='<p><b>Aléa en cours.</b> Identifiez-le, mettez la tranche en sécurité puis stabilisez.</p><p>Méthode : dans le journal, repérez la <b>première</b> alarme apparue, souvent la cause ; dans le bandeau, regardez quels paramètres varient (en gras, avec une flèche) et vers quel seuil ils vont ; puis cherchez quel équipement l\'explique.</p>'+(c.hintLv?'<div class="hintb">'+[...(scn.hints||[]),scn.hint].slice(0,c.hintLv).map((t,i)=>'<b>'+['Symptôme','Système en cause','Action'][i]+' :</b> '+t).join('<br>')+'</div>':'');
+    foot=(c.fired!=null&&(c.hintLv||0)<3?'<button class="btn" id="mHint">'+['Indice : symptôme','Indice : système','Indice : action (−1 étoile)'][c.hintLv||0]+'</button>':'')+'<button class="btn" id="mEnd">Terminer et débriefer</button>';
   } else {
     body='<p>Pilotage libre'+(c.rnd?', aléas aléatoires activés':'')+'. Toutes les commandes sont disponibles.</p>';
     foot='<button class="btn" id="mEnd">Terminer</button>';
@@ -2145,7 +2146,7 @@ function renderMission(force){
   on('tTab',()=>{ setTab(scn.steps[c.step].tab); renderMission(true); });
   on('tEnd',()=>finish());
   on('mEnd',()=>finish());
-  on('mHint',()=>{ c.hint=true; renderMission(true); });
+  on('mHint',()=>{ c.hintLv=(c.hintLv||0)+1; c.hint=c.hintLv>=3; renderMission(true); });
 }
 
 /* ================= Débriefing ================= */
@@ -2170,7 +2171,7 @@ function finish(){
       stars=Math.round(okN/cr.length*3); if(c.hint&&stars>0) stars--; setTimeout(()=>{ if(stars===3) SFX.done(); else if(stars>0) SFX.obj(); },250);
       h='<h2>Débriefing'+(scn.mystery?' · aléa mystère':'')+'</h2><div class="t">'+realTitle+'</div>';
       h+='<div class="bigstars" aria-label="'+stars+' sur 3">'+'★'.repeat(stars)+'<span style="color:var(--dim)">'+'★'.repeat(3-stars)+'</span></div>';
-      h+='<p class="note">'+okN+' critère(s) sur '+cr.length+(c.hint?' · indice utilisé (−1 étoile)':'')+'</p>';
+      h+='<p class="note">'+okN+' critère(s) sur '+cr.length+(c.hintLv?' · indices consultés : '+c.hintLv+' / 3'+(c.hint?' (le dernier retire une étoile)':''):'')+'</p>';
       h+='<ul class="crit">'+cr.map(x=>'<li class="'+(x.ok?'ok':'ko')+'"><span class="i">'+(x.ok?'✓':'✕')+'</span><span>'+x.t+(x.d?'<small>'+x.d+'</small>':'')+'</span></li>').join('')+'</ul>';
       if(c.st.aar) h+='<p>AAR '+(c.st.aar.src==='op'?'manuel':'automatique')+' à '+hms(c.st.aar.t)+' — '+c.st.aar.cause+'.</p>';
       h+='<h3>Conduite attendue</h3><p>'+scn.expected+'</p>';
@@ -2958,7 +2959,7 @@ function frame(now){
   const rd=Math.min(0.1,(now-last)/1000); last=now;
   if(A.s&&!A.paused){
     A.acc+=rd*A.speed; let k=0;
-    while(A.acc>=DT&&k<4000){ step(A.s); if(A.ctx) tick(A.s,A.ctx); A.acc-=DT; k++; if(A.paused) break; }
+    while(A.acc>=DT&&k<4000){ step(A.s); evalAlarms(A.s); if(A.ctx) tick(A.s,A.ctx); A.acc-=DT; k++; if(A.paused) break; }
     if(k>=4000) A.acc=0;
   }
   uiAcc+=rd; chAcc+=rd;
