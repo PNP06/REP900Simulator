@@ -34,3 +34,7 @@ Les valeurs sont représentatives mais simplifiées : ce n'est pas un outil de f
 ## Technique
 
 Thème clair et sombre (automatique selon le système, ou au choix). Un seul fichier `index.html` autonome (HTML, CSS, JavaScript sans dépendance ni build). Il suffit de l'ouvrir dans un navigateur. Les scores et préférences sont conservés localement dans le navigateur.
+
+## Tests
+
+`node tests/physique.test.mjs` vérifie les grandeurs de référence du modèle (états stables à 100 % et 50 %, AAR, puissance résiduelle, xénon, criticité à l'arrêt à chaud, perte de pompe primaire). Aucune dépendance n'est nécessaire.
