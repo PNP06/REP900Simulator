@@ -2,7 +2,7 @@
 
 Simulateur pédagogique de conduite d'un réacteur à eau pressurisée de 900 MWe (trois boucles, palier CPY, pilotage en mode G), jouable dans le navigateur sur ordinateur et téléphone.
 
-**Jouer :** https://pnp06.github.io/REP900simulator/
+**Jouer :** https://pnp06.github.io/REP900Simulator/
 
 ## Contenu
 
