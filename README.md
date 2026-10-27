@@ -14,7 +14,7 @@ Le simulateur repose sur des sources publiques, listées dans la rubrique « Sou
 
 ## Contenu
 
-- **Visite guidée de la centrale** : 26 chapitres illustrés, rangés en 6 thèmes et animés, sans manipulation (fission, réaction en chaîne, neutrons retardés, combustible, modérateur, circuits, mode G, xénon, sûreté, puissance résiduelle).
+- **Visite guidée de la centrale** : 35 chapitres illustrés, rangés en 7 thèmes et animés, sans manipulation (fission, réaction en chaîne, neutrons retardés, combustible, modérateur, circuits, mode G, xénon, sûreté, puissance résiduelle), dont un thème « Manœuvres » sur les principes de conduite : états de la tranche, divergence, couplage, montée en puissance, variations de charge et réglage de fréquence, repli, arrêts imprévus, règles d'or.
 - **Tutoriel** de prise de quart, avec repères animés et flèche vers les commandes.
 - **8 leçons guidées** : cinétique et temps de doublement, contre-réactions et mode G, ΔI et diagramme de pilotage, xénon 135, pressuriseur et RCV, générateurs de vapeur et eau alimentaire, protections et permissifs, divergence guidée.
 - **4 exercices notés** : divergence, couplage et montée en charge, suivi de charge et xénon, mise à l'arrêt à chaud.

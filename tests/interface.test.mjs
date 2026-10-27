@@ -41,7 +41,7 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
   }
   await pg.evaluate(() => openTour(0));
   const nT = await pg.evaluate(() => TOUR.length); for (let i = 0; i < nT; i++) { await pg.evaluate(i => tourGo(i), i); await pg.waitForTimeout(120); }
-  check(`${w}px : visite en 6 thèmes`, await pg.evaluate(() => new Set(TOUR.map(c => c.th)).size === 6));
+  check(`${w}px : visite en 7 thèmes`, await pg.evaluate(() => new Set(TOUR.map(c => c.th)).size === 7));
   await pg.evaluate(() => { document.querySelector('#srcov').hidden = false; });
   await pg.evaluate(() => { closeTour(); openFB('new'); });
   const sw = await pg.evaluate(() => document.documentElement.scrollWidth);
