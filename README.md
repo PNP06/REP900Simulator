@@ -21,7 +21,8 @@ Le simulateur repose sur des sources publiques, listées dans la rubrique « Sou
 - **9 aléas** avec débriefing : perte de TPA, îlotage, chute de grappe, aspersion bloquée ouverte, fuite sur la décharge RCV, défaillance de la régulation ARE, dilution intempestive, retrait incontrôlé à puissance nulle, déclenchement d'une pompe primaire. Plus un aléa mystère et le pilotage libre.
 - Diagramme pression-température du primaire (« chaussette ») en direct.
 - Aide « ? » sur chaque carte, lexique de 88 termes, bandeau catégorisé avec jauges.
-- Sons synthétisés : alarmes, AAR, réussite d'étape, ambiance des machines, comptage neutronique audible.
+- Deux niveaux d'explication : « Débutant » ajoute à chaque consigne une explication simple (« En clair ») et un plan pas à pas pour les exercices ; « Confirmé » garde le seul texte technique.
+- Sons synthétisés : avertisseurs d'alarme façon salle de commande (klaxon pour les alarmes rouges, ronfleur pour les ambre, jusqu'à l'acquittement), AAR, réussite d'étape, ambiance des machines discrète et réglable, comptage neutronique audible.
 
 ## Retours et suggestions
 

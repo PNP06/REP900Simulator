@@ -448,6 +448,10 @@ body.bandfocus .band .rd:not(.mb){display:block}
 .snd.off{color:var(--dim)}
 .sndset{display:flex;flex-wrap:wrap;gap:0 22px}
 .sndset .chk{margin-top:6px}
+.sndsl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;margin-top:10px;color:var(--mute)}
+.sndsl label{display:flex;align-items:center;gap:8px}
+.sndsl input[type=range]{width:130px;accent-color:var(--accent)}
+.sndsl output{font:600 12px var(--f-mono,monospace);min-width:38px;color:var(--fg)}
 .tourc{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--panel))}
 .tour{position:fixed;inset:0;z-index:75;background:var(--bg-2);display:flex;padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
 .tour[hidden]{display:none!important}
@@ -714,6 +718,24 @@ body.bandfocus .band .rd:not(.mb){display:block}
 .srct small{display:block;color:var(--mute);margin-top:2px}
 .srcl{margin:4px 0 10px;padding-left:20px}
 @media (max-width:640px){.srct td:first-child{width:auto}.srct,.srct tbody,.srct tr,.srct td{display:block}.srct thead{display:none}.srct td{border:0;padding:2px 0}.srct tr{border-bottom:1px solid var(--line);padding:8px 0}}
+
+/* En clair (débutant) */
+.eclair{margin:2px 0 10px;padding:9px 12px 9px 12px;border-radius:8px;background:color-mix(in srgb,var(--warn) 9%,var(--bg));border:1px solid color-mix(in srgb,var(--warn) 38%,var(--line));border-left:4px solid var(--warn);font-size:14px;line-height:1.5;color:var(--fg)}
+.eclair .ecl{display:inline-block;margin-right:8px;font:700 11px var(--f-disp);letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--warn) 80%,var(--fg))}
+.eclair .ecl::before{content:"💡 "}
+.eclair b{color:var(--fg);font-weight:700}
+.eclair.plan summary{cursor:pointer;list-style:none}
+.eclair.plan summary::-webkit-details-marker{display:none}
+.eclair.plan summary::after{content:" ▾";color:var(--mute);font-size:12px}
+.eclair.plan[open] summary::after{content:" ▴"}
+.eclair.plan ol{margin:6px 0 0;padding-left:22px}
+.eclair.plan li{margin:3px 0}
+.lvlseg{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0 10px;font-size:13px;color:var(--mute)}
+.lvlseg button{font:600 12px var(--f-disp);letter-spacing:.04em;padding:4px 10px;border-radius:999px;border:1px solid var(--line-2);background:var(--bg);color:var(--mute);cursor:pointer}
+.lvlseg button.on{background:color-mix(in srgb,var(--warn) 18%,var(--bg));border-color:var(--warn);color:var(--fg)}
+.btn.lvb.on{border-color:color-mix(in srgb,var(--warn) 60%,var(--line-2));color:var(--fg)}
+.btn.lvb::before{content:"💡";margin-right:4px;filter:grayscale(1);opacity:.6}
+.btn.lvb.on::before{filter:none;opacity:1}
 </style>
 </head>
 <body>
@@ -1010,7 +1032,10 @@ body.bandfocus .band .rd:not(.mb){display:block}
   </div>
   <div id="menuCards"></div>
   <div class="sec">Apparence</div><div class="row"><div class="seg" data-key="theme"><button data-v="auto">Automatique</button><button data-v="light">Clair</button><button data-v="dark">Sombre</button></div></div>
+  <div class="sec">Explications</div><div class="lvlseg" role="group" aria-label="Niveau des explications"><button type="button" data-lvl="deb">Débutant</button><button type="button" data-lvl="exp">Confirmé</button><span style="flex-basis:100%;margin-top:4px">« Débutant » ajoute, au-dessus de chaque consigne, une explication simple (« En clair ») et, pour les exercices, un plan pas à pas. « Confirmé » n'affiche que le texte technique.</span></div>
   <div class="sec">Son</div><div class="sndset"><label class="chk"><input type="checkbox" id="sndOn"> Sons activés</label><label class="chk"><input type="checkbox" id="sndAmb"> Ambiance des machines</label><label class="chk"><input type="checkbox" id="sndCnt"> Comptage neutronique audible (gamme source)</label></div>
+  <div class="sndsl"><label>Volume général <input type="range" id="sndVol" min="0" max="100" step="5"> <output id="sndVolO"></output></label><label>Ambiance des machines <input type="range" id="sndAmv" min="0" max="100" step="5"> <output id="sndAmvO"></output></label><button class="btn sm" id="sndTest" type="button">Écouter les alarmes</button></div>
+  <p class="note" style="margin:6px 0 0;font-size:13px">Comme en salle de commande, une alarme rouge fait retentir un klaxon et une alarme ambre un ronfleur, en continu, jusqu'à ce que vous appuyiez sur <kbd>Acquitter</kbd>. Acquitter signifie « j'ai vu » : la cause reste à traiter.</p>
   <label class="chk"><input type="checkbox" id="rndAlea"> Déclencher des aléas aléatoires en pilotage libre</label>
   <p class="foot">Modèle pédagogique : cinétique ponctuelle à 6 groupes de neutrons retardés, contre-réactions Doppler et modérateur (fonction du bore), chaîne iode-xénon, efficacités intégrales des grappes, thermohydraulique primaire et secondaire en paramètres concentrés, gonflement/contraction GV, régulations (température, GCP en mode G, pressuriseur, RCV, ARE, GCT) et protections RPR simplifiées. Les valeurs sont des ordres de grandeur d'un REP générique de 900 MWe, simplifiés : ce n'est pas un outil de formation agréé.</p>
 </div></div>
@@ -1423,7 +1448,7 @@ const SCN=[
   enter:(s,c,k)=>{k.v0=s.volDil;},ok:(s,c,k)=>s.volDil-k.v0>=0.29},
  {t:'Le pressuriseur : aspersion manuelle',h:"<p>Dans <b>Commandes › Pressuriseur</b>, passez l'aspersion en <kbd>Manuel</kbd> et ouvrez le curseur vers 60 %. L'eau froide pulvérisée condense la vapeur : la pression baisse. Les chaufferettes de secours démarrent sous 153,3 bar. Attendez que la pression passe sous 154 bar.</p>",ok:s=>s.sprayMode==='man'&&s.Ppzr<154},
  {t:"Remettez l'aspersion en automatique",h:"<p>Repassez l'aspersion en <kbd>Auto</kbd>. Les chaufferettes ramènent la pression vers 155 bar (environ 2 bar par minute à pleine puissance de chauffe).</p>",ok:s=>s.sprayMode==='auto'&&s.Ppzr>154.5},
- {t:'Les alarmes',h:"<p>Ouvrez <b>Alarmes</b>. Les voyants clignotent tant qu'ils ne sont pas acquittés : rouge pour les alarmes graves, ambre pour les écarts, bleu pour les informations. Appuyez sur <kbd>Acquitter</kbd>. Le journal de quart enregistre vos actions et les automatismes.</p>",ok:s=>Object.values(s.alarms).every(a=>!a.on||a.ack)},
+ {t:'Les alarmes',h:"<p>Ouvrez <b>Alarmes</b>. Les voyants clignotent tant qu'ils ne sont pas acquittés : rouge pour les alarmes graves, ambre pour les écarts, bleu pour les informations. Comme sur un tableau d'alarmes réel, un avertisseur sonore accompagne l'apparition : <b>klaxon</b> continu pour une alarme rouge, <b>ronfleur</b> pour une ambre, simple carillon pour une information. Il se tait à l'acquittement. Appuyez sur <kbd>Acquitter</kbd>. Le journal de quart enregistre vos actions et les automatismes.</p>",ok:s=>Object.values(s.alarms).every(a=>!a.on||a.ack)},
  {t:"L'arrêt automatique du réacteur",h:"<p>Dans <b>Commandes › Protection</b>, appuyez sur <kbd>AAR manuel</kbd> puis confirmez. Toutes les grappes chutent en moins de 2 secondes, soit plus de 7 000 pcm d'antiréactivité.</p>",ok:s=>s.tripped},
  {t:"Après l'AAR",h:"<p>Observez la suite : la puissance chute brutalement (saut prompt) puis décroît avec une période d'environ −80 s ; il reste la <b>puissance résiduelle</b> (≈ 6 % juste après, quelques % ensuite). La turbine est déclenchée, le GCT-c passe en mode pression et tient 70 bar dans les GV, donc Tmoy redescend vers 286 °C. La contraction du primaire fait baisser niveau et pression pressu, compensés par la charge RCV et les chaufferettes. L'ASG démarre.</p><p>Attendez que Tmoy passe sous 290 °C.</p>",ok:s=>s.Tavg<290},
  {t:'Tutoriel terminé',h:"<p>Vous avez vu l'essentiel : bilan de réactivité, autorégulation, mode G, bore, pressuriseur, alarmes et AAR. Continuez avec les <b>exercices</b> (divergence, montée en charge, suivi de charge, mise à l'arrêt), puis les <b>aléas</b>.</p>",last:true}
@@ -1780,6 +1805,117 @@ const STEPX={
  ],
 };
 for(const [id,arr] of Object.entries(STEPX)){ const sc=SCN.find(x=>x.id===id); if(!sc) continue; arr.forEach((x,i)=>{ if(sc.steps[i]) Object.assign(sc.steps[i],x); }); }
+/* ================= « En clair » : explications pour débutants ================= */
+/* Une explication simple par étape (leçons) et un plan pas à pas (exercices). Le texte technique reste affiché en dessous. */
+const ECLAIR={
+ tuto:[
+  "Une centrale nucléaire est une énorme bouilloire. Le cœur du réacteur chauffe de l'eau gardée liquide par la pression (le <b>circuit primaire</b>). Cette eau passe dans les générateurs de vapeur, où elle fait bouillir l'eau d'un second circuit, sans jamais s'y mélanger. La vapeur fait tourner la turbine et l'alternateur, qui produit l'électricité.<br>Votre métier d'opérateur : faire produire au réacteur exactement la chaleur que la turbine consomme, et vérifier en permanence que tout reste dans les limites. Ici, rien à faire : lisez, puis <kbd>Suivant</kbd>.",
+  "Pas besoin de tout retenir d'un coup. Trois chiffres comptent d'abord : la <b>puissance</b> du réacteur (combien de chaleur il produit), <b>Tmoy</b> (la température de l'eau qui le refroidit) et la <b>pression</b>.<br><b>Tref</b> est la température « voulue », calculée d'après ce que demande la turbine. Tant que Tmoy reste collée à Tref, le réacteur produit la bonne quantité de chaleur.",
+  "La <b>réactivité</b> dit si la réaction en chaîne accélère, reste stable ou ralentit. Voyez-la comme un compte en banque. Le combustible neuf apporte un gros crédit ; plusieurs « freins » le compensent : les grappes, le bore dissous dans l'eau, l'eau chaude, le combustible chaud et le xénon.<br>Solde à 0 : la puissance reste constante. Solde positif : elle monte. Solde négatif : elle baisse.<br>Le <b>pcm</b> est l'unité de ce compte : un cent-millième. C'est petit, mais +100 pcm suffisent pour que la puissance double en 45 s environ.",
+  "Les <b>grappes</b> sont des faisceaux de crayons qui absorbent les neutrons : les enfoncer freine la réaction, les remonter l'accélère. D'ordinaire, le groupe <b>R</b> bouge tout seul pour garder la bonne température. Vous allez le passer en manuel pour le déplacer vous-même et voir ce qui se passe.",
+  "Un <b>pas</b> est un petit cran de déplacement, environ 1,6 cm. En remontant R, vous retirez un peu de frein : la puissance monte. Mais le combustible et l'eau chauffent, et un réacteur à eau se freine tout seul quand il chauffe. La puissance monte donc un peu, puis se stabilise d'elle-même.<br>C'est une qualité de sûreté essentielle de ce type de réacteur : il ne s'emballe pas tout seul.",
+  "La turbine n'a pas changé, le réacteur produit donc maintenant un peu trop de chaleur : Tmoy est au-dessus de Tref. Remis en automatique, R va redescendre tout seul jusqu'à ce que les deux températures se rejoignent. Regardez-le faire.",
+  "Monter la charge, c'est demander plus d'électricité à la turbine : elle prend plus de vapeur. Le réacteur doit fournir la chaleur correspondante. Vous ne touchez qu'à la turbine : les automatismes de grappes (GCP et R) remontent eux-mêmes ce qu'il faut. En fonctionnement normal, <b>c'est le réacteur qui suit la turbine</b>.",
+  "Le <b>bore</b> est un frein dissous dans l'eau du circuit, un peu comme du sel dans l'eau. <b>Diluer</b>, c'est ajouter de l'eau pure : le frein diminue partout dans le cœur. <b>Borer</b>, c'est l'inverse.<br>Le bore agit lentement mais uniformément ; on s'en sert pour les changements lents et on garde les grappes pour les réglages rapides.",
+  "Le <b>pressuriseur</b> est un grand réservoir relié au circuit : de l'eau en bas, de la vapeur en haut, comme une cocotte-minute. Pour monter la pression, on chauffe l'eau (<b>chaufferettes</b>) ; pour la baisser, on pulvérise de l'eau plus froide dans la vapeur (<b>aspersion</b>), qui la condense.<br>Vous allez ouvrir l'aspersion à la main et regarder la pression descendre.",
+  "En automatique, la régulation reprend la main : elle chauffe jusqu'à retrouver 155 bar. C'est lent, quelques bar par minute : soyez patient.",
+  "Une <b>alarme</b> signale qu'une grandeur est sortie de sa plage normale ou qu'un automatisme a agi. Comme en salle de commande, elle clignote, et un avertisseur sonore retentit pour les alarmes rouges et ambre, jusqu'à ce que vous l'<b>acquittiez</b>.<br>Acquitter veut dire « j'ai vu », pas « c'est réglé » : le voyant reste allumé tant que la cause est là.",
+  "L'<b>AAR</b> (arrêt automatique du réacteur) est l'arrêt d'urgence : toutes les grappes tombent par leur propre poids dans le cœur en moins de 2 secondes, et la réaction en chaîne s'arrête. Les protections le déclenchent seules si une grandeur devient dangereuse ; ici, vous le déclenchez à la main.<br>Attendez-vous au klaxon d'alarme : <kbd>Acquitter</kbd> le fait taire.",
+  "La réaction en chaîne est arrêtée, mais le cœur chauffe encore. Les produits de fission sont radioactifs et dégagent de la chaleur en se désintégrant : c'est la <b>puissance résiduelle</b>, quelques % au début, qui décroît pendant des jours.<br>Il faut donc continuer à refroidir : la vapeur part au condenseur, et l'eau de secours (ASG) alimente les générateurs de vapeur. C'est la règle de base de la sûreté : <b>arrêter, refroidir, confiner</b>.",
+  "Vous savez maintenant que le réacteur suit la turbine, que les grappes règlent vite et le bore lentement, qu'il se freine seul quand il chauffe, et que même arrêté il faut le refroidir. Tout le reste du simulateur décline ces quatre idées."
+ ],
+ 'l-cin':[
+  "Une fission libère 2 à 3 neutrons, qui peuvent provoquer d'autres fissions : c'est la <b>réaction en chaîne</b>. Si chaque génération compte un peu plus de neutrons que la précédente, la puissance monte.<br>Sans un détail de la nature, elle monterait trop vite pour être pilotée : une petite partie des neutrons arrive en retard. Ces retardataires imposent un rythme lent. Cette leçon vous fait ressentir ce rythme.",
+  "Vous ajoutez très peu de réactivité, environ +40 pcm. La puissance fait d'abord un petit bond immédiat, puis elle se met à monter de plus en plus vite, en doublant à intervalles réguliers.<br>Cet intervalle s'appelle le <b>temps de doublement</b> ; il est affiché dans le bandeau, case « Réactivité ». Plus il est court, plus ça monte vite.",
+  "À 0,5 % de puissance, rien ne chauffe, donc rien ne freine la montée. Vers 1 %, le combustible commence à chauffer et se freine lui-même : c'est l'<b>effet Doppler</b>.<br>Ne touchez à rien et regardez le temps de doublement s'allonger : le réacteur se calme tout seul.",
+  "Vous enfoncez les grappes : la puissance chute d'un coup, puis baisse plus doucement. Même avec beaucoup de frein, elle ne peut pas descendre plus vite qu'un certain rythme, car les neutrons retardataires continuent d'arriver pendant une minute environ.",
+  "Le but : trouver la position où la puissance ne bouge plus, avec un temps de doublement « infini ». Allez-y doucement : un pas, attendez, observez, recommencez. C'est le geste de base du pilote.",
+  "À retenir : grâce aux neutrons retardés, le réacteur réagit en dizaines de secondes, pas en millisecondes. Une petite réactivité suffit à faire monter la puissance, et la chaleur du combustible la freine d'elle-même."
+ ],
+ 'l-fb':[
+  "Un réacteur à eau sous pression a deux freins naturels qui serrent quand il chauffe. Le <b>combustible</b> chaud capture plus de neutrons sans fission (effet Doppler). L'<b>eau</b> chaude, plus dilatée, ralentit moins bien les neutrons (effet modérateur).<br>Plus il chauffe, plus il se freine : c'est rassurant pour la sûreté. Mais pour monter en puissance, il faut compenser ce frein, sinon la température chute.",
+  "Vous coupez tous les automatismes de grappes, pour voir le réacteur se débrouiller seul.",
+  "La turbine prend plus de vapeur, donc l'eau revient plus froide au réacteur. Eau plus froide, frein moins serré : la puissance augmente. Le réacteur suit donc la turbine tout seul !<br>Mais il le fait en se refroidissant, alors qu'on voudrait que sa température monte un peu avec la charge. Regardez l'écart Tmoy − Tref se creuser.",
+  "Les <b>GCP</b> sont des grappes « grises », moins absorbantes. En automatique, ils se placent d'après la charge de la turbine en suivant un tableau calculé d'avance : à chaque charge, sa position. Ils compensent ainsi le frein naturel par anticipation. Remettez-les en auto : ils remontent et la température revient.",
+  "R fait l'ajustement fin : il compare la température mesurée à la température voulue et corrige l'écart restant. Les GCP font le réglage grossier, calculé d'avance ; R fait le réglage fin, d'après la mesure.",
+  "À retenir : le réacteur suit naturellement la turbine. Les grappes ne « fabriquent » pas la puissance, elles servent surtout à garder la bonne température."
+ ],
+ 'l-di':[
+  "Le cœur mesure environ 3,7 m de haut, et la puissance n'y est pas répartie également. Le <b>ΔI</b> compare la moitié haute et la moitié basse : négatif, il y a plus de puissance en bas ; positif, plus en haut.<br>On veut une répartition équilibrée, car si la puissance se concentre à un endroit, le combustible y chauffe trop. Sur le diagramme ΔI, le point doit rester dans la bande verte.",
+  "Les grappes entrent par le haut du cœur. En les enfonçant, vous freinez surtout la moitié haute : la puissance se décale vers le bas et le point du diagramme part vers la gauche. Comme la turbine demande toujours autant, c'est la température qui baisse.",
+  "Pour retrouver la bonne température sans toucher aux grappes, on retire du frein partout : on dilue. La température revient… mais le point reste à gauche, car les grappes sont toujours enfoncées et écrasent toujours le haut.<br>Le bore change la quantité de puissance, pas sa répartition.",
+  "Astuce de pilote : pour remonter les grappes, on ajoute du bore. Le bore freine partout, la température baisse, et la régulation remonte R pour compenser. Le point revient vers le centre.<br>À retenir : <b>c'est le bore qui décide où se trouvent les grappes</b>.",
+  "Le xénon est un poison qui se forme là où la puissance était quelques heures plus tôt. Si la puissance part vers le bas, le xénon s'y accumule ensuite et la repousse vers le haut, puis l'inverse : la puissance peut se balancer lentement entre haut et bas sur une journée. Surveiller le ΔI, c'est aussi éviter ce balancement.",
+  "À retenir : les grappes servent aux réglages rapides mais déforment la répartition de puissance ; le bore sert aux réglages lents, sans la déformer."
+ ],
+ 'l-xe':[
+  "Le <b>xénon 135</b> est un produit de fission qui absorbe les neutrons comme une éponge. Il naît surtout de l'iode 135, avec plusieurs heures de retard, et les neutrons le détruisent en permanence.<br>À puissance constante, production et destruction s'équilibrent. Si la puissance change, cet équilibre est rompu pendant des heures.",
+  "Vous baissez la charge : il y a moins de neutrons, donc moins de xénon détruit. Mais l'iode déjà présent continue de se transformer en xénon : la quantité de poison va augmenter.",
+  "Le poison s'accumule et freine de plus en plus le réacteur. La régulation remonte R pour compenser, mais R a une butée. Pour tenir, ajoutez de l'eau pure par petites doses : vous retirez du frein « bore » pour compenser le frein « xénon ».<br>Passez en ×300 : cela prend des heures.",
+  "En remontant, les neutrons détruisent le xénon plus vite qu'il ne se forme : le frein disparaît peu à peu et le réacteur a tendance à accélérer. R s'enfonce pour compenser ; si cela ne suffit pas, il faut ajouter du bore.",
+  "Après un arrêt, plus aucun neutron ne détruit le xénon, mais l'iode continue de le produire : le poison monte pendant une dizaine d'heures. Il peut devenir si fort qu'on ne peut plus redémarrer avant qu'il ait décru. Étape facultative.",
+  "À retenir : toute baisse de puissance se paie quelques heures plus tard par de la dilution, toute remontée par de la borication. Il faut anticiper."
+ ],
+ 'l-pzr':[
+  "Dans le circuit primaire, l'eau dépasse 300 °C mais ne bout pas, grâce à une pression de 155 bar, soit 155 fois la pression atmosphérique. Le <b>pressuriseur</b> tient cette pression : de l'eau en bas, de la vapeur en haut, à l'équilibre, comme une cocotte-minute.<br>Chauffer l'eau fait plus de vapeur et monter la pression. Pulvériser de l'eau froide dans la vapeur la condense et baisse la pression.<br>Le <b>RCV</b>, lui, ajoute ou retire de l'eau du circuit pour garder le bon niveau.",
+  "En baissant la charge, l'eau du circuit refroidit un peu et se contracte, comme le liquide d'un thermomètre. Le niveau du pressuriseur baisse, la vapeur a plus de place et la pression baisse. Regardez les automatismes réagir.",
+  "Vous forcez le chauffage au maximum. La pression monte… jusqu'à ce que l'aspersion automatique s'ouvre pour l'empêcher d'aller trop haut. Deux régulations s'opposent, et la pression se stabilise un peu au-dessus de la normale.",
+  "Retour en automatique : la régulation ramène d'elle-même la pression à 155 bar.",
+  "Le circuit envoie en permanence un peu d'eau vers le RCV (décharge) et en reçoit autant (charge). Si vous chargez moins que vous ne déchargez, le circuit se vide lentement et le niveau du pressuriseur baisse. C'est exactement ce qu'on observerait avec une petite fuite.",
+  "Retour en automatique : la charge augmente pour remplir de nouveau.",
+  "À retenir : le pressuriseur est à la fois le baromètre et la jauge du circuit. Si son niveau bouge alors que la température est stable, c'est que de l'eau entre ou sort."
+ ],
+ 'l-gv':[
+  "Le <b>générateur de vapeur</b> (GV) est un échangeur de chaleur. L'eau du réacteur circule dans des milliers de petits tubes et fait bouillir l'eau du second circuit, sans jamais s'y mélanger. La vapeur produite part à la turbine.<br>Il faut garder assez d'eau dans le GV, un niveau vers 50 % : c'est le rôle de l'eau alimentaire (<b>ARE</b>).<br>Piège : le niveau mesuré est celui d'un mélange d'eau et de bulles, qui gonfle ou se tasse quand la pression change.",
+  "Vous réduisez brutalement la demande de vapeur. La pression dans le GV monte et les bulles s'écrasent : le mélange se tasse et le niveau baisse, alors même qu'on envoie plus d'eau qu'il n'en sort ! C'est la <b>contraction</b>, un effet contre-intuitif. Le niveau revient ensuite.",
+  "Vous prenez la main sur l'eau alimentaire et envoyez moins d'eau qu'il ne sort de vapeur : le GV se vide doucement. Estimez le temps qu'il faudrait pour atteindre le seuil d'arrêt d'urgence (15 %) : il est très court.",
+  "En automatique, la régulation envoie plus d'eau qu'il ne sort de vapeur, jusqu'à retrouver 50 %.",
+  "À retenir : un GV qui manque d'eau ne refroidit plus le réacteur. C'est pour cela qu'il existe plusieurs secours d'eau alimentaire."
+ ],
+ 'l-prot':[
+  "Les <b>protections</b> sont des gardiens automatiques : elles mesurent en continu les grandeurs importantes et, si l'une dépasse une limite, déclenchent l'arrêt d'urgence sans attendre l'opérateur. Chaque limite est fixée avec une marge, pour que le combustible et le circuit ne soient jamais endommagés.<br>La <b>marge ΔT</b> indique à quelle distance vous êtes du seuil d'arrêt lié à la surchauffe du combustible.",
+  "Quand la pression baisse, l'eau bout plus facilement au contact du combustible, et le risque de surchauffe augmente. Le gardien en tient compte et rapproche son seuil : la marge fond à mesure que la pression baisse.<br>Arrêtez-vous bien avant qu'elle n'atteigne zéro !",
+  "Retour en automatique : la pression remonte et la marge revient.",
+  "Certaines protections n'ont de sens qu'à certaines puissances : perdre une pompe à 2 % de puissance n'a pas les mêmes conséquences qu'à 100 %. Les <b>permissifs</b> sont des interrupteurs automatiques qui activent ou désactivent ces protections selon la puissance.",
+  "À retenir : votre travail n'est pas d'éviter l'arrêt d'urgence à tout prix, mais de garder vos marges pour ne jamais en avoir besoin."
+ ],
+ 'l-div':[
+  "Le réacteur est à l'arrêt, <b>sous-critique</b> : chaque chaîne de réactions finit par s'éteindre. Mais une source de neutrons en relance sans cesse, donc les compteurs comptent quelque chose.<br>Plus on approche de la criticité, plus chaque chaîne dure longtemps et plus le comptage monte. On s'en sert comme d'un détecteur d'approche : <b>1/M</b> descend vers 0 à mesure qu'on s'approche du point critique.",
+  "Remontez R par paliers. Après chaque palier, attendez que le comptage se stabilise : plus il est élevé, plus vous êtes proche.",
+  "Avec deux mesures, on trace une droite et on la prolonge jusqu'à 1/M = 0 : on obtient une estimation de la position critique. C'est comme estimer la distance d'un obstacle pour ralentir à temps.",
+  "Plus près de la criticité, le comptage met plus longtemps à se stabiliser : soyez patient. L'estimation devient plus précise.",
+  "On avance maintenant tout doucement. Quand le comptage ne se stabilise plus et monte régulièrement, le réacteur est <b>critique</b> : il entretient seul la réaction en chaîne. Le temps de doublement doit rester long, au moins une minute : c'est un démarrage en douceur.",
+  "Les compteurs de démarrage sont très sensibles et saturent quand la puissance augmente. À P6, des détecteurs moins sensibles prennent le relais ; il faut alors inhiber les premiers, sinon leur seuil arrête le réacteur.",
+  "Vers 1 %, le combustible chauffe et se freine lui-même. Corrigez R d'un pas, puis laissez à la puissance le temps de réagir avant de corriger encore. Le but : une puissance qui ne bouge presque plus.",
+  "À retenir : on approche la criticité par paliers, on prédit, on ralentit, puis on laisse la physique stabiliser la puissance."
+ ],
+ div:{e:"Démarrer un réacteur, c'est l'amener de l'arrêt, où la réaction en chaîne s'éteint d'elle-même, à la <b>criticité</b>, où elle s'entretient seule, sans jamais aller trop vite. On avance par paliers en mesurant à chaque fois si l'on se rapproche.",
+  plan:["Remontez R par paliers de 20 à 30 pas. Après chaque palier, attendez que le comptage se stabilise et lisez 1/M dans la ligne d'information.","Quand 1/M passe sous 0,25, réduisez les paliers à 2 à 5 pas : vous êtes proche.","Quand un temps de doublement constant apparaît, cessez d'extraire : le réacteur est critique.","À l'alarme P6, inhibez la gamme source (Agir › Protection).","Laissez monter jusqu'à 1 à 3 %, puis stabilisez par petites corrections d'un pas."]},
+ montee:{e:"Le réacteur chauffe déjà, mais sa vapeur part directement au condenseur : aucune électricité n'est produite. Il faut raccorder l'alternateur au réseau, puis augmenter progressivement la production jusqu'à 100 %, en laissant les automatismes faire suivre le réacteur.",
+  plan:["Couplez l'alternateur (Agir › Turbine).","Montez la charge vers 10 à 12 %, puis passez R et GCP en automatique.","Lancez une borication de 300 à 500 L à 10 m³/h, pour que R ne s'enfonce pas trop.","Réglez la vitesse à 3 %/min et la consigne à 100 %, puis passez en ×5.","Surveillez R : s'il descend vers 150 pas, borez ; s'il monte trop haut, diluez. Gardez un œil sur le ΔI."]},
+ suivi:{e:"La nuit ou le week-end, le réseau a besoin de moins d'électricité : la centrale baisse sa production, puis la remonte. La manœuvre en elle-même est simple ; la difficulté, c'est le <b>xénon</b>, qui continue d'évoluer pendant des heures après chaque changement.",
+  plan:["Réglez la vitesse à 5 %/min et la consigne à 50 %.","Dès le début du palier, diluez par lots à 20 ou 30 m³/h pour garder R dans sa bande et Tmoy sur Tref.","Passez en ×60 et contrôlez régulièrement R, Tmoy − Tref et le ΔI.","Après 2 h de palier, remontez à 100 %.","Pendant la remontée, borez quand R s'enfonce."]},
+ arret:{e:"Mettre à l'arrêt à chaud, c'est arrêter la réaction en chaîne tout en gardant le circuit chaud et sous pression, prêt à redémarrer. On le fait en douceur, puis on ajoute assez de bore pour être certain que le réacteur ne redémarrera pas tout seul, même quand le xénon aura disparu.",
+  plan:["Baissez la charge à 5 %.","Découplez la turbine : la vapeur part au condenseur.","Insérez les GCP puis R : la puissance s'effondre.","Borez jusqu'à une marge d'arrêt de 3 000 pcm (la réactivité totale doit valoir −3 000 pcm ou moins).","Vérifiez que Tmoy se stabilise vers 286 °C."]},
+ tpa:{e:"L'eau qui remplit les générateurs de vapeur est envoyée par deux grosses pompes entraînées par de petites turbines à vapeur (les <b>TPA</b>). Si l'une s'arrête à pleine puissance, l'autre ne fournit qu'un peu plus de la moitié de l'eau nécessaire : les GV commencent à se vider. Tout se joue en quelques dizaines de secondes."},
+ ilot:{e:"L'<b>îlotage</b>, c'est se retrouver coupé du réseau électrique, par exemple après un défaut sur une ligne. La centrale doit continuer à tourner en n'alimentant plus que ses propres équipements, quelques % de sa puissance. La turbine perd d'un coup presque toute sa charge : il y a soudain beaucoup trop de vapeur et de chaleur, et les automatismes doivent encaisser ce choc."},
+ drop:{e:"Une <b>grappe</b> est l'un des faisceaux absorbants qui pilotent le réacteur. Si une seule tombe dans le cœur, elle freine fortement la zone autour d'elle : la puissance se déséquilibre, d'un côté à l'autre du cœur et entre le haut et le bas. Le reste du réacteur cherche à compenser."},
+ spray:{e:"L'<b>aspersion</b> pulvérise de l'eau dans la vapeur du pressuriseur pour baisser la pression. Si sa vanne reste bloquée ouverte, la pression baisse sans s'arrêter, même chaufferettes à fond. Une pression trop basse rapproche l'eau de l'ébullition au contact du combustible."},
+ leak:{e:"Le circuit primaire échange sans cesse de l'eau avec le <b>RCV</b>. Si la ligne qui en retire fuit, le circuit perd de l'eau : le niveau du pressuriseur, qui sert de jauge, baisse. Il faut trouver d'où vient la perte."},
+ are:{e:"La régulation <b>ARE</b> dose l'eau envoyée dans les générateurs de vapeur. Si elle ouvre en grand par erreur, les GV se remplissent trop. Un GV trop plein risque d'envoyer de l'eau liquide vers la turbine, ce qui l'abîmerait : des protections surveillent ce niveau haut."},
+ dil:{e:"Le <b>bore</b> dissous dans l'eau freine le réacteur. Si une vanne d'eau pure s'ouvre toute seule, ce bore est dilué sans que personne l'ait demandé : le frein diminue lentement et le réacteur gagne de la réactivité. C'est discret : au début, on voit seulement les grappes qui compensent."},
+ rodwd:{e:"Juste après le démarrage, la puissance est minuscule et rien ne la freine encore, car le combustible est froid. Si des grappes sortent toutes seules, la puissance grimpe très vite. Il faut réagir dans les secondes qui suivent."},
+ gmpp:{e:"Les trois <b>pompes primaires</b> (GMPP) font circuler l'eau dans le cœur. Si l'une s'arrête à pleine puissance, une boucle n'est plus correctement refroidie et la protection arrête le réacteur. À vous ensuite de stabiliser la tranche avec deux pompes sur trois."}
+};
+for(const [id,v] of Object.entries(ECLAIR)){ const sc=SCN.find(x=>x.id===id); if(!sc) continue; if(Array.isArray(v)){ v.forEach((e,i)=>{ if(sc.steps&&sc.steps[i]) sc.steps[i].e=e; }); } else { sc.e=v.e; if(v.plan) sc.plan=v.plan; } }
+const LVL={v:(store('lvl')==='exp')?'exp':'deb'};
+const isDeb=()=>LVL.v==='deb';
+function lvlSet(v){ LVL.v=v; store('lvl',v); if(A.ctx){ A.ctx.dirty=true; renderMission(true); } if(!$('#brief').hidden&&A.scn){ const keep=A.paused; showBrief(); A.paused=keep; } $$('.lvlseg button').forEach(b=>b.classList.toggle('on',b.dataset.lvl===v)); }
+const ecBox=(h,lab)=>'<div class="eclair"><span class="ecl">'+(lab||'En clair')+'</span>'+h+'</div>';
+const planBox=(scn,open)=>scn.plan?'<details class="eclair plan"'+(open?' open':'')+'><summary><span class="ecl">Le plan, en clair</span></summary><ol>'+scn.plan.map(x=>'<li>'+x+'</li>').join('')+'</ol></details>':'';
+const lvlSeg=()=>'<div class="lvlseg" role="group" aria-label="Niveau des explications"><span>Explications :</span><button type="button" data-lvl="deb" class="'+(LVL.v==='deb'?'on':'')+'">Débutant</button><button type="button" data-lvl="exp" class="'+(LVL.v==='exp'?'on':'')+'">Confirmé</button></div>';
+document.addEventListener('click',e=>{ const b=e.target.closest('.lvlseg button'); if(b) lvlSet(b.dataset.lvl); });
+$$('.lvlseg button').forEach(b=>b.classList.toggle('on',b.dataset.lvl===LVL.v));
 
 /* Formateur pour les exercices : premier conseil applicable */
 const COACH={
@@ -1858,6 +1994,8 @@ function launch(id){
 function showBrief(){
   const scn=A.scn;
   let h='<h2>'+({tuto:'Tutoriel',lecon:'Leçon guidée',exo:'Exercice',alea:'Aléa',libre:'Pilotage libre'}[scn.kind])+'</h2><div class="t">'+scn.title+'</div>';
+  h+=lvlSeg();
+  if(isDeb()&&scn.e&&scn.id!=='myst') h+=ecBox(scn.e)+(scn.plan?planBox(scn,true):'');
   if(scn.kind==='alea') h+=INTRO_ALEA+(scn.id==='rodwd'?"<p>État : réacteur tout juste critique à puissance nulle (GI ≈ 10⁻⁸ A), turbine découplée, groupes en manuel. Restez à ×1.</p>":'');
   else if(scn.kind==='libre') h+="<p>Aucun objectif imposé : manœuvrez librement. "+(A.ctx.rnd?'Des aléas aléatoires surviendront pendant le pilotage. ':'')+"Le bouton <kbd>Terminer</kbd> affiche un bilan.</p>";
   else h+=scn.brief||'';
@@ -2187,25 +2325,27 @@ function renderMission(force){
     const sub=stp.sub&&!c.stepOk?'<ul class="subl">'+stp.sub.map(x=>{ let d=false; try{ d=x[1](s,c,c.sk); }catch(e){} return '<li class="'+(d?'done':'')+'">'+x[0]+'</li>'; }).join('')+'</ul>':'';
     const okb=c.stepOk?'<div class="aft"><div class="stepok">✓ Étape réalisée</div>'+(c.after?'<p>'+c.after+'</p>':'')+'</div>':'';
     const hb=stp.hint&&!c.stepOk?(c.showHint?'<div class="hintb"><b>Comment faire :</b> '+stp.hint+'</div>':''):'';
-    body=stp.h+sub+hb+(inf!=null?'<div class="info" id="mis-info">'+inf+'</div>':'')+okb;
+    body=(isDeb()&&stp.e?ecBox(stp.e):'')+stp.h+sub+hb+(inf!=null?'<div class="info" id="mis-info">'+inf+'</div>':'')+okb;
     foot='<div class="prog"><i style="width:'+((c.step+1)/scn.steps.length*100)+'%"></i></div>';
     if(stp.tab&&innerWidth<1080&&A.tab!==stp.tab) foot+='<button class="btn sm" id="tTab">Ouvrir '+({synop:'Surveiller',cmd:'Agir',trend:'Tendances',alarm:'Suivre'}[stp.tab])+'</button>';
     if(stp.hint&&!c.stepOk&&!c.showHint) foot+='<button class="btn sm" id="tHint"><span class="lg2">Comment faire ?</span><span class="sh2">Aide</span></button>';
     if(c.step>0) foot+='<button class="btn sm" id="tPrev" aria-label="Précédent"><span class="lg2">Précédent</span><span class="sh2">‹</span></button>';
     foot+=stp.last?'<button class="btn pri" id="tEnd">Terminer '+(scn.kind==='tuto'?'le tutoriel':'la leçon')+'</button>':'<button class="btn pri" id="tNext"'+(stp.ok&&!c.stepOk&&!stp.opt?' disabled':'')+'>Suivant ›</button>';
   } else if(scn.kind==='exo'){
-    body='<ul class="obj">'+scn.obj.map(o=>'<li class="'+(c.o[o.id]!=null?'done':'')+'"><span>'+o.t+(o.w&&c.o[o.id]==null?'<small class="why">'+o.w+'</small>':'')+'</span></li>').join('')+'</ul>'+(scn.info?'<div class="info" id="mis-info">'+scn.info(s,c)+'</div>':'');
+    body=(isDeb()?planBox(scn,c.planOpen!==false):'')+'<ul class="obj">'+scn.obj.map(o=>'<li class="'+(c.o[o.id]!=null?'done':'')+'"><span>'+o.t+(o.w&&c.o[o.id]==null?'<small class="why">'+o.w+'</small>':'')+'</span></li>').join('')+'</ul>'+(scn.info?'<div class="info" id="mis-info">'+scn.info(s,c)+'</div>':'');
     if(c.coach) body+='<div class="coach"><b>Formateur :</b> '+c.coach+'</div>';
     foot='<button class="btn" id="mEnd">Terminer et débriefer</button>';
   } else if(scn.kind==='alea'){
-    if(c.fired==null) body='<p>Fonctionnement normal. Surveillez la tranche : un aléa va survenir.</p>';
+    if(c.fired==null) body=(isDeb()&&scn.e?ecBox(scn.e):'')+'<p>Fonctionnement normal. Surveillez la tranche : un aléa va survenir.</p>';
     else body='<p><b>Aléa en cours.</b> Identifiez-le, mettez la tranche en sécurité puis stabilisez.</p><p>Méthode : dans le journal, repérez la <b>première</b> alarme apparue, souvent la cause ; dans le bandeau, regardez quels paramètres varient (en gras, avec une flèche) et vers quel seuil ils vont ; puis cherchez quel équipement l\'explique.</p>'+(c.hintLv?'<div class="hintb">'+[...(scn.hints||[]),scn.hint].slice(0,c.hintLv).map((t,i)=>'<b>'+['Symptôme','Système en cause','Action'][i]+' :</b> '+t).join('<br>')+'</div>':'');
     foot=(c.fired!=null&&(c.hintLv||0)<3?'<button class="btn" id="mHint">'+['Indice : symptôme','Indice : système','Indice : action (−1 étoile)'][c.hintLv||0]+'</button>':'')+'<button class="btn" id="mEnd">Terminer et débriefer</button>';
   } else {
     body='<p>Pilotage libre'+(c.rnd?', aléas aléatoires activés':'')+'. Toutes les commandes sont disponibles.</p>';
     foot='<button class="btn" id="mEnd">Terminer</button>';
   }
+  if(scn.kind!=='libre') foot='<button class="btn sm lvb'+(isDeb()?' on':'')+'" id="tLvl" title="Niveau des explications : Débutant ajoute une explication simple au-dessus du texte technique" aria-label="Explications '+(isDeb()?'débutant':'confirmé')+'"><span class="lg2">'+(isDeb()?'Débutant':'Confirmé')+'</span><span class="sh2">'+(isDeb()?'Déb.':'Conf.')+'</span></button>'+foot;
   T('mis-title',title); $('#mis-body').innerHTML=body; glossDom($('#mis-body')); $('#mis-foot').innerHTML=foot;
+  const pd=$('#mis-body details.plan'); if(pd) pd.addEventListener('toggle',()=>{ c.planOpen=pd.open; });
   $$('.focus').forEach(e=>e.classList.remove('focus','focus-sm')); A.ptrT=[];
   if(scn.steps&&!c.stepOk){ const fs=scn.steps[c.step].f||[]; fs.forEach(q=>$$(q).forEach(e=>e.classList.add('focus'))); applyFocus(); } else document.body.classList.remove('bandfocus');
   const on=(id,f)=>{ const e=document.getElementById(id); if(e) e.onclick=f; };
@@ -2214,6 +2354,7 @@ function renderMission(force){
   on('tHint',()=>{ c.showHint=true; renderMission(true); });
   on('tTab',()=>{ setTab(scn.steps[c.step].tab); renderMission(true); });
   on('tEnd',()=>finish());
+  on('tLvl',()=>lvlSet(isDeb()?'exp':'deb'));
   on('mEnd',()=>finish());
   on('mHint',()=>{ c.hintLv=(c.hintLv||0)+1; c.hint=c.hintLv>=3; renderMission(true); });
 }
@@ -2335,7 +2476,7 @@ const HELP={
 <h3>Ce que vous voyez</h3><ul><li>Les puces choisissent les courbes ; la fenêtre va de 5 minutes à 8 heures.</li><li>Le point au bout de chaque courbe est la valeur actuelle ; les pointillés sont des références (Tref, ΔI de référence).</li></ul>
 <h3>Bonnes associations</h3><ul><li><b>Puissance + Température</b> pour tout transitoire.</li><li><b>Grappes + Bore + Xénon</b> sur 8 h pour le suivi de charge.</li><li><b>Niveaux + Pression</b> pour les aléas d'eau alimentaire ou de RCV.</li></ul>`},
  alarm:{t:'Alarmes et journal',l:null,h:`<h3>En bref</h3><p>Les alarmes signalent un écart avant qu'il ne devienne grave. Le métier de l'opérateur consiste à les trier : laquelle est la cause, lesquelles en sont les conséquences.</p>
-<h3>Ce que vous voyez</h3><ul><li><b>Rouge</b> : événement grave (AAR, IS, chute de grappe…). <b>Ambre</b> : écart à traiter. <b>Bleu</b> : information.</li><li>Une alarme qui apparaît <b>clignote</b> jusqu'à l'acquittement et s'éteint quand sa cause disparaît. Le bandeau en haut résume les alarmes en cours.</li><li>Le <b>journal de quart</b> horodate vos actions (bleu), les automatismes (ambre) et les alarmes.</li></ul>
+<h3>Ce que vous voyez</h3><ul><li><b>Rouge</b> : événement grave (AAR, IS, chute de grappe…). <b>Ambre</b> : écart à traiter. <b>Bleu</b> : information.</li><li>Une alarme qui apparaît <b>clignote</b> jusqu'à l'acquittement et s'éteint quand sa cause disparaît. L'avertisseur sonore suit la même séquence : <b>klaxon</b> pour une alarme rouge, <b>ronfleur</b> pour une ambre, répétés jusqu'à l'acquittement ; un carillon pour une information. Le bandeau en haut résume les alarmes en cours.</li><li>Le <b>journal de quart</b> horodate vos actions (bleu), les automatismes (ambre) et les alarmes.</li></ul>
 <h3>Méthode</h3><p>Lisez le journal à rebours pour trouver la <b>première</b> alarme apparue : c'est souvent la cause. Regardez ensuite quels paramètres varient (en gras dans le bandeau) et vers quel seuil ils vont.</p>`},
 };
 const GLOSS=[
@@ -2509,11 +2650,12 @@ function updateBand(s){
 }
 
 /* ================= Sons ================= */
-const SND={ctx:null,m:null,pref:{on:true,amb:true,cnt:true},lastAl:0,lastRed:0,amb:null,clickBuf:null};
+const SND={ctx:null,m:null,pref:{on:true,amb:true,cnt:true,vol:0.7,amv:0.25},lastAl:0,lastRed:0,amb:null,clickBuf:null,horn:null,hs:{r:0,a:0}};
+const sndMaster=()=>SND.pref.on?0.75*SND.pref.vol:0;
 { const p=store('snd'); if(p&&typeof p==='object') Object.assign(SND.pref,p); }
 function sndInit(){
   try{
-    if(!SND.ctx){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return; SND.ctx=new AC(); SND.m=SND.ctx.createGain(); SND.m.gain.value=SND.pref.on?0.55:0; SND.m.connect(SND.ctx.destination);
+    if(!SND.ctx){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return; SND.ctx=new AC(); SND.m=SND.ctx.createGain(); SND.m.gain.value=sndMaster(); SND.m.connect(SND.ctx.destination);
       const b=SND.ctx.createBuffer(1,Math.round(SND.ctx.sampleRate*0.004),SND.ctx.sampleRate), d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(d.length/5)); SND.clickBuf=b; }
     if(SND.ctx.state==='suspended') SND.ctx.resume();
   }catch(e){}
@@ -2558,19 +2700,41 @@ function sndAmbient(s,active){
   const c=SND.ctx;
   if(!SND.amb){
     const n=Math.round(c.sampleRate*2), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); let last=0; for(let i=0;i<n;i++){ last=(last+0.02*(Math.random()*2-1))/1.02; d[i]=last*3.5; }
-    const src=c.createBufferSource(); src.buffer=b; src.loop=true; const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=380; const gS=c.createGain(); gS.gain.value=0; src.connect(f); f.connect(gS); gS.connect(SND.m); src.start();
+    const src=c.createBufferSource(); src.buffer=b; src.loop=true; const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=300; const gS=c.createGain(); gS.gain.value=0; src.connect(f); f.connect(gS); gS.connect(SND.m); src.start();
     const o1=c.createOscillator(); o1.frequency.value=100; const o2=c.createOscillator(); o2.frequency.value=150; o2.type='triangle'; const gH=c.createGain(); gH.gain.value=0; o1.connect(gH); o2.connect(gH); gH.connect(SND.m); o1.start(); o2.start();
     SND.amb={gS,gH};
   }
   const on=active&&SND.pref.amb;
-  const steam=on?0.05+0.22*Math.min(1,s.Wst):0, hum=on?0.006+0.008*s.pumps.filter(Boolean).length/3:0;
-  SND.amb.gS.gain.setTargetAtTime(steam*0.5,c.currentTime,0.4); SND.amb.gH.gain.setTargetAtTime(hum,c.currentTime,0.4);
+  const k=SND.pref.amv, steam=on?(0.03+0.12*Math.min(1,s.Wst))*k:0, hum=on?(0.004+0.005*s.pumps.filter(Boolean).length/3)*k:0;
+  SND.amb.gS.gain.setTargetAtTime(steam,c.currentTime,0.6); SND.amb.gH.gain.setTargetAtTime(hum,c.currentTime,0.6);
 }
-function sndApply(){ store('snd',SND.pref); if(SND.m) SND.m.gain.setTargetAtTime(SND.pref.on?0.55:0,SND.ctx.currentTime,0.05); const b=$('#sndBtn'); if(b){ b.innerHTML=SND.pref.on?'<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>':'<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>'; b.setAttribute('aria-label',SND.pref.on?'Couper le son':'Activer le son'); b.classList.toggle('off',!SND.pref.on); }
-  ['sndOn','sndAmb','sndCnt'].forEach((id,i)=>{ const e=document.getElementById(id); if(e) e.checked=!!SND.pref[['on','amb','cnt'][i]]; }); }
+function sndApply(){ store('snd',SND.pref); if(SND.m) SND.m.gain.setTargetAtTime(sndMaster(),SND.ctx.currentTime,0.05); const b=$('#sndBtn'); if(b){ b.innerHTML=SND.pref.on?'<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>':'<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>'; b.setAttribute('aria-label',SND.pref.on?'Couper le son':'Activer le son'); b.classList.toggle('off',!SND.pref.on); }
+  ['sndOn','sndAmb','sndCnt'].forEach((id,i)=>{ const e=document.getElementById(id); if(e) e.checked=!!SND.pref[['on','amb','cnt'][i]]; });
+  [['sndVol','vol'],['sndAmv','amv']].forEach(([id,k])=>{ const e=document.getElementById(id); if(e){ e.value=Math.round(SND.pref[k]*100); const o=document.getElementById(id+'O'); if(o) o.textContent=Math.round(SND.pref[k]*100)+' %'; } }); }
 function alarmSound(sev){
+  /* Les alarmes rouges et ambre sont annoncées par l'avertisseur continu (sndHorn) ; les informations par un simple carillon. */
   const now=performance.now(); if(now-SND.lastAl<900) return; SND.lastAl=now;
-  if(sev==='r'){ SND.lastRed=now; SFX.red(); } else if(sev==='a') SFX.amber(); else SFX.info();
+  if(sev==='i') SFX.info();
+}
+/* Avertisseur d'alarme de type salle de commande : un son rauque et répétitif qui ne s'arrête qu'à l'acquittement.
+   Rouge : klaxon grave, cadence rapide. Ambre : ronfleur électronique, double impulsion lente. */
+function hornInit(){
+  const c=SND.ctx; if(SND.horn||!c) return;
+  const shaper=n=>{ const ws=c.createWaveShaper(), cv=new Float32Array(1024); for(let i=0;i<1024;i++){ const x=i/511.5-1; cv[i]=Math.tanh(n*x)/Math.tanh(n); } ws.curve=cv; return ws; };
+  const voice=(fs,types,bp,q,drive)=>{ const g=c.createGain(); g.gain.value=0; const sh=shaper(drive), f=c.createBiquadFilter(); f.type='bandpass'; f.frequency.value=bp; f.Q.value=q; const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3200;
+    const mix=c.createGain(); mix.gain.value=0.5; fs.forEach((fr,i)=>{ const o=c.createOscillator(); o.type=types[i]; o.frequency.value=fr; o.connect(mix); o.start(); });
+    mix.connect(sh); sh.connect(f); f.connect(lp); lp.connect(g); g.connect(SND.m); return g; };
+  SND.horn={ r:voice([311,313.5,155.5],['sawtooth','sawtooth','square'],820,0.9,3.2), a:voice([466,233],['square','square'],1150,1.6,1.6) };
+}
+const HV={r:0.12,a:0.15};
+function hornPat(sev,t){ if(sev==='r'){ return (t%0.9)<0.55?1:0; } const u=t%2.6; return (u<0.16||(u>0.24&&u<0.40))?1:0; }
+function sndHorn(live){
+  if(!SND.ctx||SND.ctx.state!=='running') return;
+  if(!SND.horn) hornInit();
+  const s=A.s, un=sev=>live&&SND.pref.on&&s&&ALM.some(([id,,sv])=>sv===sev&&s.alarms[id]&&s.alarms[id].on&&!s.alarms[id].ack);
+  const t=SND.ctx.currentTime, red=un('r'), amb=!red&&un('a');
+  const lv={r:red?hornPat('r',t)*HV.r:0, a:amb?hornPat('a',t)*HV.a:0};
+  for(const k of ['r','a']) if(lv[k]!==SND.hs[k]){ SND.hs[k]=lv[k]; SND.horn[k].gain.setTargetAtTime(lv[k],t,0.006); }
 }
 
 /* ================= Repères d'attention ================= */
@@ -3174,7 +3338,7 @@ function frame(now){
   const live=A.s&&!A.paused&&$('#menu').hidden&&$('#tour').hidden&&$('#brief').hidden;
   if(SND.ctx){ sndAmbient(A.s||{Wst:0,pumps:[]},!!live);
     if(live&&!A.s.srInhib&&A.s.n<1e-4) sndClicks(rd,A.s.n*1e10);
-    if(live&&ALM.some(([id,,sev])=>sev==='r'&&A.s.alarms[id]&&A.s.alarms[id].on&&!A.s.alarms[id].ack)&&now-SND.lastRed>3200){ SND.lastRed=now; SFX.red(); } }
+    sndHorn(live); }
   requestAnimationFrame(frame);
 }
 addEventListener('resize',()=>{ drawCharts(); drawDI(); drawPT(); });
@@ -3185,6 +3349,8 @@ $('#tvClose').onclick=closeTour;
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#fb').hidden){ closeFB(); return; } if($('#tour').hidden) return; if(e.key==='ArrowRight'){ TV.auto=false; tourGo(TV.i+1); } else if(e.key==='ArrowLeft'){ TV.auto=false; tourGo(TV.i-1); } else if(e.key==='Escape') closeTour(); });
 $('#sndBtn').onclick=()=>{ sndInit(); SND.pref.on=!SND.pref.on; sndApply(); if(SND.pref.on) setTimeout(SFX.ack,80); };
 [['sndOn','on'],['sndAmb','amb'],['sndCnt','cnt']].forEach(([id,k])=>{ const e=document.getElementById(id); if(e) e.addEventListener('change',()=>{ sndInit(); SND.pref[k]=e.checked; sndApply(); }); });
+[['sndVol','vol'],['sndAmv','amv']].forEach(([id,k])=>{ const e=document.getElementById(id); if(e) e.addEventListener('input',()=>{ sndInit(); SND.pref[k]=e.value/100; sndApply(); }); });
+$('#sndTest')&&($('#sndTest').onclick=()=>{ sndInit(); if(!SND.ctx) return; hornInit(); const t=SND.ctx.currentTime; ['r','a'].forEach((k,j)=>{ const g=SND.horn[k].gain; for(let i=0;i<(k==='r'?3:2);i++){ const t0=t+j*2.9+(k==='r'?i*0.9:i*0.24); g.setValueAtTime(HV[k],t0); g.setValueAtTime(0,t0+(k==='r'?0.55:0.16)); } }); SND.hs={r:-1,a:-1}; });
 sndApply();
 $('#fbLv').innerHTML=FB.lv.map(v=>'<label class="lvo '+v[3]+'"><input type="radio" name="fblv" value="'+v[0]+'"><span class="lvt">'+v[1]+'</span><span class="lvd">'+v[2]+'</span></label>').join('');
 $('#fbPart').innerHTML=FB.parts.map(x=>'<option>'+x+'</option>').join(''); $('#fbPart').addEventListener('change',()=>$('#fbPart').dataset.touched=1);

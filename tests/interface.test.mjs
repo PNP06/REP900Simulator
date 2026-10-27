@@ -52,6 +52,12 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
 { const pg = await browser.newPage(); const errs = []; pg.on('pageerror', e => errs.push(e.message));
   await pg.goto(url); await pg.evaluate(() => { store('about', 1); document.querySelector('#about').hidden = true; });
   for (const [id, ok, at] of await pg.evaluate(LESSONS)) check('Leçon ' + id + ' jouable de bout en bout', ok, at);
+  const ec = await pg.evaluate(() => { const miss = SCN.filter(x => x.steps && x.steps.some(st => !st.e)).map(x => x.id);
+    lvlSet('deb'); launch('l-cin'); document.querySelector('#brief').hidden = true; const d = !!document.querySelector('#mis-body .eclair');
+    lvlSet('exp'); const e = !document.querySelector('#mis-body .eclair'); lvlSet('deb');
+    launch('div'); const pl = !!document.querySelector('#mis-body details.plan'); return { miss, d, e, pl }; });
+  check('Explication « En clair » pour chaque étape de leçon', ec.miss.length === 0, ec.miss.join(', '));
+  check('Niveau Débutant / Confirmé appliqué à la consigne', ec.d && ec.e && ec.pl);
   check('Leçons : aucune erreur JavaScript', errs.length === 0, errs.slice(0, 2).join(' | ')); }
 await browser.close();
 console.log(fails ? `\n${fails} test(s) en échec` : '\nTous les tests passent');
