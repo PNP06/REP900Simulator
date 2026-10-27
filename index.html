@@ -5,39 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Simulateur pédagogique de conduite d'un réacteur REP 900 MWe : tutoriel, leçons guidées, exercices et aléas.">
 <meta name="theme-color" content="#10161a">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
-/* ===== variations, alarmes en tête, lexique ===== */
-:root{--chg:#5fdcff}
-.up,.dn{font-weight:700!important;color:var(--chg)}
-.up::after,.dn::after{font-size:.62em;margin-left:2px;vertical-align:.15em}
-.up::after{content:"▲"}.dn::after{content:"▼"}
-.rd.warn .up,.rd.warn .dn{color:var(--warn)}.rd.crit .up,.rd.crit .dn{color:var(--crit)}
-.rd .v span{transition:color .2s}
-.alb{display:flex;align-items:center;gap:8px;margin-top:6px;padding:5px 6px 5px 10px;border-radius:7px;border:1px solid var(--line);background:var(--panel);font:600 12.5px/1.25 var(--f-disp);letter-spacing:.04em;text-transform:uppercase;min-width:0}
-.alb.r{background:#4c1915;border-color:var(--crit);color:#ffd3cf}
-.alb.a{background:#46340f;border-color:var(--warn);color:#ffe0a6}
-.alb.i{background:#163240;border-color:var(--accent);color:#cdebf5}
-.alb.nack{animation:blink 1s steps(2) infinite}
-.alb-n{white-space:nowrap;font-family:var(--f-num);font-size:11.5px;opacity:.85}
-.alb-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.alb .ib{height:26px;min-width:0;padding:0 8px;font-size:11.5px;background:#0003;color:inherit;border-color:currentColor}
-@media (max-width:520px){.alb-n{display:none}}
-.g{border-bottom:1px dotted color-mix(in srgb,var(--accent) 70%,transparent);cursor:help;border-radius:2px}
-.g:hover,.g:focus-visible{background:color-mix(in srgb,var(--accent) 18%,transparent);outline:none}
-.gpop{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:90;width:min(92vw,460px);background:var(--panel-2);border:1px solid var(--accent);border-radius:10px;padding:10px 12px 12px;box-shadow:0 12px 32px #000a;font-size:14px;line-height:1.45}
-@media (min-width:1080px){.gpop{bottom:24px}}
-.gp-h{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--accent);font:600 16px var(--f-disp);letter-spacing:.03em}
-.gp-h .ib{height:28px}
-.gpop p{margin:6px 0 8px}
-.gp-l{background:none;border:0;padding:0;color:var(--accent);font:600 12.5px var(--f-disp);letter-spacing:.06em;text-transform:uppercase;text-decoration:underline}
-.lex{display:grid;grid-template-columns:minmax(0,1fr);gap:2px 16px}
-.lex dt{font:600 15px var(--f-disp);color:var(--accent);margin-top:10px}
-.lex dd{margin:2px 0 0;color:var(--fg);max-width:72ch}
-@media (min-width:900px){.lex{grid-template-columns:minmax(160px,220px) minmax(0,1fr)}.lex dt{margin-top:0;padding-top:8px;border-top:1px solid var(--line)}.lex dd{padding-top:8px;border-top:1px solid var(--line)}}
-.brief h3{color:var(--accent);margin-top:16px}
-.obj .why,.crit small{display:block;color:var(--mute);font-size:12.5px;line-height:1.35;margin-top:1px}
-.obj li.done .why{display:none}
-</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Simulateur REP 900</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -364,6 +332,97 @@ table.kv td{padding:3px 0;font-size:13px}
   .st{font-size:12px}
 }
 @media (max-width:370px){.st span:last-child{display:none}}
+
+/* ===== variations, alarmes en tête, lexique ===== */
+:root{--chg:#5fdcff}
+.up,.dn{font-weight:700!important;color:var(--chg)}
+.up::after,.dn::after{font-size:.62em;margin-left:2px;vertical-align:.15em}
+.up::after{content:"▲"}.dn::after{content:"▼"}
+.rd.warn .up,.rd.warn .dn{color:var(--warn)}.rd.crit .up,.rd.crit .dn{color:var(--crit)}
+.rd .v span{transition:color .2s}
+.alb{display:flex;align-items:center;gap:8px;margin-top:6px;padding:5px 6px 5px 10px;border-radius:7px;border:1px solid var(--line);background:var(--panel);font:600 12.5px/1.25 var(--f-disp);letter-spacing:.04em;text-transform:uppercase;min-width:0}
+.alb.r{background:#4c1915;border-color:var(--crit);color:#ffd3cf}
+.alb.a{background:#46340f;border-color:var(--warn);color:#ffe0a6}
+.alb.i{background:#163240;border-color:var(--accent);color:#cdebf5}
+.alb.nack{animation:blink 1s steps(2) infinite}
+.alb-n{white-space:nowrap;font-family:var(--f-num);font-size:11.5px;opacity:.85}
+.alb-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.alb .ib{height:26px;min-width:0;padding:0 8px;font-size:11.5px;background:#0003;color:inherit;border-color:currentColor}
+@media (max-width:520px){.alb-n{display:none}}
+.g{border-bottom:1px dotted color-mix(in srgb,var(--accent) 70%,transparent);cursor:help;border-radius:2px}
+.g:hover,.g:focus-visible{background:color-mix(in srgb,var(--accent) 18%,transparent);outline:none}
+.gpop{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:90;width:min(92vw,460px);background:var(--panel-2);border:1px solid var(--accent);border-radius:10px;padding:10px 12px 12px;box-shadow:0 12px 32px #000a;font-size:14px;line-height:1.45}
+@media (min-width:1080px){.gpop{bottom:24px}}
+.gp-h{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--accent);font:600 16px var(--f-disp);letter-spacing:.03em}
+.gp-h .ib{height:28px}
+.gpop p{margin:6px 0 8px}
+.gp-l{background:none;border:0;padding:0;color:var(--accent);font:600 12.5px var(--f-disp);letter-spacing:.06em;text-transform:uppercase;text-decoration:underline}
+.lex{display:grid;grid-template-columns:minmax(0,1fr);gap:2px 16px}
+.lex dt{font:600 15px var(--f-disp);color:var(--accent);margin-top:10px}
+.lex dd{margin:2px 0 0;color:var(--fg);max-width:72ch}
+@media (min-width:900px){.lex{grid-template-columns:minmax(160px,220px) minmax(0,1fr)}.lex dt{margin-top:0;padding-top:8px;border-top:1px solid var(--line)}.lex dd{padding-top:8px;border-top:1px solid var(--line)}}
+.brief h3{color:var(--accent);margin-top:16px}
+.obj .why,.crit small{display:block;color:var(--mute);font-size:12.5px;line-height:1.35;margin-top:1px}
+.obj li.done .why{display:none}
+
+/* ===== vue d'ensemble, repli, accompagnement ===== */
+.card[data-c="crv"]{--cc:var(--c-trend)}.card[data-c="run"]{--cc:#9fb7ff}
+.d-syn,.d-crv,.d-run,.d-phy,.d-al{display:grid;gap:10px;align-content:start;min-width:0}
+.xb{display:block}
+@media (max-width:760px){.xb{display:none}}
+@media (min-width:761px) and (max-width:1279px){.band{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media (min-width:1280px){.band{grid-template-columns:repeat(12,minmax(0,1fr))}}
+.fold{flex:none;width:24px;height:24px;padding:0;border-radius:6px;border:1px solid color-mix(in srgb,var(--cc,var(--accent)) 35%,var(--line-2));background:transparent;color:inherit;display:inline-grid;place-items:center;margin-left:6px}
+.fold svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;transition:transform .2s}
+.card.folded .fold svg{transform:rotate(-90deg)}
+.card[data-c]>h2:first-child{cursor:pointer;user-select:none}
+.card.folded>:not(h2){display:none!important}
+.card.folded>h2:first-child{margin-bottom:-11px;border-bottom-color:transparent;border-radius:9px}
+.card[data-c] h2 .qm{margin-left:auto}
+.mseg{margin-left:auto}
+.mseg button{min-height:24px;padding:2px 7px;font-size:11px}
+.mseg+.fold{margin-left:6px}
+.chart.mini canvas{height:74px}
+.chart.mini{margin-bottom:6px}
+.runl{display:grid;gap:4px}
+.ri{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:6px;background:var(--bg);border:1px solid var(--line);font-size:13px;line-height:1.3;min-width:0}
+.ri .rt{flex:1;min-width:0}
+.ri .btn{min-height:24px;padding:2px 7px;font-size:11.5px;flex:none}
+.rdot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.ri.auto .rdot{background:var(--warn)}.ri.a .rdot{background:var(--warn)}.ri.r .rdot{background:var(--crit)}.ri.r{border-color:color-mix(in srgb,var(--crit) 50%,var(--line))}
+.ri.none{color:var(--mute)}
+.runa{display:grid;gap:3px}
+.ra{font:600 11.5px/1.3 var(--f-disp);letter-spacing:.04em;text-transform:uppercase;padding:4px 7px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:var(--mute)}
+.ra .tm{font:500 11px var(--f-num);color:var(--dim);margin-right:8px;letter-spacing:0}
+.ra.r{background:#4c1915;border-color:var(--crit);color:#ffc9c4}.ra.a{background:#4a3712;border-color:var(--warn);color:#ffd590}.ra.i{background:#173543;border-color:var(--accent);color:#c9ebf6}
+.ra.nack{animation:blink .8s steps(2) infinite}
+.ra.none,.ra.more{text-transform:none;font:13px var(--f-body);letter-spacing:0}
+.runlog{max-height:none}
+.focus{outline:2px solid var(--accent)!important;outline-offset:2px;animation:pulse 1.6s ease-in-out infinite;border-radius:6px}
+@keyframes pulse{50%{outline-color:color-mix(in srgb,var(--accent) 15%,transparent)}}
+.subl{list-style:none;padding:0;margin:8px 0;display:flex;flex-wrap:wrap;gap:6px;column-span:all}
+.subl li{font-size:12.5px;padding:3px 9px 3px 7px;border-radius:12px;border:1px solid var(--line-2);color:var(--mute);display:flex;gap:6px;align-items:center}
+.subl li::before{content:"";width:9px;height:9px;border-radius:50%;border:1.5px solid var(--line-2)}
+.subl li.done{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 50%,var(--line))}
+.subl li.done::before{background:var(--ok);border-color:var(--ok)}
+.hintb,.coach{column-span:all;margin:8px 0;padding:8px 10px;border-radius:7px;background:color-mix(in srgb,var(--accent) 9%,var(--bg));border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));font-size:13.5px}
+.coach{background:color-mix(in srgb,var(--ok) 8%,var(--bg));border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.hintb b,.coach b{color:var(--accent)}.coach b{color:var(--ok)}
+.aft{column-span:all;margin-top:8px;padding:8px 10px;border-radius:7px;background:color-mix(in srgb,var(--ok) 8%,var(--bg));border:1px solid color-mix(in srgb,var(--ok) 35%,var(--line))}
+.aft p{margin:4px 0 0}
+@media (prefers-reduced-motion:reduce){.focus,.ra.nack{animation:none}}
+@media (min-width:1080px){
+  .layout{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);grid-template-areas:"mis mis" "syn run" "crv phy" "cmd cmd" "tr al"}
+  .panel{display:contents!important}
+  .d-syn{grid-area:syn}.d-crv{grid-area:crv}.d-run{grid-area:run}.d-phy{grid-area:phy}.d-al{grid-area:al}
+  .panel[data-p="cmd"]>.cmdgrid{grid-area:cmd}
+  .panel[data-p="trend"]>.card{grid-area:tr}
+}
+@media (min-width:1280px){
+  .layout{grid-template-columns:minmax(0,5fr) minmax(0,4fr) minmax(0,3.3fr);grid-template-areas:"mis mis mis" "syn crv run" "cmd cmd phy" "tr tr al"}
+  .panel[data-p="cmd"]>.cmdgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .d-phy .grid2{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -381,13 +440,17 @@ table.kv td{padding:3px 0;font-size:13px}
 </div>
 <div class="wrap bandw"><section class="band" id="band">
     <div class="rd" id="rd-pn"><div class="k">P nucl.</div><div class="v"><span id="b-pn">—</span><small>%</small></div></div>
-    <div class="rd"><div class="k">P élec.</div><div class="v"><span id="b-pe">—</span><small>MWe</small></div></div>
+    <div class="rd" id="rd-pe"><div class="k">P élec.</div><div class="v"><span id="b-pe">—</span><small>MWe</small></div></div>
     <div class="rd" id="rd-tm"><div class="k">Tmoy · écart</div><div class="v"><span id="b-tm">—</span><small id="b-tr">—</small></div></div>
     <div class="rd" id="rd-pp"><div class="k">P pressu</div><div class="v"><span id="b-pp">—</span><small>bar</small></div></div>
     <div class="rd" id="rd-lg"><div class="k">Niv. GV</div><div class="v"><span id="b-lg">—</span><small>%</small></div></div>
     <div class="rd" id="rd-lp"><div class="k">Niv. pressu</div><div class="v"><span id="b-lp">—</span><small>%</small></div></div>
-    <div class="rd"><div class="k">Bore</div><div class="v"><span id="b-cb">—</span><small>ppm</small></div></div>
+    <div class="rd" id="rd-cb"><div class="k">Bore</div><div class="v"><span id="b-cb">—</span><small>ppm</small></div></div>
     <div class="rd" id="rd-td"><div class="k">ρ · Td</div><div class="v"><span id="b-rho">—</span><small id="b-td">—</small></div></div>
+    <div class="rd xb" id="rd-th"><div class="k">Tch · Tfr</div><div class="v"><span id="b-th">—</span><small id="b-tc">—</small></div></div>
+    <div class="rd xb" id="rd-psg"><div class="k">P GV</div><div class="v"><span id="b-psg">—</span><small>bar</small></div></div>
+    <div class="rd xb" id="rd-rg"><div class="k">R · GCP</div><div class="v"><span id="b-r">—</span><small id="b-g">—</small></div></div>
+    <div class="rd xb" id="rd-di"><div class="k">ΔI · écart</div><div class="v"><span id="b-di">—</span><small id="b-die">—</small></div></div>
   </section>
 <div class="alb" id="alb" hidden><span class="lamp" id="alb-l"></span><span class="alb-n" id="alb-n"></span><span class="alb-t" id="alb-t"></span><button class="ib" id="alb-see">Voir</button><button class="ib" id="alb-ack">Acquitter</button></div></div>
 </header>
@@ -407,6 +470,7 @@ table.kv td{padding:3px 0;font-size:13px}
 
     <!-- SYNOPTIQUE -->
     <section class="panel" data-p="synop">
+      <div class="d-syn">
       <div class="card" data-c="synop">
         <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="6" height="11" rx="3"/><rect x="14" y="4" width="7" height="14" rx="3"/><path d="M9 10h5M9 15h5"/></svg></i>Synoptique<button class="qm" data-help="synop" aria-label="Aide : Synoptique — circuits primaire et secondaire">?</button></h2>
         <svg class="mimic" viewBox="0 0 380 258" role="img" aria-label="Synoptique de la tranche">
@@ -460,7 +524,29 @@ table.kv td{padding:3px 0;font-size:13px}
           <text x="276" y="252" id="m-feed">—</text>
         </svg>
       </div>
-      <div class="grid2">
+      </div>
+      <div class="d-crv">
+      <div class="card" data-c="crv">
+        <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 8-9"/><path d="M3 21h18"/></svg></i>Courbes clés<div class="seg mseg" data-key="mwin"><button data-v="300">5 min</button><button data-v="1800">30 min</button><button data-v="7200">2 h</button></div></h2>
+        <div id="mcharts"></div>
+      </div>
+      </div>
+      <div class="d-run">
+      <div class="card" data-c="run">
+        <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg></i>En cours<button class="qm" data-help="run" aria-label="Aide : en cours">?</button></h2>
+        <div id="runList" class="runl"></div>
+        <h3>Alarmes actives</h3>
+        <div id="runAl" class="runa"></div>
+        <h3>Dernières entrées du journal</h3>
+        <div id="runLog" class="log runlog"></div>
+      </div>
+      </div>
+      <div class="d-phy">
+      <div class="card" data-c="di">
+        <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M12 6H6M12 10H3M12 14h7M12 18h4"/></svg></i>Diagramme de pilotage ΔI<button class="qm" data-help="di" aria-label="Aide : Diagramme de pilotage ΔI">?</button></h2>
+        <canvas class="dic" id="c-di"></canvas>
+      </div>
+
         <div class="card" data-c="instr">
           <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4-6"/><path d="M4 21h16"/></svg></i>Instrumentation neutronique<button class="qm" data-help="instr" aria-label="Aide : Instrumentation neutronique">?</button></h2>
           <table class="kv">
@@ -485,11 +571,7 @@ table.kv td{padding:3px 0;font-size:13px}
             <tr class="tot"><td>Total ρ</td><td class="v" id="r-tot">—</td></tr>
           </table>
         </div>
-      </div>
-      <div class="card" data-c="di">
-        <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M12 6H6M12 10H3M12 14h7M12 18h4"/></svg></i>Diagramme de pilotage ΔI<button class="qm" data-help="di" aria-label="Aide : Diagramme de pilotage ΔI">?</button></h2>
-        <canvas class="dic" id="c-di"></canvas>
-      </div>
+            </div>
     </section>
 
     <!-- COMMANDES -->
@@ -623,6 +705,7 @@ table.kv td{padding:3px 0;font-size:13px}
 
     <!-- ALARMES -->
     <section class="panel" data-p="alarm">
+     <div class="d-al">
       <div class="card" data-c="alarm">
         <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg></i>Tableau d'alarmes<button class="qm" data-help="alarm" aria-label="Aide : alarmes">?</button><button class="btn sm amber" id="ackBtn">Acquitter</button></h2>
         <div class="ann" id="ann"></div>
@@ -631,12 +714,13 @@ table.kv td{padding:3px 0;font-size:13px}
         <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg></i>Journal de quart</h2>
         <div class="log" id="log"></div>
       </div>
+     </div>
     </section>
   </div>
 </main>
 
 <nav class="tabs" id="tabs">
-  <button data-tab="synop"><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="6" height="11" rx="3"/><rect x="14" y="4" width="7" height="14" rx="3"/><path d="M9 10h5M9 15h5"/></svg></i><span>Synoptique</span></button>
+  <button data-tab="synop"><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="6" height="11" rx="3"/><rect x="14" y="4" width="7" height="14" rx="3"/><path d="M9 10h5M9 15h5"/></svg></i><span>Vue</span></button>
   <button data-tab="cmd"><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></i><span>Commandes</span></button>
   <button data-tab="trend"><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 8-9"/><path d="M3 21h18"/></svg></i><span>Tendances</span></button>
   <button data-tab="alarm"><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg></i><span>Alarmes</span><span class="badge" id="badge" hidden>0</span></button>
@@ -993,7 +1077,7 @@ const SCN=[
  init:{P:.5,xe:.5,R:190,G:'cal',coupled:true,modeR:'auto',modeG:'auto'},
  brief:"<p>Durée : 15 à 20 minutes. La tranche est à 50 % de puissance, régulations en automatique. Chaque étape vous demande une action ; le bouton <kbd>Suivant</kbd> s'active quand elle est réalisée.</p>",
  steps:[
- {t:'Bienvenue en salle de commande',h:"<p>Vous êtes l'opérateur réacteur de la tranche 1, un REP 900 MWe à trois boucles (2 785 MWth). Le réacteur fonctionne à <b>50 %</b>, groupes de grappes et régulations en automatique.</p><p>L'écran comporte quatre zones : <b>Synoptique</b> (état physique), <b>Commandes</b>, <b>Tendances</b> et <b>Alarmes</b>. Sur téléphone, passez de l'une à l'autre avec les onglets en bas. Le bandeau du haut résume les grandeurs clés et reste toujours visible.</p><p>La simulation tourne en temps réel. La vitesse se règle en haut (×1 à ×300) : accélérez pour les phénomènes lents (bore, xénon), revenez à ×1 pour les transitoires rapides.</p>"},
+ {t:'Bienvenue en salle de commande',h:"<p>Vous êtes l'opérateur réacteur de la tranche 1, un REP 900 MWe à trois boucles (2 785 MWth). Le réacteur fonctionne à <b>50 %</b>, groupes de grappes et régulations en automatique.</p><p>L'écran comporte quatre zones : la <b>Vue d'ensemble</b> (synoptique, courbes clés, actions en cours, ΔI, physique du cœur), les <b>Commandes</b>, les <b>Tendances</b> et les <b>Alarmes</b>. Sur téléphone, passez de l'une à l'autre avec les onglets en bas. Le bandeau du haut résume les grandeurs clés et reste toujours visible ; une valeur qui varie s'y affiche en gras avec une flèche. Chaque carte se replie en touchant son titre.</p><p>La simulation tourne en temps réel. La vitesse se règle en haut (×1 à ×300) : accélérez pour les phénomènes lents (bore, xénon), revenez à ×1 pour les transitoires rapides.</p>"},
  {t:'Les grandeurs essentielles',h:"<p>Dans le bandeau : <b>P nucléaire</b> (chambres gamme puissance) et <b>P électrique</b>. <b>Tmoy</b> est la température moyenne du primaire ; elle suit un programme linéaire de 286 °C à 0 % à 304,5 °C à 100 %. <b>Tref</b> est calculée à partir de la charge turbine : en mode G, c'est le réacteur qui suit la turbine.</p><p>La <b>pression pressuriseur</b> est régulée à 155 bar par les chaufferettes et l'aspersion. Le <b>niveau GV</b> est tenu vers 50 % par l'eau alimentaire (ARE).</p>"},
  {t:'Le bilan de réactivité',h:"<p>Ouvrez le <b>Synoptique</b> et regardez le bilan de réactivité. La réserve du cœur (combustible neuf) est compensée par les <b>grappes</b>, le <b>bore</b> dissous (environ −9 pcm/ppm), l'effet <b>modérateur</b> (coefficient α, d'autant plus négatif que le bore est bas), l'effet <b>Doppler</b> du combustible et l'empoisonnement <b>xénon</b>.</p><p>Quand la somme vaut 0 pcm, le réacteur est critique. Un ρ positif fait apparaître un <b>temps de doublement</b> : avec β = 600 pcm, +100 pcm donnent environ une minute.</p>"},
  {t:'Passez le groupe R en manuel',h:"<p>Dans <b>Commandes › Grappes</b>, réglez <kbd>Mode R</kbd> sur <kbd>Manuel</kbd>. Le groupe R (régulation de température) ne bougera plus seul.</p>",ok:s=>s.modeR==='man'},
@@ -1235,11 +1319,185 @@ const SCN=[
 {id:'libre',kind:'libre',title:'Pilotage libre à 100 %',desc:'Tranche à pleine puissance, sans objectif imposé.',diff:0,speed:1,init:P100},
 {id:'libre0',kind:'libre',title:'Pilotage libre à l\'arrêt à chaud',desc:'Réacteur sous-critique, à vous de démarrer.',diff:0,speed:5,init:{P:0,critR:170,R:0,G:'cal',SD:225,coupled:false,xe:0,modeR:'man',modeG:'man'}},
 ];
+/* ================= Accompagnement des leçons ================= */
+const f0=v=>fmt(v,0), f1=v=>fmt(v,1), f2=v=>fmt(v,2);
+const TdTxt=s=>Number.isFinite(s.Td)&&s.Td<99999?f0(s.Td)+' s':'infini';
+const RB=s=>s.rodSel==='R', RM=s=>s.modeR==='man';
+const STEPX={
+ tuto:[
+  {f:['header.top']},
+  {f:['#band']},
+  {f:['[data-c="react"]','#rd-td']},
+  {f:['.seg[data-key="modeR"]'],hint:"Onglet Commandes › carte « Grappes de commande » › ligne « Mode R » › bouton « Manuel ».",after:()=>"Le groupe R ne bougera plus seul : la régulation de température est suspendue, c'est vous qui fixez sa position."},
+  {f:['[data-bank="R"]','[data-act="rod"][data-v="1"]','#rd-pn','#rd-tm'],hint:"Touchez la case « Groupe R » (elle s'entoure en bleu), puis six fois « +1 ». Chaque appui demande un pas ; le groupe se déplace à 48 pas/min, soit un peu moins d'un pas par seconde.",
+   sub:[['Groupe R sélectionné',RB],['R extrait de 6 pas',(s,c,k)=>s.rods.R.p>=k.r0+5.5],['40 s d\'observation',(s,c,k)=>k.tm!=null&&s.t-k.tm>40]],
+   after:(s,c,k)=>`Puissance : ${f1(k.n0*100)} → ${f1(s.n*100)} %. Tmoy : ${f1(k.T0)} → ${f1(s.Tavg)} °C. Les grappes ont apporté ${sgn(s.rho.rods-k.rh0.rods,0)} pcm ; le Doppler (${sgn(s.rho.dop-k.rh0.dop,0)} pcm) et le modérateur (${sgn(s.rho.mod-k.rh0.mod,0)} pcm) les ont compensés. ρ est revenu à ${sgn(s.rho.tot,0)} pcm : la puissance s'est stabilisée toute seule, un peu plus haut.`},
+  {f:['.seg[data-key="modeR"]','#rd-tm','[data-bank="R"]'],hint:"Même ligne « Mode R », bouton « Auto ». Attendez que l'écart Tmoy − Tref affiché dans le bandeau revienne sous 0,8 °C.",
+   after:(s,c,k)=>`R est revenu à ${f0(s.rods.R.p)} pas (il était à ${f0(k.R0)}). Tmoy = ${f1(s.Tavg)} °C pour Tref = ${f1(s.Tref)} °C. En mode G, la température est la grandeur réglée : le réacteur s'aligne toujours sur la demande de la turbine.`},
+  {f:['[data-c="turb"]','#rd-pe'],hint:"Commandes › carte « Turbine — GCT » : touchez « 3 » sur la ligne Vitesse, puis « +5 % » deux fois (ou faites glisser la consigne jusqu'à 60 %). La charge met environ 3 minutes à monter : passez en ×5 si vous voulez.",
+   sub:[['Vitesse 3 %/min',s=>s.ramp===3],['Consigne à 60 %',s=>Math.round(s.LtSet*100)>=60],['Charge atteinte',s=>s.Lt>=0.595]],
+   after:(s,c,k)=>`Les GCP sont passés de ${f0(k.G0)} à ${f0(s.rods.G.p)} pas en suivant leur courbe de calibrage ; R de ${f0(k.R0)} à ${f0(s.rods.R.p)} pas pour l'ajustement fin. Tref a pris ${sgn(s.Tref-k.Tr0,1)} °C et Tmoy a suivi à ${f1(Math.abs(s.Tavg-s.Tref))} °C près.`},
+  {f:['[data-c="bore"]','#rd-cb'],hint:"Carte « Bore — RCV / REA » : touchez « Dilution », « 10 », « 300 L », puis « Lancer l'appoint ». L'appoint dure environ 2 minutes à ×1.",
+   sub:[['Mode Dilution',s=>s.rea.mode==='dil'],['Débit 10 m³/h',s=>s.rea.q===10],['Volume 300 L',s=>s.rea.vt===0.3],['Appoint lancé',(s,c,k)=>s.volDil-k.v0>0.005],['300 L injectés',(s,c,k)=>s.volDil-k.v0>=0.29]],
+   after:(s,c,k)=>`Bore : ${f1(k.Cb0)} → ${f1(s.Cb)} ppm, soit ${sgn(-(s.Cb-k.Cb0)*9,0)} pcm de réactivité ajoutée. Pour ne pas laisser monter la température, R s'est inséré de ${f0(k.R0-s.rods.R.p)} pas. Le bore a « poussé » R vers le bas : c'est ainsi qu'on choisit la position de R.`},
+  {f:['.seg[data-key="sprayMode"]','#sprayMan','#rd-pp'],hint:"Carte « Pressuriseur — RCV » : ligne Aspersion › « Manuel », puis faites glisser « Asp. man. » vers 60 %.",
+   sub:[['Aspersion en manuel',s=>s.sprayMode==='man'],['Ouverture ≥ 40 %',s=>s.sprayMan>=0.4],['Pression < 154 bar',s=>s.Ppzr<154]],
+   after:(s,c,k)=>`Pression descendue à ${f1(s.Ppzr)} bar. Les chaufferettes sont montées à ${f0(s.hEff*1440)} kW pour s'y opposer : sous 153,3 bar, les chaufferettes de secours s'enclenchent.`},
+  {f:['.seg[data-key="sprayMode"]','#rd-pp'],hint:"Même ligne Aspersion, bouton « Auto ».",after:(s)=>`La pression remonte (${f1(s.Ppzr)} bar) : chaufferettes et aspersion se partagent la régulation autour de 155 bar.`},
+  {f:['#alb','[data-c="alarm"]'],hint:"Touchez « Acquitter » dans le bandeau d'alarme en haut, ou dans la carte « Tableau d'alarmes »."},
+  {f:['#aarBtn'],hint:"Commandes › carte « Protection et sauvegarde » : touchez « AAR manuel », le bouton clignote, touchez-le à nouveau pour confirmer.",
+   after:s=>`Toutes les grappes sont en bas : ρ = ${sgn(s.rho.tot,0)} pcm. La puissance neutronique est déjà à ${fmt(s.n*100,2)} %, mais le cœur dégage encore ${f1(s.Qcore*100)} % de chaleur : c'est la puissance résiduelle, qu'il faut continuer d'évacuer.`},
+  {f:['#rd-tm','#rd-lp','#rd-pp','[data-c="synop"]'],hint:"Rien à faire : observez. Passez en ×5 pour accélérer.",
+   after:(s,c,k)=>`Tmoy = ${f1(s.Tavg)} °C : le GCT-c tient ${f1(s.Psg)} bar dans les GV. Pendant le refroidissement, le niveau pressu est descendu jusqu'à ${f0(k.minLp)} % et la pression jusqu'à ${f1(k.minP)} bar ; la charge RCV et les chaufferettes ont compensé.`},
+  {}
+ ],
+ 'l-cin':[
+  {f:['[data-c="instr"]','#rd-td']},
+  {f:['[data-bank="R"]','#rd-td','#rd-pn'],hint:"Commandes › Grappes : touchez « Groupe R » puis cinq fois « +1 ».",
+   sub:[['Groupe R sélectionné',RB],['R extrait de 5 pas',(s,c,k)=>s.rods.R.p>=k.r0+4.5],['30 s d\'observation',(s,c,k)=>k.tm!=null&&s.t-k.tm>30]],
+   after:s=>{ const r=s.rho.tot; const th=r>2?0.69*(600-r)/(0.08*r):NaN; return `Réactivité : ${sgn(r,0)} pcm. Temps de doublement mesuré : ${TdTxt(s)}. La relation T ≈ (β − ρ)/(λ·ρ), avec λ ≈ 0,08 s⁻¹, donne ${Number.isFinite(th)?f0(th)+' s':'—'} : l'ordre de grandeur est juste. L'écart vient des six groupes de précurseurs, que la formule résume en un seul.`; }},
+  {f:['#rd-td','[data-c="react"]','.spdseg','#spdSel'],hint:"Passez en ×5 en haut de l'écran. Ne touchez plus aux grappes : regardez la ligne Doppler du bilan de réactivité se creuser pendant que la puissance monte.",
+   after:(s,c,k)=>`À ${f1(s.n*100)} %, le Doppler a repris ${sgn(s.rho.dop-k.rh0.dop,0)} pcm : ρ est passé de ${sgn(k.rh0.tot,0)} à ${sgn(s.rho.tot,0)} pcm et le temps de doublement s'est allongé (${TdTxt(s)}). Encore un peu et la puissance s'arrêtera seule.`},
+  {f:['[data-act="rod"][data-v="-10"]','#rd-td','#rd-pn'],hint:"Touchez « −10 » une fois, puis observez pendant 40 s.",
+   after:s=>`Période mesurée : ${s.rate<0?f0(1/s.rate)+' s':'—'}. Malgré une forte antiréactivité, elle reste proche de −80 s : c'est le précurseur le plus lent (55 s de demi-vie) qui fixe cette limite. C'est aussi pour cela que la puissance met des minutes à disparaître après un AAR.`},
+  {f:['[data-bank="R"]','#rd-td'],hint:"Faites « +1 », attendez 20 à 30 s, observez le temps de doublement ; recommencez. S'il devient court (moins de 2 min), faites « −1 ». Le but : « stable » ou « infini ».",
+   after:(s,c,k)=>`Cote critique trouvée : R = ${f0(s.rods.R.p)} pas (départ à 140). Elle est différente car le combustible n'est plus à la même température : le Doppler a déplacé l'équilibre.`},
+  {}
+ ],
+ 'l-fb':[
+  {f:['[data-c="react"]']},
+  {f:['.seg[data-key="modeR"]','.seg[data-key="modeG"]'],hint:"Commandes › Grappes : « Manuel » sur la ligne Mode R, puis « Manuel » sur la ligne Mode GCP.",sub:[['R en manuel',RM],['GCP en manuel',s=>s.modeG==='man']]},
+  {f:['[data-c="turb"]','#rd-tm','#rd-pn'],hint:"Turbine : touchez « 5 » sur la ligne Vitesse puis « +5 % » deux fois. Ne touchez à rien d'autre et regardez l'écart Tmoy − Tref dans le bandeau.",
+   sub:[['Vitesse 5 %/min',s=>s.ramp===5],['Consigne 60 %',s=>Math.round(s.LtSet*100)>=60],['Charge atteinte',s=>s.Lt>=0.595],['60 s d\'observation',(s,c,k)=>k.tm!=null&&s.t-k.tm>60]],
+   after:(s,c,k)=>`Puissance ${f1(k.n0*100)} → ${f1(s.n*100)} % sans toucher aux grappes. Le refroidissement du primaire a apporté ${sgn(s.rho.mod-k.rh0.mod,0)} pcm par le modérateur ; le Doppler en a repris ${sgn(s.rho.dop-k.rh0.dop,0)}. Résultat : Tmoy − Tref = ${sgn(s.Tavg-s.Tref,1)} °C. Le réacteur suit, mais à une température trop basse.`},
+  {f:['.seg[data-key="modeG"]','[data-bank="G"]','#rd-tm'],hint:"Ligne Mode GCP › « Auto ». Les GCP rejoignent leur position programmée pour 60 %.",
+   after:(s,c,k)=>`GCP : ${f0(k.G0)} → ${f0(s.rods.G.p)} pas. Tmoy − Tref : ${sgn(s.Tavg-s.Tref,1)} °C. Les GCP ont fourni la réactivité du défaut de puissance, sans mesure de température : c'est une compensation « en boucle ouverte ».`},
+  {f:['.seg[data-key="modeR"]','#rd-tm'],hint:"Ligne Mode R › « Auto ».",after:s=>`Écart résiduel ${sgn(s.Tavg-s.Tref,1)} °C, R à ${f0(s.rods.R.p)} pas. R corrige ce que les GCP n'ont pas parfaitement compensé : c'est la boucle fermée.`},
+  {}
+ ],
+ 'l-di':[
+  {f:['[data-c="di"]','#rd-di']},
+  {f:['[data-c="rods"]','[data-c="di"]','#rd-di'],hint:"Commandes › Grappes : Mode R › « Manuel », touchez « Groupe R », puis « −10 » quatre fois. Gardez un œil sur le point du diagramme ΔI.",
+   sub:[['R en manuel',RM],['Groupe R sélectionné',RB],['R inséré de 40 pas',(s,c,k)=>s.rods.R.p<=k.r0-39.5]],
+   after:(s,c,k)=>`ΔI : ${f2(k.DI0)} → ${f2(s.DI)} % PN (référence ${f2(-1.5*s.n)}). Tmoy est ${f1(Math.abs(s.Tavg-s.Tref))} °C sous Tref : la turbine tire toujours 50 %, c'est donc la température qui a baissé.`},
+  {f:['[data-c="bore"]','#rd-tm'],hint:"Bore : « Dilution », « 30 », « Continu », « Lancer l'appoint ». Passez en ×10. Surveillez « Tmoy − Tref » dans la ligne bleue ci-dessus ; sous 0,5 °C, touchez « Arrêter ». Il faut environ 7 m³.",
+   sub:[['Dilution lancée',(s,c,k)=>s.volDil-k.v0>0.01],['Écart Tmoy − Tref < 0,6 °C',s=>Math.abs(s.Tavg-s.Tref)<0.6],['Appoint arrêté',s=>!s.rea.run]],
+   after:(s,c,k)=>`${f1(s.volDil-k.v0)} m³ injectés, bore ${f1(k.Cb0)} → ${f1(s.Cb)} ppm. Tmoy est revenue sur Tref, mais ΔI vaut toujours ${f2(s.DI)} %. Le bore a compensé la réactivité, pas la forme du flux.`},
+  {f:['.seg[data-key="modeR"]','[data-c="bore"]','[data-bank="R"]'],hint:"Mode R › « Auto ». Bore : « Borication », « 10 », « Continu », « Lancer ». Quand R dépasse 185 pas, « Arrêter ».",
+   sub:[['R en automatique',s=>s.modeR==='auto'],['Borication lancée',(s,c,k)=>s.volBor-k.vB0>0.005],['R ≥ 185 pas',s=>s.rods.R.p>=185],['Appoint arrêté',s=>!s.rea.run]],
+   after:(s,c,k)=>`R : ${f0(k.R0)} → ${f0(s.rods.R.p)} pas, ΔI : ${f2(k.DI0)} → ${f2(s.DI)} %. Le bore a « tiré » R vers le haut et le flux s'est redressé.`},
+  {f:['[data-c="di"]']},
+  {}
+ ],
+ 'l-xe':[
+  {f:['[data-c="trend"]','[data-c="react"]']},
+  {f:['[data-c="turb"]'],hint:"Turbine : vitesse « 10 », puis consigne 50 % (curseur, ou « −5 % » dix fois).",sub:[['Vitesse 10 %/min',s=>s.ramp===10],['Consigne 50 %',s=>Math.round(s.LtSet*100)<=50],['Charge atteinte',s=>s.Lt<=0.505]]},
+  {f:['[data-c="trend"]','.spdseg','#spdSel','#rd-tm'],hint:"Passez en ×300. Dans Tendances, activez la courbe « Xénon » et la fenêtre « 8 h ». Quand l'alarme « Tmoy − Tref < −1,5 °C » apparaît, lancez une dilution de 300 L à 10 m³/h ; recommencez au besoin.",
+   after:(s,c,k)=>`ρ Xe : ${f0(k.rh0.xe)} → ${f0(s.rho.xe)} pcm en 4 h. Vous avez dilué ${f1(s.volDil-k.vD0)} m³, soit ${f1(k.Cb0-s.Cb)} ppm, pour compenser.`},
+  {f:['[data-c="turb"]','[data-c="bore"]'],hint:"Consigne 100 % à 5 %/min. Si Tmoy passe au-dessus de Tref de plus de 1 °C, borez 100 L à 5 m³/h.",
+   after:(s,c,k)=>`ρ Xe : ${f0(k.rh0.xe)} → ${f0(s.rho.xe)} pcm. Borication totale pendant la remontée : ${f1(s.volBor-k.vB0)} m³.`},
+  {f:['#aarBtn','[data-c="trend"]'],hint:"Protection › « AAR manuel » (deux appuis), puis ×300. La ligne bleue indique le minimum atteint.",
+   after:(s,c,k)=>`Pic xénon : ${f0(k.pk)} pcm, à comparer aux −2 700 pcm de l'équilibre à pleine puissance.`},
+  {}
+ ],
+ 'l-pzr':[
+  {f:['[data-c="pzr"]','[data-c="synop"]']},
+  {f:['[data-c="turb"]','#rd-lp','#rd-pp'],hint:"Turbine : vitesse « 10 », consigne 80 % (« −5 % » quatre fois).",sub:[['Vitesse 10 %/min',s=>s.ramp===10],['Consigne 80 %',s=>Math.round(s.LtSet*100)<=80],['Charge atteinte',s=>s.Lt<=0.805]],
+   after:(s,c,k)=>`Tmoy a baissé de ${f1(k.T0-s.Tavg)} °C. Niveau pressu : ${f1(k.Lp0)} → ${f1(s.Lpzr)} % (référence ${f1(s.Lref)}). Pression la plus basse : ${f1(k.minP)} bar. Charge RCV : ${f1(s.Qc)} m³/h, au-dessus des 13,6 de la décharge pour regonfler le niveau.`},
+  {f:['.seg[data-key="heatMode"]','#rd-pp'],hint:"Pressuriseur : ligne Chaufferettes › « Forcé ».",after:s=>`Pression ${f1(s.Ppzr)} bar, aspersion automatique à ${f0(s.spray*100)} % : elle s'oppose aux chaufferettes.`},
+  {f:['.seg[data-key="heatMode"]'],hint:"Ligne Chaufferettes › « Auto »."},
+  {f:['.seg[data-key="chgMode"]','#chgMan','#rd-lp'],hint:"Ligne Charge › « Manuel », puis faites glisser « Charge man. » vers 5 m³/h. Passez en ×5.",sub:[['Charge en manuel',s=>s.chgMode==='man'],['Débit ≤ 6 m³/h',s=>s.chgMan<=6],['Niveau 2,5 % sous la référence',s=>s.Lpzr<s.Lref-2.5]],
+   after:s=>`Niveau ${f1(s.Lpzr)} % pour une référence de ${f1(s.Lref)} %. Charge ${f1(s.Qc)} m³/h contre ${f1(s.Qld)} de décharge : le primaire perd ${f1(s.Qld-s.Qc)} m³/h.`},
+  {f:['.seg[data-key="chgMode"]','#rd-lp'],hint:"Ligne Charge › « Auto ».",after:s=>`Niveau ${f1(s.Lpzr)} %, charge ${f1(s.Qc)} m³/h : retour à l'équilibre.`},
+  {}
+ ],
+ 'l-gv':[
+  {f:['[data-c="are"]','[data-c="synop"]']},
+  {f:['[data-c="turb"]','#rd-lg'],hint:"Turbine : vitesse « 30 », consigne 70 %.",sub:[['Vitesse 30 %/min',s=>s.ramp===30],['Consigne 70 %',s=>Math.round(s.LtSet*100)<=70],['Charge atteinte',s=>s.Lt<=0.705]],
+   after:(s,c,k)=>`Niveau GV le plus bas : ${f1(k.minLg)} % pendant la baisse, alors que l'ARE envoyait plus d'eau que la vapeur n'en emportait. C'est la contraction. Pression GV : ${f1(k.Psg0)} → ${f1(s.Psg)} bar.`},
+  {f:['.seg[data-key="areMode"]','#areMan','#rd-lg'],hint:"Eau alimentaire : Régul. ARE › « Manuel », puis faites glisser « Débit man. » vers 55 %.",sub:[['ARE en manuel',s=>s.areMode==='man'],['Débit ≤ 60 %',s=>s.areMan<=0.6],['Niveau < 45 %',s=>s.Lsg<45]],
+   after:s=>`Débit ARE ${f0(s.Wf*100)} % contre ${f0(s.Wst*100)} % de vapeur : le GV perd de l'eau.`},
+  {f:['.seg[data-key="areMode"]','#rd-lg'],hint:"Régul. ARE › « Auto ».",after:(s,c,k)=>`Niveau minimal ${f1(k.minLg)} %, revenu à ${f1(s.Lsg)} %.`},
+  {}
+ ],
+ 'l-prot':[
+  {f:['[data-c="prot"]']},
+  {f:['.seg[data-key="sprayMode"]','#sprayMan','[data-c="instr"]'],hint:"Pressuriseur : Aspersion › « Manuel », curseur vers 40 %. Passez en ×2. La ligne bleue montre la marge ΔT ; arrêtez-vous sous 9 %.",
+   sub:[['Aspersion en manuel',s=>s.sprayMode==='man'],['Ouverture ≈ 40 %',s=>s.sprayMan>=0.3],['Marge ΔT < 9 %',s=>s.dtMargin<9]],
+   after:(s,c,k)=>`Pression ${f1(s.Ppzr)} bar, marge ΔT ${f1(s.dtMargin)} %. Le seuil de surtempérature est passé de ${f1(k.OT0)} à ${f1(s.OTsp)} % : à basse pression, l'eau est plus près de l'ébullition, la protection devient plus exigeante.`},
+  {f:['.seg[data-key="sprayMode"]','#rd-pp'],hint:"Aspersion › « Auto ».",after:s=>`Pression ${f1(s.Ppzr)} bar, marge ${f1(s.dtMargin)} %.`},
+  {f:['[data-c="prot"]']},
+  {}
+ ],
+ 'l-div':[
+  {f:['[data-c="instr"]']},
+  {f:['[data-bank="R"]','[data-act="rod"][data-v="10"]','[data-c="instr"]'],hint:"Touchez « Groupe R », puis « +10 » dix fois (ou « Tout ext. » puis « Stop » à 100). Passez en ×10 et attendez que le temps de doublement redevienne « stable ».",sub:[['R ≥ 100 pas',s=>s.rods.R.p>=99.5],['Comptage stabilisé',(s,c,k)=>(k.st||0)>5]],
+   after:(s,c,k)=>`1/M = ${fmt(c.k.c0/s.n,3)} à 100 pas. Notez-le : c'est votre premier point.`},
+  {f:['[data-act="rod"][data-v="10"]','[data-c="instr"]'],hint:"« +10 » quatre fois, puis attendez la stabilisation.",sub:[['R ≥ 140 pas',s=>s.rods.R.p>=139.5],['Comptage stabilisé',(s,c,k)=>(k.st||0)>5]],
+   after:(s,c,k)=>{ const m=c.k.c0/s.n; return `1/M = ${fmt(m,3)} à 140 pas. Pente depuis 100 pas : ${fmt((m-0.574)/40,4)} par pas → cote critique extrapolée ≈ ${f0(140+m/((0.574-m)/40))} pas.`; }},
+  {f:['[data-act="rod"][data-v="10"]','[data-c="instr"]'],hint:"« +10 » deux fois. Près du critique, la stabilisation prend plusieurs minutes : ×10.",sub:[['R ≥ 160 pas',s=>s.rods.R.p>=159.5],['Comptage stabilisé',(s,c,k)=>(k.st||0)>5]],
+   after:(s,c,k)=>{ const m=c.k.c0/s.n; return `1/M = ${fmt(m,3)} à 160 pas. Nouvelle extrapolation ≈ ${f0(160+m/((0.2-m)/20))} pas. L'estimation se resserre à mesure qu'on approche.`; }},
+  {f:['[data-act="rod"][data-v="1"]','#rd-td'],hint:"« +1 », attendez 30 à 60 s ; recommencez jusqu'à voir un temps de doublement constant entre 60 et 120 s. S'il passe sous 40 s, « −1 ».",
+   after:s=>`Critique à R ≈ ${f0(s.rods.R.p)} pas, temps de doublement ${TdTxt(s)}.`},
+  {f:['[data-act="srInhib"]'],hint:"Quand l'alarme bleue « P6 » apparaît : Commandes › Protection › « Inhiber GS »."},
+  {f:['[data-bank="R"]','#rd-pn','#rd-td'],hint:"Laissez monter. Au-dessus de 3 %, « −1 » ; si la puissance redescend sous 1 %, « +1 ». Visez « stable »."},
+  {}
+ ],
+};
+for(const [id,arr] of Object.entries(STEPX)){ const sc=SCN.find(x=>x.id===id); if(!sc) continue; arr.forEach((x,i)=>{ if(sc.steps[i]) Object.assign(sc.steps[i],x); }); }
+
+/* Formateur pour les exercices : premier conseil applicable */
+const COACH={
+ div:[
+  [(s,c)=>s.tripped,"AAR : relisez le débriefing. Le plus souvent, la gamme source n'a pas été inhibée, ou l'extraction a été trop rapide."],
+  [(s,c)=>s.n>1e-7&&!s.srInhib,"P6 est franchi : inhibez la gamme source maintenant (Commandes › Protection › Inhiber GS), sinon l'AAR tombera vers 10⁵ c/s."],
+  [(s,c)=>s.Td<40&&s.n>1e-9,"Temps de doublement court : arrêtez d'extraire, voire insérez 1 ou 2 pas. Visez 60 s ou plus."],
+  [(s,c)=>s.n>0.03,"Au-dessus de 3 % : insérez R de 1 ou 2 pas. Le Doppler fera le reste."],
+  [(s,c)=>s.n>=0.01&&s.n<=0.03,"Vous êtes dans la plage. Ajustez par pas de 1 jusqu'à un temps de doublement « stable », puis attendez 2 minutes."],
+  [(s,c)=>s.srInhib&&s.rate<Math.LN2/600&&s.n<0.01,"Puissance quasi stable mais trop basse : extrayez R de 2 ou 3 pas pour reprendre une montée lente."],
+  [(s,c)=>!s.srInhib&&c.k.cps0&&c.k.cps0/(s.n*1e10)<0.25,"1/M est sous 0,25 : vous approchez de la criticité. Passez à des pas de 2 à 5 et attendez que le comptage se stabilise à chaque fois."],
+  [(s,c)=>s.rods.R.p<130,"Extrayez R par paliers de 20 à 30 pas (« +10 »). Après chaque palier, attendez que le comptage GS se stabilise (temps de doublement « stable ») et regardez 1/M. Passez en ×5."],
+ ],
+ montee:[
+  [(s,c)=>s.tripped,"AAR : relisez la cause dans le journal."],
+  [(s,c)=>!s.coupled,"Couplez l'alternateur : Commandes › Turbine › « Coupler » (il faut au moins 6 % de puissance)."],
+  [(s,c)=>s.coupled&&(s.modeR!=='auto'||s.modeG!=='auto')&&s.Lt<0.1,"Montez d'abord la charge vers 10–12 % (« +5 % ») pour égaler la puissance du réacteur, puis passez R et GCP en automatique."],
+  [(s,c)=>s.coupled&&(s.modeR!=='auto'||s.modeG!=='auto'),"Passez R et GCP en automatique : en mode G, ce sont eux qui feront suivre le réacteur."],
+  [(s,c)=>s.rods.R.p<160,"R descend sous 160 pas : les GCP compensent un peu trop le défaut de puissance. Borez (5 m³/h, 300 L) pour le faire remonter."],
+  [(s,c)=>s.rods.R.p>214,"R approche de sa butée haute : diluez (10 m³/h, 300 L), sinon Tmoy décrochera."],
+  [(s,c)=>Math.abs(s.DI+1.5*s.n)>4,"ΔI s'approche de la limite du domaine : R est trop inséré. Remontez-le en borant."],
+  [(s,c)=>Math.abs(s.Tavg-s.Tref)>1.5,"Tmoy s'écarte de Tref : R est-il en butée ? Corrigez au bore."],
+  [(s,c)=>s.ramp>3,"Vitesse au-dessus de 3 %/min : l'exercice demande 3 au maximum."],
+  [(s,c)=>s.LtSet<0.995,"Vitesse 3 %/min, consigne 100 %. Passez en ×5 et surveillez la position de R."],
+  [(s,c)=>true,"Montée en cours : surveillez R (idéalement entre 180 et 210 pas) et ΔI."],
+ ],
+ suivi:[
+  [(s,c)=>s.tripped,"AAR : relisez la cause dans le journal."],
+  [(s,c)=>!c.o.low&&s.LtSet>0.505,"Vitesse 5 %/min, consigne 50 %."],
+  [(s,c)=>!c.o.low,"Baisse en cours : les GCP s'insèrent, R règle la température."],
+  [(s,c)=>(s.Tavg-s.Tref<-1||s.rods.R.p>214)&&!s.rea.run,"Le xénon consomme de la réactivité : R est en haut et Tmoy décroche. Diluez par petits volumes (300 L à 10 m³/h)."],
+  [(s,c)=>(s.Tavg-s.Tref>1||s.rods.R.p<155)&&!s.rea.run,"Trop de réactivité : R s'enfonce ou Tmoy dépasse. Borez par petits volumes (100 L à 5 m³/h)."],
+  [(s,c)=>!c.o.hold,"Palier en cours. Passez en ×60 et suivez ρ Xe dans Tendances (fenêtre 8 h) : le xénon monte encore plusieurs heures après la baisse."],
+  [(s,c)=>!c.o.up&&s.LtSet<0.995,"Palier terminé : remontez à 100 % à 5 %/min. Le xénon va brûler, préparez-vous à borer."],
+  [(s,c)=>true,"Remontée : le xénon brûle et libère de la réactivité. Surveillez R et Tmoy, borez si besoin."],
+ ],
+ arret:[
+  [(s,c)=>s.coupled&&s.Lt>0.055&&s.LtSet>0.05,"Baissez la charge à 5 % (vitesse 10 %/min, consigne 5 %)."],
+  [(s,c)=>s.coupled&&s.Lt>0.055,"Baisse en cours : les GCP s'insèrent en suivant la charge."],
+  [(s,c)=>s.coupled,"Charge à 5 % : découplez la turbine. Les groupes passeront en manuel."],
+  [(s,c)=>s.n>0.001,"Insérez les grappes : sélectionnez GCP puis « Tout ins. », ensuite le groupe R. La puissance décroîtra avec une période d'environ −80 s."],
+  [(s,c)=>-s.rho.tot<3000&&!s.rea.run,"Borez pour atteindre 3 000 pcm de marge : Borication, 20 m³/h, 1 m³ (≈ 200 pcm par m³ ici)."],
+  [(s,c)=>-s.rho.tot<3000,"Borication en cours : surveillez la marge d'arrêt dans la ligne bleue."],
+  [(s,c)=>Math.abs(s.Tavg-286)>=2,"Attendez que Tmoy se stabilise vers 286 °C : le GCT-c en mode pression s'en charge."],
+  [(s,c)=>true,"Tous les critères sont proches : vérifiez la marge et Tmoy."],
+ ],
+};
+
 const ALEA_IDS=['tpa','ilot','drop','spray','leak','are','dil','gmpp'];
 const byId=id=>SCN.find(x=>x.id===id);
 
 /* ================= Application ================= */
-const A={s:null,scn:null,ctx:null,speed:1,paused:true,acc:0,done:false,win:1800,charts:['pw','tp','pp','lv'],tab:'synop'};
+const A={mwin:1800,s:null,scn:null,ctx:null,speed:1,paused:true,acc:0,done:false,win:1800,charts:['pw','tp','pp','lv'],tab:'synop'};
 function store(k,v){ try{ if(v===undefined){ return JSON.parse(localStorage.getItem('rep900-'+k)); } localStorage.setItem('rep900-'+k,JSON.stringify(v)); }catch(e){ return null; } }
 { const c=store('charts'); if(Array.isArray(c)&&c.length) A.charts=c; }
 
@@ -1278,7 +1536,8 @@ function showBrief(){
 }
 
 /* tutoriel */
-function enterStep(i){ const c=A.ctx; c.step=i; c.sk={}; c.stepOk=false; const st=A.scn.steps[i]; if(st.enter) st.enter(A.s,c,c.sk); renderMission(true); }
+function snapK(s,k){ Object.assign(k,{n0:s.n,T0:s.Tavg,Tr0:s.Tref,P0:s.Ppzr,Lp0:s.Lpzr,Lg0:s.Lsg,Cb0:s.Cb,R0:s.rods.R.p,G0:s.rods.G.p,DI0:s.DI,Td0:s.Td,rh0:Object.assign({},s.rho),vD0:s.volDil,vB0:s.volBor,ts:s.t,Psg0:s.Psg,OT0:s.OTsp,minLg:s.Lsg,maxLg:s.Lsg,minP:s.Ppzr,maxP:s.Ppzr,minLp:s.Lpzr}); }
+function enterStep(i){ const c=A.ctx; c.step=i; c.sk={}; c.stepOk=false; c.after=''; c.showHint=false; c.subM=''; const st=A.scn.steps[i]; snapK(A.s,c.sk); if(st.enter) st.enter(A.s,c,c.sk); renderMission(true); }
 
 /* tick de scénario (chaque pas) */
 function tick(s,c){
@@ -1298,7 +1557,7 @@ function tick(s,c){
   if(scn.kind==='libre'&&c.cur){ const sc=byId(c.cur); if(sc.update) sc.update(s,c); }
   else if(scn.update) scn.update(s,c);
   if(scn.obj) for(const o of scn.obj) if(c.o[o.id]==null&&o.test(s,c)){ c.o[o.id]=s.t; c.dirty=true; }
-  if(scn.steps){ const stp=scn.steps[c.step]; if(stp.ok&&!c.stepOk&&stp.ok(s,c,c.sk)){ c.stepOk=true; c.dirty=true; } }
+  if(scn.steps){ const stp=scn.steps[c.step], k=c.sk; k.minLg=Math.min(k.minLg,s.Lsg); k.maxLg=Math.max(k.maxLg,s.Lsg); k.minP=Math.min(k.minP,s.Ppzr); k.maxP=Math.max(k.maxP,s.Ppzr); k.minLp=Math.min(k.minLp,s.Lpzr); if(stp.ok&&!c.stepOk&&stp.ok(s,c,k)){ c.stepOk=true; c.dirty=true; try{ c.after=stp.after?stp.after(s,c,k):''; }catch(e){ c.after=''; } } }
   if(scn.end&&!A.done&&scn.end.call(scn,s,c)){ A.done=true; setTimeout(finish,600); }
 }
 
@@ -1319,6 +1578,8 @@ function act(a,v){
     else { s.modeG='man'; R.G.tg=R.G.p; op('GCP en manuel'); }
     break;
   case 'rodSel': s.rodSel=v; break;
+  case 'rodStopB': { const bk=R[v]; if(bk){ bk.tg=bk.p; op({SD:'Groupes d\'arrêt',G:'GCP',R:'Groupe R'}[v]+' : arrêt du mouvement'); } break; }
+  case 'gctaZero': s.gctaMan=0; op('GCT-a manuel fermé'); break;
   case 'rod': case 'rodIn': case 'rodOut': case 'rodStop': {
     const b=s.rodSel, bk=R[b], nm={SD:'Groupes d\'arrêt',G:'GCP',R:'Groupe R'}[b];
     if(s.tripped) return toast('AAR non réarmé : les grappes restent en bas.');
@@ -1410,6 +1671,8 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#lexBtn')){ openLex(); return; }
   if(e.target.closest('#alb-see')){ if(innerWidth<1080) setTab('alarm'); else document.querySelector('[data-c="alarm"]').scrollIntoView({behavior:'smooth',block:'center'}); return; }
   if(e.target.closest('#alb-ack')){ if(A.s){ for(const a of Object.values(A.s.alarms)) if(a.on) a.ack=true; updateAlarms(); } return; }
+  const fb=e.target.closest('.fold'); if(fb){ toggleFold(fb.closest('.card')); return; }
+  const h2c=e.target.closest('.card[data-c] > h2'); if(h2c&&!e.target.closest('button,.seg,input,select')){ toggleFold(h2c.parentElement); return; }
   const hq=e.target.closest('[data-help]'); if(hq){ openHelp(hq.dataset.help); return; }
   if(e.target.id==='help'){ closeHelp(); return; }
   const b=e.target.closest('[data-act]'); if(b&&!b.closest('.seg')){ act(b.dataset.act,b.dataset.v); return; }
@@ -1417,6 +1680,7 @@ document.addEventListener('click',e=>{
   if(sg){ const key=sg.parentElement.dataset.key, v=sg.dataset.v;
     if(key==='speed') setSpeed(+v);
     else if(key==='win'){ A.win=+v; syncAll(); drawCharts(); }
+    else if(key==='mwin'){ A.mwin=+v; syncAll(); drawCharts(); }
     else act(key,v);
     return; }
   const bank=e.target.closest('.bank'); if(bank){ act('rodSel',bank.dataset.bank); return; }
@@ -1442,7 +1706,7 @@ function setTab(t){ A.tab=t; document.body.dataset.tab=t; $$('#tabs button').for
 function syncSeg(key,val){ $$('.seg[data-key="'+key+'"] button').forEach(b=>b.classList.toggle('on',b.dataset.v===String(val))); }
 function syncAll(){
   const s=A.s;
-  syncSeg('speed',A.speed); syncSeg('win',A.win);
+  syncSeg('speed',A.speed); syncSeg('win',A.win); syncSeg('mwin',A.mwin);
   $('#pauseBtn').innerHTML=A.paused?'▶<span class="lab"> Reprendre</span>':'❚❚<span class="lab"> Pause</span>'; $('#pauseBtn').setAttribute('aria-label',A.paused?'Reprendre':'Pause'); $('#pauseBtn').classList.toggle('on',A.paused); $('#spdSel').value=String(A.speed);
   if(!s) return;
   syncSeg('modeR',s.modeR); syncSeg('modeG',s.modeG);
@@ -1488,7 +1752,7 @@ function updateUI(){
   T('b-pn',s.n<0.001?fmt(s.n*100,3):fmt(s.n*100,1));
   T('b-pe',fmt(s.Qt*K.MWE,0));
   T('b-tm',fmt(s.Tavg,1)); T('b-tr',s.coupled?' '+sgn(s.Tavg-s.Tref,1):' —');
-  T('b-pp',fmt(s.Ppzr,1)); T('b-lp',fmt(s.Lpzr,0)); cls('rd-lp','warn',Math.abs(s.Lpzr-s.Lref)>5); T('b-lg',fmt(s.Lsg,0)); T('b-cb',fmt(s.Cb,0));
+  T('b-pp',fmt(s.Ppzr,1)); T('b-th',fmt(s.Thot,1)); T('b-tc',' '+fmt(s.Tcold,1)); T('b-psg',fmt(s.Psg,1)); T('b-r',fmt(s.rods.R.p,0)); T('b-g',' '+fmt(s.rods.G.p,0)); T('b-di',fmt(s.DI,1)); T('b-die',' '+sgn(s.DI+1.5*s.n,1)); cls('rd-di','warn',!s.tripped&&s.n>0.15&&Math.abs(s.DI+1.5*s.n)>5); cls('rd-rg','warn',!s.tripped&&s.coupled&&(s.rods.R.p<150||s.rods.R.p>215)); T('b-lp',fmt(s.Lpzr,0)); cls('rd-lp','warn',Math.abs(s.Lpzr-s.Lref)>5); T('b-lg',fmt(s.Lsg,0)); T('b-cb',fmt(s.Cb,0));
   T('b-rho',sgn(s.rho.tot,0)); T('b-td',Number.isFinite(s.Td)&&s.Td<9999?' · '+fmt(s.Td,0)+' s':' · ∞');
   cls('rd-pn','warn',s.n>1.03); cls('rd-tm','warn',s.coupled&&Math.abs(s.Tavg-s.Tref)>1.5);
   cls('rd-pp','warn',s.Ppzr>157.5||s.Ppzr<152); cls('rd-pp','crit',s.Ppzr>164||s.Ppzr<132);
@@ -1569,6 +1833,8 @@ function updateAlarms(){
 function curInfo(scn,c,s){ if(scn.steps){ const st=scn.steps[c.step]; const f=st.info||scn.info; return f?f(s,c,c.sk):null; } return scn.info?scn.info(s,c):null; }
 function renderMission(force){
   const s=A.s,c=A.ctx,scn=A.scn; if(!s||!c) return;
+  if(!force&&scn.steps){ const stp=scn.steps[c.step]; if(stp.sub&&!c.stepOk){ const m=stp.sub.map(x=>{ try{ return x[1](s,c,c.sk)?1:0; }catch(e){ return 0; } }).join(''); if(m!==c.subM){ c.subM=m; c.dirty=true; } } }
+  if(!force&&scn.kind==='exo'&&COACH[scn.id]){ const t=(COACH[scn.id].find(x=>{ try{ return x[0](s,c); }catch(e){ return false; } })||[])[1]||''; if(t!==c.coach){ c.coach=t; c.dirty=true; } }
   if(!force&&!c.dirty&&!c.liveInfo&&c.lastFire===c.fired){ /* only refresh live info line */ const il=document.getElementById('mis-info'); const iv=curInfo(scn,c,s); if(il&&iv!=null) il.innerHTML=iv; return; }
   c.dirty=false; c.lastFire=c.fired;
   const tagTxt={tuto:'Tutoriel',lecon:'Leçon',exo:'Exercice',alea:'Aléa',libre:'Libre'}[scn.kind];
@@ -1577,13 +1843,18 @@ function renderMission(force){
   if(scn.steps){
     const stp=scn.steps[c.step], inf=curInfo(scn,c,s);
     title=(c.step+1)+' / '+scn.steps.length+' · '+stp.t;
-    body=stp.h+(inf!=null?'<div class="info" id="mis-info">'+inf+'</div>':'')+(stp.ok?(c.stepOk?'<p class="stepok">✓ Étape réalisée</p>':''):'');
+    const sub=stp.sub&&!c.stepOk?'<ul class="subl">'+stp.sub.map(x=>{ let d=false; try{ d=x[1](s,c,c.sk); }catch(e){} return '<li class="'+(d?'done':'')+'">'+x[0]+'</li>'; }).join('')+'</ul>':'';
+    const okb=c.stepOk?'<div class="aft"><div class="stepok">✓ Étape réalisée</div>'+(c.after?'<p>'+c.after+'</p>':'')+'</div>':'';
+    const hb=stp.hint&&!c.stepOk?(c.showHint?'<div class="hintb"><b>Comment faire :</b> '+stp.hint+'</div>':''):'';
+    body=stp.h+sub+hb+(inf!=null?'<div class="info" id="mis-info">'+inf+'</div>':'')+okb;
     foot='<div class="prog"><i style="width:'+((c.step+1)/scn.steps.length*100)+'%"></i></div>';
-    if(stp.tab&&innerWidth<1080&&A.tab!==stp.tab) foot+='<button class="btn sm" id="tTab">Ouvrir '+({synop:'Synoptique',cmd:'Commandes',trend:'Tendances',alarm:'Alarmes'}[stp.tab])+'</button>';
+    if(stp.tab&&innerWidth<1080&&A.tab!==stp.tab) foot+='<button class="btn sm" id="tTab">Ouvrir '+({synop:'Vue d\'ensemble',cmd:'Commandes',trend:'Tendances',alarm:'Alarmes'}[stp.tab])+'</button>';
+    if(stp.hint&&!c.stepOk&&!c.showHint) foot+='<button class="btn sm" id="tHint">Comment faire ?</button>';
     if(c.step>0) foot+='<button class="btn sm" id="tPrev">Précédent</button>';
     foot+=stp.last?'<button class="btn pri" id="tEnd">Terminer '+(scn.kind==='tuto'?'le tutoriel':'la leçon')+'</button>':'<button class="btn pri" id="tNext"'+(stp.ok&&!c.stepOk&&!stp.opt?' disabled':'')+'>Suivant</button>';
   } else if(scn.kind==='exo'){
     body='<ul class="obj">'+scn.obj.map(o=>'<li class="'+(c.o[o.id]!=null?'done':'')+'"><span>'+o.t+(o.w&&c.o[o.id]==null?'<small class="why">'+o.w+'</small>':'')+'</span></li>').join('')+'</ul>'+(scn.info?'<div class="info" id="mis-info">'+scn.info(s,c)+'</div>':'');
+    if(c.coach) body+='<div class="coach"><b>Formateur :</b> '+c.coach+'</div>';
     foot='<button class="btn" id="mEnd">Terminer et débriefer</button>';
   } else if(scn.kind==='alea'){
     if(c.fired==null) body='<p>Fonctionnement normal. Surveillez la tranche : un aléa va survenir.</p>';
@@ -1594,9 +1865,12 @@ function renderMission(force){
     foot='<button class="btn" id="mEnd">Terminer</button>';
   }
   T('mis-title',title); $('#mis-body').innerHTML=body; glossDom($('#mis-body')); $('#mis-foot').innerHTML=foot;
+  $$('.focus').forEach(e=>e.classList.remove('focus'));
+  if(scn.steps&&!c.stepOk){ const fs=scn.steps[c.step].f||[]; fs.forEach(q=>$$(q).forEach(e=>e.classList.add('focus'))); }
   const on=(id,f)=>{ const e=document.getElementById(id); if(e) e.onclick=f; };
   on('tNext',()=>{ if(c.step<scn.steps.length-1) enterStep(c.step+1); });
   on('tPrev',()=>enterStep(c.step-1));
+  on('tHint',()=>{ c.showHint=true; renderMission(true); });
   on('tTab',()=>{ setTab(scn.steps[c.step].tab); renderMission(true); });
   on('tEnd',()=>finish());
   on('mEnd',()=>finish());
@@ -1710,6 +1984,7 @@ const HELP={
 <h3>Pourquoi c'est important</h3><p>Les protections couvrent les grands risques : excursion de puissance (haut flux), crise d'ébullition (ΔT surtempérature, basse pression), surpression du circuit (haute pression), perte de refroidissement (niveau GV, débit primaire). Les <b>permissifs</b> P6, P7 et P10 adaptent ces protections au niveau de puissance.</p>
 <h3>Ordres de grandeur</h3><ul><li>Haut flux 109 % (25 % tant que P10 n'est pas atteint), gamme source 10⁵ c/s.</li><li>Pression 165 / 131 bar, niveau pressu 92 %, niveau GV 15 %.</li><li>IS à 119 bar ; arrêt possible au-dessus de 140 bar, avec un niveau pressu supérieur à 20 % et une marge à la saturation supérieure à 20 °C.</li></ul>
 <h3>Pièges fréquents</h3><ul><li>Arrêter l'IS trop tôt : si la fuite continue, la pression rechute.</li><li>Hésiter à faire un AAR manuel quand une situation échappe au contrôle : c'est l'action la plus sûre.</li></ul>`},
+ run:{t:'En cours',l:null,h:`<h3>En bref</h3><p>La carte de suivi de quart : ce qui est en train de se passer sur la tranche, qu'il s'agisse de vos actions ou des automatismes.</p><h3>Ce que vous voyez</h3><ul><li><b>Actions en cours</b> : rampe de charge, mouvements de grappes, appoints, modes manuels, isolements, équipements de secours. Le point indique l'origine : bleu pour une action de l'opérateur, ambre pour un automatisme, rouge pour une sauvegarde. Un bouton permet souvent d'arrêter ou de revenir en automatique directement.</li><li><b>Alarmes actives</b>, de la plus grave à la moins grave.</li><li><b>Journal</b> : les trois dernières entrées.</li></ul><h3>Pourquoi c'est important</h3><p>Un opérateur doit toujours savoir ce qu'il a lancé et ce qui tourne en manuel. Une dilution oubliée ou un groupe laissé en manuel sont des causes classiques d'écart.</p>`},
  trend:{t:'Tendances',l:null,h:`<h3>En bref</h3><p>Un chiffre dit où l'on est, une courbe dit où l'on va. Les tendances enregistrent chaque seconde les grandeurs principales pour voir les dérives lentes et la forme des transitoires.</p>
 <h3>Ce que vous voyez</h3><ul><li>Les puces choisissent les courbes ; la fenêtre va de 5 minutes à 8 heures.</li><li>Le point au bout de chaque courbe est la valeur actuelle ; les pointillés sont des références (Tref, ΔI de référence).</li></ul>
 <h3>Bonnes associations</h3><ul><li><b>Puissance + Température</b> pour tout transitoire.</li><li><b>Grappes + Bore + Xénon</b> sur 8 h pour le suivi de charge.</li><li><b>Niveaux + Pression</b> pour les aléas d'eau alimentaire ou de RCV.</li></ul>`},
@@ -1847,6 +2122,64 @@ function openHelp(k){
 }
 function closeHelp(){ $('#help').hidden=true; if(A.s) A.paused=helpWasPaused; syncAll(); }
 
+
+/* ================= Carte « En cours » ================= */
+function runItems(s){
+  const L=[]; const it=(k,t,b)=>L.push({k,t,b});
+  if(s.is) it('r','Injection de sécurité : '+fmt(s.Qis,0)+' m³/h d\'eau borée',['isStop','','Arrêter l\'IS']);
+  if(s.tripped) it('r','AAR — '+s.tripCause,['rearm','','Réarmer']);
+  if(s.sebim) it('r','Soupapes SEBIM ouvertes');
+  if(s.ilot) it('a','Îlotage : turbine sur les auxiliaires'+(s.grid?' · réseau revenu':''),s.grid?['recouple','','Recoupler']:null);
+  if(s.coupled&&!s.ilot&&Math.abs(s.LtSet-s.Lt)>0.002) it('op','Charge '+fmt(s.Lt*100,1)+' → '+fmt(s.LtSet*100,0)+' % à '+s.ramp+' %/min · '+dur(Math.abs(s.LtSet-s.Lt)*100/s.ramp*60),['hold','','Maintenir']);
+  const NM={SD:'Groupes d\'arrêt',G:'GCP',R:'Groupe R'};
+  for(const b of ['SD','G','R']){ const r=s.rods[b]; if(!s.tripped&&Math.abs(r.tg-r.p)>0.4) it('op',NM[b]+' '+fmt(r.p,0)+' → '+fmt(r.tg,0)+' pas',['rodStopB',b,'Stop']); }
+  if(!s.tripped&&s.coupled&&s.modeR==='auto'&&s.rAuto) it('auto','Groupe R en régulation automatique ('+fmt(s.rods.R.p,0)+' pas)');
+  if(!s.tripped&&s.coupled&&s.modeG==='auto'&&Math.abs(calG(s.Lt)-s.rods.G.p)>0.6) it('auto','GCP vers leur position de calibrage ('+fmt(calG(s.Lt),0)+' pas)');
+  if(s.rea.run&&!s.reaIsol) it('op',(s.rea.mode==='dil'?'Dilution ':'Borication ')+s.rea.q+' m³/h · '+fmt(s.rea.v*1000,0)+(s.rea.vt===Infinity?' L (continu)':' / '+fmt(s.rea.vt*1000,0)+' L · reste '+dur((s.rea.vt-s.rea.v)/s.rea.q*3600)),['reaStop','','Arrêter']);
+  else if(s.Qdil>0) it('a','Débit d\'eau d\'appoint '+fmt(s.Qdil,0)+' m³/h');
+  if(s.gct>0.02) it('auto','GCT-c ouvert '+fmt(s.gct/0.85*100,0)+' % (mode '+(s.coupled?'température':'pression')+')');
+  if(s.qa>0.005) it(s.gctaMan>0?'op':'auto','GCT-a : '+fmt(s.qa*100,1)+' % de vapeur à l\'atmosphère',s.gctaMan>0?['gctaZero','','Fermer']:null);
+  if(s.asg) it('auto','ASG en service ('+fmt(s.Wasg*100,1)+' %)',['asg','','Arrêter']);
+  if(s.apd) it('op','Motopompe APD en service',['apd','','Arrêter']);
+  if(s.areIsol&&!s.is) it('a','ARE isolée (niveau GV très haut)');
+  if(!s.tripped&&s.coupled&&s.modeR==='man') it('op','Groupe R en manuel',['modeR','auto','Auto']);
+  if(!s.tripped&&s.coupled&&s.modeG==='man') it('op','GCP en manuel',['modeG','auto','Auto']);
+  if(s.areMode==='man') it('op','ARE en manuel : '+fmt(s.areMan*100,0)+' %',['areMode','auto','Auto']);
+  if(s.sprayMode==='man') it('op','Aspersion manuelle : '+fmt(s.sprayMan*100,0)+' %',['sprayMode','auto','Auto']);
+  if(s.heatMode!=='auto') it('op','Chaufferettes '+(s.heatMode==='on'?'forcées':'arrêtées'),['heatMode','auto','Auto']);
+  if(s.chgMode==='man') it('op','Charge RCV manuelle : '+fmt(s.chgMan,1)+' m³/h',['chgMode','auto','Auto']);
+  if(s.sprayIsol) it('op','Aspersion isolée',['sprayIsol','','Rétablir']);
+  if(s.ldIsolMan) it('op','Décharge RCV isolée',['ldIsol','','Rétablir']); else if(s.Qld===0&&!s.is) it('auto','Décharge RCV isolée (niveau pressu bas)');
+  if(s.reaIsol) it('op','Appoint REA isolé',['reaIsol','','Rétablir']);
+  return L;
+}
+function updateRun(){
+  const s=A.s; if(!s) return;
+  const L=runItems(s);
+  const lh=L.length?L.map(x=>'<div class="ri '+x.k+'"><span class="rdot"></span><span class="rt">'+x.t+'</span>'+(x.b?'<button class="btn sm" data-act="'+x.b[0]+'" data-v="'+x.b[1]+'">'+x.b[2]+'</button>':'')+'</div>').join(''):'<div class="ri none">Aucune action en cours. Régulations en automatique.</div>';
+  const el=$('#runList'); if(el&&el.dataset.h!==lh){ el.innerHTML=lh; el.dataset.h=lh; }
+  const rk={r:0,a:1,i:2};
+  const al=ALM.filter(([id])=>s.alarms[id]&&s.alarms[id].on).map(([id,lab,sev])=>({lab,sev,t:s.alarms[id].since,ack:s.alarms[id].ack})).sort((a,b)=>rk[a.sev]-rk[b.sev]||b.t-a.t);
+  const ah=al.length?al.slice(0,6).map(x=>'<div class="ra '+x.sev+(x.ack?'':' nack')+'"><span class="tm">'+hms(x.t)+'</span>'+x.lab+'</div>').join('')+(al.length>6?'<div class="ra more">+ '+(al.length-6)+' autres</div>':''):'<div class="ra none">Aucune alarme.</div>';
+  const ea=$('#runAl'); if(ea&&ea.dataset.h!==ah){ ea.innerHTML=ah; ea.dataset.h=ah; }
+  const lg=s.log.slice(-3).reverse().map(l=>'<div><span class="tm">'+hms(l.t)+'</span><span class="'+l.type+'">'+l.txt+'</span></div>').join('');
+  const er=$('#runLog'); if(er&&er.dataset.h!==lg){ er.innerHTML=lg; er.dataset.h=lg; }
+}
+function buildMini(){
+  $('#mcharts').innerHTML=['pw','tp','pp','lv'].map(k=>{ const c=CH[k]; return '<div class="chart mini"><div class="ct"><span>'+c.t+'</span><span class="lg">'+c.s.map(x=>'<span style="color:var(--'+x[2]+')">'+x[1]+'</span>').join('')+'</span></div><canvas id="mc-'+k+'"></canvas></div>'; }).join('');
+}
+/* repli des cartes */
+function initFold(){
+  const F=store('fold')||{};
+  $$('.card[data-c]').forEach(cd=>{
+    const h2=cd.querySelector(':scope > h2'); if(!h2||h2.querySelector('.fold')) return;
+    const b=document.createElement('button'); b.className='fold'; b.type='button'; b.setAttribute('aria-label','Replier ou déplier'); b.innerHTML='<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
+    h2.appendChild(b);
+    if(F[cd.dataset.c]) cd.classList.add('folded');
+  });
+}
+function toggleFold(cd){ cd.classList.toggle('folded'); const F=store('fold')||{}; F[cd.dataset.c]=cd.classList.contains('folded')?1:0; store('fold',F); if(!cd.classList.contains('folded')){ setTimeout(()=>{ drawCharts(); drawDI(); },30); } }
+
 /* ================= Tendances ================= */
 let COL={};
 function readCols(){ const cs=getComputedStyle(document.documentElement); for(const k of ['fg','mute','dim','line','accent','hot','cold','steam','feed','bore','warn','ok','crit','bg']) COL[k]=cs.getPropertyValue('--'+k).trim(); }
@@ -1866,13 +2199,14 @@ function buildCharts(){
 }
 $('#chips').addEventListener('click',e=>{ const b=e.target.closest('[data-ch]'); if(!b) return; const k=b.dataset.ch; A.charts=A.charts.includes(k)?A.charts.filter(x=>x!==k):Object.keys(CH).filter(x=>x===k||A.charts.includes(x)); store('charts',A.charts); buildCharts(); drawCharts(); });
 function prepCanvas(cv){ const w=cv.clientWidth,h=cv.clientHeight; if(!w) return null; const dpr=window.devicePixelRatio||1; if(cv.width!==Math.round(w*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);} const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h); return {g,w,h}; }
-function drawCharts(){
+function drawCharts(){ drawSet(A.charts,'ch-',A.win); drawSet(['pw','tp','pp','lv'],'mc-',A.mwin); }
+function drawSet(keys,pre,win){
   const s=A.s; if(!s) return;
-  const t1=s.t, t0=Math.max(0,t1-A.win);
+  const t1=s.t, t0=Math.max(0,t1-win);
   const H0=s.hist; let i0=0; { let lo=0,hi=H0.length; while(lo<hi){ const m=(lo+hi)>>1; if(H0[m].t<t0) lo=m+1; else hi=m; } i0=lo; }
   const pts=H0.slice(i0); const stepN=Math.max(1,Math.floor(pts.length/600));
-  for(const k of A.charts){
-    const cv=document.getElementById('ch-'+k); if(!cv) continue; const P=prepCanvas(cv); if(!P) continue; const {g,w,h}=P; const c=CH[k];
+  for(const k of keys){
+    const cv=document.getElementById(pre+k); if(!cv) continue; const P=prepCanvas(cv); if(!P) continue; const {g,w,h}=P; const c=CH[k];
     let mn=Infinity,mx=-Infinity; for(let i=0;i<pts.length;i+=stepN) for(const sr of c.s){ const v=pts[i][sr[0]]; if(v<mn)mn=v; if(v>mx)mx=v; }
     if(!Number.isFinite(mn)){ mn=0; mx=1; }
     if(c.min!=null) mn=Math.min(mn,c.min); if(c.max!=null) mx=Math.max(mx,c.max);
@@ -1911,11 +2245,11 @@ function frame(now){
   }
   uiAcc+=rd; chAcc+=rd;
   if(A.s&&uiAcc>0.1){ uiAcc=0; updateUI(); }
-  if(A.s&&chAcc>0.5){ chAcc=0; if(A.tab==='trend'||innerWidth>=1080) drawCharts(); if(A.tab==='synop'||innerWidth>=1080) drawDI(); }
+  if(A.s&&chAcc>0.5){ chAcc=0; drawCharts(); drawDI(); updateRun(); }
   requestAnimationFrame(frame);
 }
 addEventListener('resize',()=>{ drawCharts(); drawDI(); });
-readCols(); buildCharts(); setTab('synop'); buildAnn(); syncAll(); openMenu();
+readCols(); buildCharts(); buildMini(); initFold(); setTab('synop'); buildAnn(); syncAll(); openMenu();
 requestAnimationFrame(frame);
 </script>
 </body>
