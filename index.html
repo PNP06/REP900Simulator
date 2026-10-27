@@ -5,7 +5,39 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Simulateur pédagogique de conduite d'un réacteur REP 900 MWe : tutoriel, leçons guidées, exercices et aléas.">
 <meta name="theme-color" content="#10161a">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* ===== variations, alarmes en tête, lexique ===== */
+:root{--chg:#5fdcff}
+.up,.dn{font-weight:700!important;color:var(--chg)}
+.up::after,.dn::after{font-size:.62em;margin-left:2px;vertical-align:.15em}
+.up::after{content:"▲"}.dn::after{content:"▼"}
+.rd.warn .up,.rd.warn .dn{color:var(--warn)}.rd.crit .up,.rd.crit .dn{color:var(--crit)}
+.rd .v span{transition:color .2s}
+.alb{display:flex;align-items:center;gap:8px;margin-top:6px;padding:5px 6px 5px 10px;border-radius:7px;border:1px solid var(--line);background:var(--panel);font:600 12.5px/1.25 var(--f-disp);letter-spacing:.04em;text-transform:uppercase;min-width:0}
+.alb.r{background:#4c1915;border-color:var(--crit);color:#ffd3cf}
+.alb.a{background:#46340f;border-color:var(--warn);color:#ffe0a6}
+.alb.i{background:#163240;border-color:var(--accent);color:#cdebf5}
+.alb.nack{animation:blink 1s steps(2) infinite}
+.alb-n{white-space:nowrap;font-family:var(--f-num);font-size:11.5px;opacity:.85}
+.alb-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.alb .ib{height:26px;min-width:0;padding:0 8px;font-size:11.5px;background:#0003;color:inherit;border-color:currentColor}
+@media (max-width:520px){.alb-n{display:none}}
+.g{border-bottom:1px dotted color-mix(in srgb,var(--accent) 70%,transparent);cursor:help;border-radius:2px}
+.g:hover,.g:focus-visible{background:color-mix(in srgb,var(--accent) 18%,transparent);outline:none}
+.gpop{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:90;width:min(92vw,460px);background:var(--panel-2);border:1px solid var(--accent);border-radius:10px;padding:10px 12px 12px;box-shadow:0 12px 32px #000a;font-size:14px;line-height:1.45}
+@media (min-width:1080px){.gpop{bottom:24px}}
+.gp-h{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--accent);font:600 16px var(--f-disp);letter-spacing:.03em}
+.gp-h .ib{height:28px}
+.gpop p{margin:6px 0 8px}
+.gp-l{background:none;border:0;padding:0;color:var(--accent);font:600 12.5px var(--f-disp);letter-spacing:.06em;text-transform:uppercase;text-decoration:underline}
+.lex{display:grid;grid-template-columns:minmax(0,1fr);gap:2px 16px}
+.lex dt{font:600 15px var(--f-disp);color:var(--accent);margin-top:10px}
+.lex dd{margin:2px 0 0;color:var(--fg);max-width:72ch}
+@media (min-width:900px){.lex{grid-template-columns:minmax(160px,220px) minmax(0,1fr)}.lex dt{margin-top:0;padding-top:8px;border-top:1px solid var(--line)}.lex dd{padding-top:8px;border-top:1px solid var(--line)}}
+.brief h3{color:var(--accent);margin-top:16px}
+.obj .why,.crit small{display:block;color:var(--mute);font-size:12.5px;line-height:1.35;margin-top:1px}
+.obj li.done .why{display:none}
+</style>
 <title>Simulateur REP 900</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -356,7 +388,8 @@ table.kv td{padding:3px 0;font-size:13px}
     <div class="rd" id="rd-lp"><div class="k">Niv. pressu</div><div class="v"><span id="b-lp">—</span><small>%</small></div></div>
     <div class="rd"><div class="k">Bore</div><div class="v"><span id="b-cb">—</span><small>ppm</small></div></div>
     <div class="rd" id="rd-td"><div class="k">ρ · Td</div><div class="v"><span id="b-rho">—</span><small id="b-td">—</small></div></div>
-  </section></div>
+  </section>
+<div class="alb" id="alb" hidden><span class="lamp" id="alb-l"></span><span class="alb-n" id="alb-n"></span><span class="alb-t" id="alb-t"></span><button class="ib" id="alb-see">Voir</button><button class="ib" id="alb-ack">Acquitter</button></div></div>
 </header>
 
 <main class="wrap">
@@ -613,6 +646,7 @@ table.kv td{padding:3px 0;font-size:13px}
   <div class="hero">
     <h1>Simulateur <span>REP 900</span></h1>
     <p>Prenez le quart en salle de commande d'une tranche REP de 900 MWe à trois boucles. Apprenez avec le tutoriel, entraînez-vous aux manœuvres d'exploitation, puis gérez les aléas.</p>
+    <div class="row" style="margin-top:12px"><button class="btn" id="lexBtn">Lexique des termes</button></div>
     <div class="spec"><span>2 785 MWth</span><span>155 bar</span><span>Tmoy 286 → 304,5 °C</span><span>β = 600 pcm</span><span>mode G</span></div>
   </div>
   <div id="menuCards"></div>
@@ -624,6 +658,7 @@ table.kv td{padding:3px 0;font-size:13px}
 <div class="ov" id="help" hidden><div class="box wrap"><div class="brief" id="helpBox"></div></div></div>
 <div class="ov" id="debrief" hidden><div class="box wrap"><div class="brief" id="debriefBox"></div></div></div>
 <div class="toast" id="toast" hidden></div>
+<div class="gpop" id="gpop" hidden role="dialog" aria-label="Définition"></div>
 
 <script>
 'use strict';
@@ -1090,9 +1125,9 @@ const SCN=[
  brief:"<p>Arrêt à chaud : 286 °C, 155 bar, groupes d'arrêt extraits, GCP à la position de calibrage 0 %, groupe R inséré. Le bore a été ajusté : la <b>position critique estimée</b> est <b>R = 170 pas (± 25)</b>.</p><p>Extrayez R par paliers et surveillez le comptage gamme source. L'indicateur <b>1/M</b> (comptage initial ÷ comptage actuel) tend vers 0 à l'approche de la criticité : extrapolez-le.</p>",
  tips:"Conseil : ×5 pendant l'approche, ×10 après la criticité. Inhiber la gamme source avant 10⁵ c/s, sinon AAR.",
  obj:[
-  {id:'crit',t:'Atteindre la criticité et franchir P6 (GI > 10⁻¹⁰ A)',test:s=>s.n>1e-7},
-  {id:'inh',t:'Inhiber la gamme source',test:s=>s.srInhib},
-  {id:'stab',t:'Stabiliser entre 1 et 3 % PN pendant 2 minutes',test:(s,c)=>(c.k.stab||0)>=120}
+  {id:'crit',t:'Atteindre la criticité et franchir P6 (GI > 10⁻¹⁰ A)',w:"Le réacteur entretient seul la réaction en chaîne. Au-delà de P6, la gamme intermédiaire prend le relais de la gamme source.",test:s=>s.n>1e-7},
+  {id:'inh',t:'Inhiber la gamme source',w:"Les compteurs de la gamme source saturent vers 10⁵ c/s ; s'ils restent en service, ils provoquent un AAR.",test:s=>s.srInhib},
+  {id:'stab',t:'Stabiliser entre 1 et 3 % PN pendant 2 minutes',w:"Vers 1 %, le Doppler apparaît et freine seul la montée : c'est l'état d'attente avant le couplage.",test:(s,c)=>(c.k.stab||0)>=120}
  ],
  update(s,c){ if(c.k.cps0==null) c.k.cps0=s.n*1e10; if(s.n>=0.01&&s.n<=0.03&&Math.abs(s.rate)<Math.LN2/600) c.k.stab=(c.k.stab||0)+DT; else c.k.stab=0; },
  info(s,c){ const cps=s.n*1e10; return s.srInhib?('GI '+sci(s.n*1e-3)+' A · GP '+fmt(s.n*100,2)+' %'):('GS '+fmt(cps,0)+' c/s · 1/M = '+fmt(c.k.cps0/cps,3)); },
@@ -1104,9 +1139,9 @@ const SCN=[
  brief:"<p>Le réacteur est à 12 % PN, la vapeur part au condenseur par le GCT-c. Couplez, passez les groupes en automatique et montez à 100 % <b>sans dépasser 3 %/min</b>.</p><p>Critères : Tmoy à ± 2 °C de Tref, ΔI dans le domaine, groupe R au-dessus de sa limite basse (150 pas).</p>",
  tips:"Juste après le couplage, montez la charge vers 10–12 % avant de passer en automatique, sinon R s'insère fortement. Les GCP ne compensent pas exactement le défaut de puissance à ce bore : surveillez R pendant la montée et corrigez au bore (borication si R descend, dilution s'il monte). ×5 conseillé.",
  obj:[
-  {id:'cpl',t:"Coupler l'alternateur au réseau",test:s=>s.coupled},
-  {id:'auto',t:'Passer R et GCP en automatique',test:s=>s.coupled&&s.modeR==='auto'&&s.modeG==='auto'},
-  {id:'p100',t:'Atteindre 100 % de charge',test:s=>s.Lt>=0.995}
+  {id:'cpl',t:"Coupler l'alternateur au réseau",w:"L'alternateur est raccordé au réseau : la turbine commence à prendre de la vapeur et à produire de l'électricité.",test:s=>s.coupled},
+  {id:'auto',t:'Passer R et GCP en automatique',w:"En mode G, les GCP suivent la charge et R tient la température : le réacteur suit la turbine.",test:s=>s.coupled&&s.modeR==='auto'&&s.modeG==='auto'},
+  {id:'p100',t:'Atteindre 100 % de charge',w:"Une montée progressive limite les contraintes thermiques sur le combustible et laisse le temps de corriger au bore.",test:s=>s.Lt>=0.995}
  ],
  win:s=>s.coupled&&!s.tripped,tol:2,
  update(s,c){ if(s.coupled&&s.LtSet>s.Lt+0.001&&s.ramp>3) c.st.rampViol=true; },
@@ -1119,9 +1154,9 @@ const SCN=[
  brief:"<p>Pleine puissance, xénon à l'équilibre. Le dispatching demande : baisse à <b>50 % à 5 %/min</b>, palier de <b>2 heures</b>, puis retour à 100 %.</p><p>Critères : Tmoy à ±1,5 °C de Tref, ΔI dans le domaine, R dans sa bande 150–220 pas.</p>",
  tips:"Le xénon monte plusieurs heures après une baisse de puissance : il faut diluer. À la remontée il brûle : il faut borer. ×60 pendant le palier.",
  obj:[
-  {id:'low',t:'Baisser la charge à 50 %',test:s=>s.Lt<=0.505},
-  {id:'hold',t:'Tenir 50 % pendant 2 h',test:(s,c)=>(c.k.hold||0)>=7200},
-  {id:'up',t:'Remonter à 100 %',test:(s,c)=>c.o.hold&&s.Lt>=0.995}
+  {id:'low',t:'Baisser la charge à 50 %',w:"Le réseau demande moins d'électricité (nuit, week-end) : la tranche module sa production.",test:s=>s.Lt<=0.505},
+  {id:'hold',t:'Tenir 50 % pendant 2 h',w:"Pendant ce palier, le xénon évolue pendant des heures : c'est lui qu'il faut compenser au bore.",test:(s,c)=>(c.k.hold||0)>=7200},
+  {id:'up',t:'Remonter à 100 %',w:"À la remontée, le flux brûle le xénon : il libère de la réactivité qu'il faut reprendre en borant.",test:(s,c)=>c.o.hold&&s.Lt>=0.995}
  ],
  win:s=>s.coupled&&!s.tripped,tol:1.5,
  update(s,c){ if(c.o.low&&Math.abs(s.Lt-0.5)<0.02) c.k.hold=(c.k.hold||0)+DT; },
@@ -1134,11 +1169,11 @@ const SCN=[
  brief:"<p>Tranche à 30 %. Mettez le réacteur à l'arrêt à chaud de façon contrôlée : baisse de charge, découplage, passage sous-critique avec les groupes de commande, borication jusqu'à une <b>marge d'arrêt de 3 000 pcm</b> (groupes d'arrêt restant extraits), Tmoy stabilisée à 286 °C.</p>",
  tips:"Découplage possible sous 6 % de charge. Les groupes passent alors en manuel : insérez GCP et R. La marge d'arrêt est −ρ total.",
  obj:[
-  {id:'l5',t:'Réduire la charge à 5 %',test:s=>s.coupled&&s.Lt<=0.055||(!s.coupled&&!s.tripped)},
-  {id:'dec',t:'Découpler la turbine',test:s=>!s.coupled&&!s.tripped},
-  {id:'sub',t:'Puissance nucléaire sous 0,1 % PN',test:s=>s.n<0.001},
-  {id:'mar',t:"Marge d'arrêt ≥ 3 000 pcm",test:s=>-s.rho.tot>=3000},
-  {id:'tm',t:'Tmoy stabilisée à 286 ± 2 °C',test:s=>!s.coupled&&s.n<0.001&&Math.abs(s.Tavg-286)<2}
+  {id:'l5',t:'Réduire la charge à 5 %',w:"On ramène la turbine à son minimum avant de la séparer du réseau.",test:s=>s.coupled&&s.Lt<=0.055||(!s.coupled&&!s.tripped)},
+  {id:'dec',t:'Découpler la turbine',w:"La vapeur part alors au condenseur par le GCT-c, qui tient la pression des GV.",test:s=>!s.coupled&&!s.tripped},
+  {id:'sub',t:'Puissance nucléaire sous 0,1 % PN',w:"Insérer GCP puis R rend le réacteur sous-critique : la puissance décroît avec une période d'environ −80 s.",test:s=>s.n<0.001},
+  {id:'mar',t:"Marge d'arrêt ≥ 3 000 pcm",w:"Le bore garantit que le réacteur restera sous-critique même quand le xénon aura disparu, dans un ou deux jours.",test:s=>-s.rho.tot>=3000},
+  {id:'tm',t:'Tmoy stabilisée à 286 ± 2 °C',w:"Le GCT-c tient 70 bar dans les GV, ce qui fixe Tmoy vers 286 °C : c'est l'arrêt à chaud.",test:s=>!s.coupled&&s.n<0.001&&Math.abs(s.Tavg-286)<2}
  ],
  info:s=>'Marge d\'arrêt '+fmt(-s.rho.tot,0)+' pcm · Bore '+fmt(s.Cb,0)+' ppm',
  end:(s,c)=>(c.o.l5&&c.o.dec&&c.o.sub&&c.o.mar&&c.o.tm)||c.st.isT!=null,
@@ -1216,7 +1251,7 @@ function newCtx(scn,s){
 function launch(id){
   let scn=byId(id), mystery=false;
   if(id==='myst'){ const real=byId(ALEA_IDS[Math.floor(Math.random()*ALEA_IDS.length)]); scn=Object.assign({},real,{mystery:true,realTitle:real.title,title:'Aléa mystère',id:'myst'}); mystery=true; }
-  A.s=makeState(scn.init); A.scn=scn; A.ctx=newCtx(scn,A.s); A.done=false; A.acc=0;
+  A.s=makeState(scn.init); A.trk={}; A.scn=scn; A.ctx=newCtx(scn,A.s); A.done=false; A.acc=0;
   const c=A.ctx;
   if(scn.kind==='alea') c.fireAt=A.s.t+(scn.id==='rodwd'?25+Math.random()*20:45+Math.random()*60);
   if(scn.kind==='libre'){ c.rnd=$('#rndAlea').checked; c.nextAlea=600+Math.random()*900; c.fires=[]; }
@@ -1233,11 +1268,11 @@ function showBrief(){
   if(scn.kind==='alea') h+=INTRO_ALEA+(scn.id==='rodwd'?"<p>État : réacteur tout juste critique à puissance nulle (GI ≈ 10⁻⁸ A), turbine découplée, groupes en manuel. Restez à ×1.</p>":'');
   else if(scn.kind==='libre') h+="<p>Aucun objectif imposé : manœuvrez librement. "+(A.ctx.rnd?'Des aléas aléatoires surviendront pendant le pilotage. ':'')+"Le bouton <kbd>Terminer</kbd> affiche un bilan.</p>";
   else h+=scn.brief||'';
-  if(scn.obj){ h+='<h3>Objectifs</h3><ul class="crit">'+scn.obj.map(o=>'<li><span class="i">○</span><span>'+o.t+'</span></li>').join('')+'</ul>'; }
+  if(scn.obj){ h+='<h3>Objectifs</h3><ul class="crit">'+scn.obj.map(o=>'<li><span class="i">○</span><span>'+o.t+(o.w?'<small>'+o.w+'</small>':'')+'</span></li>').join('')+'</ul>'; }
   if(scn.tips) h+='<p class="note" style="font-size:14px">'+scn.tips+'</p>';
   h+='<p class="note">Vitesse de départ : ×'+(scn.speed||1)+'. Modifiable à tout moment en haut de l\'écran.</p>';
   h+='<div class="row" style="margin-top:14px"><button class="btn pri" id="goBtn">Prendre le quart</button><button class="btn" id="backMenu">Retour au menu</button></div>';
-  $('#briefBox').innerHTML=h; $('#brief').hidden=false; A.paused=true;
+  $('#briefBox').innerHTML=h; $('#brief').hidden=false; A.paused=true; glossDom($('#briefBox'));
   $('#goBtn').onclick=()=>{ $('#brief').hidden=true; A.paused=false; syncAll(); };
   $('#backMenu').onclick=()=>{ $('#brief').hidden=true; openMenu(); };
 }
@@ -1368,7 +1403,13 @@ function twoStep(btn,label,armed,fn){
 twoStep($('#aarBtn'),'AAR manuel','Confirmer l\'AAR',()=>act('aar'));
 twoStep($('#isBtn'),'IS manuelle','Confirmer l\'IS',()=>act('is'));
 
+document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('g')){ e.preventDefault(); showGloss(+e.target.dataset.g); } if(e.key==='Escape') $('#gpop').hidden=true; });
 document.addEventListener('click',e=>{
+  const gq=e.target.closest('.g'); if(gq){ showGloss(+gq.dataset.g); return; }
+  if(!e.target.closest('#gpop')) $('#gpop').hidden=true;
+  if(e.target.closest('#lexBtn')){ openLex(); return; }
+  if(e.target.closest('#alb-see')){ if(innerWidth<1080) setTab('alarm'); else document.querySelector('[data-c="alarm"]').scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  if(e.target.closest('#alb-ack')){ if(A.s){ for(const a of Object.values(A.s.alarms)) if(a.on) a.ack=true; updateAlarms(); } return; }
   const hq=e.target.closest('[data-help]'); if(hq){ openHelp(hq.dataset.help); return; }
   if(e.target.id==='help'){ closeHelp(); return; }
   const b=e.target.closest('[data-act]'); if(b&&!b.closest('.seg')){ act(b.dataset.act,b.dataset.v); return; }
@@ -1426,8 +1467,21 @@ const H=(id,v)=>{ const e=document.getElementById(id); if(e&&e.innerHTML!==v) e.
 function cls(id,c,on){ document.getElementById(id).classList.toggle(c,!!on); }
 function lamp(id,st){ const e=document.getElementById(id); e.className='lamp'+(st?' '+st:''); }
 
+const TRK=[['b-pn',s=>s.n*100,0.3],['b-pe',s=>s.Qt*K.MWE,3],['b-tm',s=>s.Tavg,0.15],['b-pp',s=>s.Ppzr,0.25],['b-lg',s=>s.Lsg,0.5],['b-lp',s=>s.Lpzr,0.5],['b-cb',s=>s.Cb,0.3],['b-rho',s=>s.rho.tot,3],
+ ['c-lt',s=>s.Lt*100,0.3],['c-gct',s=>s.gct*100,1],['c-lsg',s=>s.Lsg,0.5],['c-wf',s=>s.Wf*100,1],['c-wst',s=>s.Wst*100,1],['c-psg',s=>s.Psg,0.2],['c-pp',s=>s.Ppzr,0.25],['c-lp',s=>s.Lpzr,0.5],['c-heat',s=>s.hEff*1440,25],['c-spr',s=>s.spray*100,2],['c-qc',s=>s.Qc,0.5],['c-cb',s=>s.Cb,0.3],['i-pr',s=>s.n*100,0.3],['i-sat',s=>s.satMargin,0.3]];
+function trackVar(s){
+  const now=performance.now(); if(!A.trk) A.trk={};
+  for(const [id,f,thr] of TRK){
+    const v=f(s); let o=A.trk[id]; if(!o) o=A.trk[id]={smp:[],lc:-1e9,dir:0};
+    o.smp.push([s.t,v]); while(o.smp.length>2&&o.smp[1][0]<=s.t-10) o.smp.shift();
+    const d=v-o.smp[0][1]; if(Math.abs(d)>=thr){ o.lc=now; o.dir=d>0?1:-1; }
+    const on=now-o.lc<1500, e=document.getElementById(id); if(!e) continue;
+    e.classList.toggle('up',on&&o.dir>0); e.classList.toggle('dn',on&&o.dir<0);
+  }
+}
 function updateUI(){
   const s=A.s; if(!s) return;
+  trackVar(s);
   T('clock',hms(s.t));
   const st=s.is?'IS':s.tripped?'AAR':s.ilot?'Îlotage':s.coupled?'Puissance':(s.n>1e-7?'Critique':'Sous-crit.');
   T('b-state',st); lamp('b-lamp',s.is||s.tripped?'r':s.ilot||s.limitNow?'a':'g');
@@ -1503,6 +1557,11 @@ function updateAlarms(){
   let nack=0;
   for(const [id,,sev] of ALM){ const a=s.alarms[id], e=document.getElementById('an-'+id); if(!e) continue; const on=a&&a.on; e.className='an '+sev+(on?' on':'')+(on&&!a.ack?' nack':''); if(on&&!a.ack) nack++; }
   const bd=$('#badge'); bd.hidden=nack===0; bd.textContent=nack;
+  const rk={r:0,a:1,i:2}, act=ALM.filter(([id])=>s.alarms[id]&&s.alarms[id].on).map(([id,lab,sev])=>({lab,sev,ack:s.alarms[id].ack,t:s.alarms[id].since}));
+  const show=act.filter(x=>x.sev!=='i'||!x.ack).sort((a,b)=>rk[a.sev]-rk[b.sev]||b.t-a.t);
+  const ab=$('#alb');
+  if(!show.length){ ab.hidden=true; }
+  else{ ab.hidden=false; const w=show[0].sev; ab.className='alb '+w+(show.some(x=>!x.ack)?' nack':''); lamp('alb-l',w==='i'?'g':w); T('alb-n',show.length+(show.length>1?' alarmes':' alarme')); T('alb-t',show.slice(0,3).map(x=>x.lab).join(' · ')+(show.length>3?' …':'')); }
   if(A.logN!==s.log.length){ A.logN=s.log.length; const L=s.log.slice(-120).reverse(); $('#log').innerHTML=L.map(l=>'<div><span class="tm">'+hms(l.t)+'</span><span class="'+l.type+'">'+l.txt+'</span></div>').join(''); }
 }
 
@@ -1524,17 +1583,17 @@ function renderMission(force){
     if(c.step>0) foot+='<button class="btn sm" id="tPrev">Précédent</button>';
     foot+=stp.last?'<button class="btn pri" id="tEnd">Terminer '+(scn.kind==='tuto'?'le tutoriel':'la leçon')+'</button>':'<button class="btn pri" id="tNext"'+(stp.ok&&!c.stepOk&&!stp.opt?' disabled':'')+'>Suivant</button>';
   } else if(scn.kind==='exo'){
-    body='<ul class="obj">'+scn.obj.map(o=>'<li class="'+(c.o[o.id]!=null?'done':'')+'">'+o.t+'</li>').join('')+'</ul>'+(scn.info?'<div class="info" id="mis-info">'+scn.info(s,c)+'</div>':'');
+    body='<ul class="obj">'+scn.obj.map(o=>'<li class="'+(c.o[o.id]!=null?'done':'')+'"><span>'+o.t+(o.w&&c.o[o.id]==null?'<small class="why">'+o.w+'</small>':'')+'</span></li>').join('')+'</ul>'+(scn.info?'<div class="info" id="mis-info">'+scn.info(s,c)+'</div>':'');
     foot='<button class="btn" id="mEnd">Terminer et débriefer</button>';
   } else if(scn.kind==='alea'){
     if(c.fired==null) body='<p>Fonctionnement normal. Surveillez la tranche : un aléa va survenir.</p>';
-    else body='<p><b>Aléa en cours.</b> Identifiez-le (alarmes, synoptique, tendances), mettez la tranche en sécurité puis stabilisez.</p>'+(c.hint?'<p>Indice : '+scn.hint+'</p>':'');
+    else body='<p><b>Aléa en cours.</b> Identifiez-le, mettez la tranche en sécurité puis stabilisez.</p><p>Méthode : dans le journal, repérez la <b>première</b> alarme apparue, souvent la cause ; dans le bandeau, regardez quels paramètres varient (en gras, avec une flèche) et vers quel seuil ils vont ; puis cherchez quel équipement l\'explique.</p>'+(c.hint?'<p>Indice : '+scn.hint+'</p>':'');
     foot=(c.fired!=null&&!c.hint?'<button class="btn" id="mHint">Indice</button>':'')+'<button class="btn" id="mEnd">Terminer et débriefer</button>';
   } else {
     body='<p>Pilotage libre'+(c.rnd?', aléas aléatoires activés':'')+'. Toutes les commandes sont disponibles.</p>';
     foot='<button class="btn" id="mEnd">Terminer</button>';
   }
-  T('mis-title',title); $('#mis-body').innerHTML=body; $('#mis-foot').innerHTML=foot;
+  T('mis-title',title); $('#mis-body').innerHTML=body; glossDom($('#mis-body')); $('#mis-foot').innerHTML=foot;
   const on=(id,f)=>{ const e=document.getElementById(id); if(e) e.onclick=f; };
   on('tNext',()=>{ if(c.step<scn.steps.length-1) enterStep(c.step+1); });
   on('tPrev',()=>enterStep(c.step-1));
@@ -1577,7 +1636,7 @@ function finish(){
   const ops=s.log.filter(l=>l.type==='op').slice(-14);
   if(ops.length) h+='<h3>Vos dernières actions</h3><div class="log" style="max-height:200px">'+ops.map(l=>'<div><span class="tm">'+hms(l.t)+'</span><span class="op">'+l.txt+'</span></div>').join('')+'</div>';
   h+='<div class="row" style="margin-top:16px"><button class="btn pri" id="dRe">Rejouer</button><button class="btn" id="dCont">Continuer en libre</button><button class="btn" id="dMenu">Menu</button></div>';
-  $('#debriefBox').innerHTML=h; $('#debrief').hidden=false;
+  $('#debriefBox').innerHTML=h; $('#debrief').hidden=false; glossDom($('#debriefBox'));
   $('#dRe').onclick=()=>launch(scn.mystery?'myst':scn.id);
   $('#dMenu').onclick=()=>openMenu();
   $('#dCont').onclick=()=>{ A.scn=Object.assign({},byId('libre')); A.ctx=newCtx(A.scn,s); A.ctx.rnd=false; A.ctx.fires=[]; A.done=false; $('#debrief').hidden=true; A.paused=false; renderMission(true); syncAll(); };
@@ -1602,27 +1661,188 @@ $('#menuCards').addEventListener('click',e=>{ const b=e.target.closest('[data-sc
 
 /* ================= Aide des cartes ================= */
 const HELP={
- synop:{t:'Synoptique',l:'tuto',h:"<p>Vue simplifiée de la tranche, trois boucles regroupées en une.</p><ul><li><b>Primaire</b> : branche chaude en orange (Tch ≈ 323 °C à 100 %), branche froide en bleu (Tfr ≈ 286 °C). Le cœur s'échauffe de ~37 °C à pleine puissance ; Tmoy est la moyenne des deux.</li><li><b>Cuve</b> : les trois barres blanches sont les groupes d'arrêt, les GCP et R ; leur longueur visible est l'insertion. La couleur du cœur suit la puissance thermique.</li><li><b>Pressuriseur</b> relié à la branche chaude, <b>GV</b> avec leur niveau, <b>pompes primaires</b> (vert = 3/3 en service).</li><li><b>Secondaire</b> : vapeur vers la turbine, l'alternateur et le disjoncteur (vert = couplé) ; GCT-c vers le condenseur ; eau alimentaire (vert) qui revient aux GV.</li></ul>"},
- instr:{t:'Instrumentation neutronique',l:'l-cin',h:"<p>Trois gammes se recouvrent pour couvrir 12 décades de flux :</p><ul><li><b>Gamme source</b> (compteurs, 1 à 10⁶ c/s) pour l'arrêt et la divergence. Inhibée au-dessus de P6, sinon elle saturerait ; elle se réalimente seule après un AAR.</li><li><b>Gamme intermédiaire</b> (chambres compensées, 10⁻¹¹ à 10⁻³ A).</li><li><b>Gamme puissance</b> (chambres longues à deux sections, 0–120 % PN), qui fournit aussi le ΔI.</li></ul><p><b>Temps de doublement</b> : durée pour que la puissance double ; 60 s correspondent à ~+100 pcm. <b>Marge ΔT</b> : distance au seuil d'AAR surpuissance ou surtempérature. <b>Marge à la saturation</b> : écart entre Tsat à la pression pressu et la branche chaude. <b>Puissance résiduelle</b> : chaleur des produits de fission, ~6,5 % juste après arrêt, 1 à 2 % au bout d'une heure.</p>"},
- react:{t:'Bilan de réactivité',l:'l-fb',h:"<p>La réactivité ρ mesure l'écart à la criticité, en <b>pcm</b> (10⁻⁵). ρ = 0 : puissance constante. Les barres sont centrées sur zéro : bleu pour les termes négatifs, orange pour les positifs.</p><ul><li><b>Réserve du cœur</b> : excès du combustible neuf, constant ici (milieu de cycle).</li><li><b>Grappes</b> : 4 800 pcm pour les groupes d'arrêt, 1 800 pour les GCP, 1 100 pour R.</li><li><b>Bore</b> : −9 pcm/ppm.</li><li><b>Modérateur</b> : α × (Tmoy − 286 °C), α dépendant du bore.</li><li><b>Doppler</b> : ≈ −1 000 pcm entre 0 et 100 %.</li><li><b>Xénon</b> : ≈ −2 700 pcm à l'équilibre pleine puissance.</li></ul><p>Repère clé : <b>β = 600 pcm</b>. Au-delà, le réacteur est prompt-critique. Réacteur sous-critique : −ρ est la <b>marge d'arrêt</b>.</p>"},
- di:{t:'Diagramme ΔI',l:'l-di',h:"<p><b>ΔI = P(haut) − P(bas)</b> en % PN, mesuré par les deux sections des chambres gamme puissance. Il décrit la forme axiale du flux.</p><p>Le diagramme porte la puissance en ordonnée et ΔI en abscisse. La bande verte est le domaine autorisé : ΔI de référence ± 5 % PN. Sortir du domaine dégrade les marges thermiques et le seuil ΔT surtempérature.</p><p>Ce qui le fait bouger : les grappes (insérées par le haut → ΔI plus négatif), le xénon (avec plusieurs heures de retard) et, dans la réalité, l'usure axiale du combustible. Le bore est uniforme et ne le change pas : c'est pourquoi on compense les variations lentes au bore.</p>"},
- rods:{t:'Grappes de commande',l:'l-fb',h:"<ul><li><b>Groupes d'arrêt</b> SA, SB, SC : toujours extraits en fonctionnement ; ils garantissent la marge d'arrêt à la chute.</li><li><b>GCP</b> (G1, G2 gris, N1, N2 noirs, en recouvrement) : en mode G, ils suivent une <b>courbe de calibrage</b> fonction de la charge turbine, pour compenser le défaut de puissance.</li><li><b>Groupe R</b> : régulation de Tmoy sur Tref, bande de manœuvre ~150–215 pas.</li></ul><p>225 pas de course. L'efficacité intégrale suit une <b>courbe en S</b> : presque rien aux extrémités, maximale à mi-hauteur (≈ 10 pcm/pas pour R).</p><p><b>Blocages d'extraction</b> : puissance > 103 %, chute de grappe, marge ΔT < 3 %. Sur AAR, toutes les grappes tombent en moins de 2 s.</p>"},
- bore:{t:'Bore — RCV / REA',l:'l-xe',h:"<p>L'acide borique dissous (bore 10, absorbant) compense les variations <b>lentes</b> : épuisement du combustible (de ~1 200 ppm en début de cycle à ~0 en fin), xénon, et position de R.</p><p>L'appoint passe par le RCV et se mélange aux 270 m³ du primaire : la concentration évolue en exponentielle. Repères à ~800 ppm :</p><ul><li>dilution de 1 m³ ≈ −3 ppm ≈ +27 pcm ;</li><li>borication de 100 L (7 700 ppm) ≈ +2,5 ppm ≈ −23 pcm.</li></ul><p>Plus le bore est bas, plus une même dilution coûte de volume. Le bore rend aussi α moins négatif : à concentration élevée, la tranche est moins autorégulée.</p>"},
- turb:{t:'Turbine — GCT',l:'l-fb',h:"<p>En <b>mode G</b>, la turbine commande et le réacteur suit : la charge fixe <b>Tref = 286 + 18,5 × charge</b>, la position des GCP et la demande de vapeur.</p><ul><li>Couplage possible à partir de 6 % PN ; vitesse de variation de 1 à 30 %/min.</li><li><b>GCT-c</b> (85 %) : contournement au condenseur. Turbine découplée, il régule la pression GV à 70 bar ; couplée, il s'ouvre si Tmoy dépasse Tref de plus de 1,5 °C (rejet de charge, îlotage).</li><li><b>GCT-a</b> (3 × 10 %) : décharge à l'atmosphère, automatique au-delà de 78 bar, manuelle pour refroidir.</li><li><b>Îlotage</b> : perte du réseau, la turbine se cale sur les auxiliaires (~5 %).</li></ul>"},
- are:{t:'Eau alimentaire — ARE / ASG',l:'l-gv',h:"<p>Le niveau GV (gamme étroite) est tenu à 50 % par la régulation ARE, qui combine niveau, débit vapeur et débit d'eau.</p><ul><li><b>Gonflement / contraction</b> : le niveau monte un instant quand la vapeur augmente et baisse quand elle diminue, à contresens de l'inventaire réel.</li><li>Pompes : 2 <b>TPA</b> de 58 % chacune, une <b>APD</b> de 12 %. Après AAR, l'ARE passe en bas débit (15 %).</li><li><b>ASG</b> : alimentation de secours (10 %, eau froide), démarrée sur AAR, niveau < 25 % ou perte des deux TPA.</li></ul><p>Seuils : AAR à 15 %, isolement ARE et déclenchement turbine à 80 %. La pression GV est la pression de saturation : 57,5 bar à 100 %, 70 bar à 0 %.</p>"},
- pzr:{t:'Pressuriseur — RCV',l:'l-pzr',h:"<p>Eau et vapeur à saturation : la pression (155 bar) est fixée par la température de l'eau du pressuriseur (345 °C).</p><ul><li><b>Chaufferettes</b> : 216 kW proportionnelles + 1 224 kW de secours, coupées sous 14 % de niveau.</li><li><b>Aspersion</b> : eau de branche froide pulvérisée, nécessite les pompes primaires 1 ou 2. Pleine ouverture ≈ −9 bar/min.</li><li><b>SEBIM</b> : soupapes pilotées, ouverture à 166,6 bar.</li></ul><p>Le niveau est programmé avec Tmoy (20 → 61 %) et tenu par la <b>charge RCV</b> face à une décharge fixe de 13,6 m³/h. 1 °C de Tmoy ≈ 2,2 % de niveau. Un débit de charge anormalement élevé trahit une fuite.</p>"},
- prot:{t:'Protection et sauvegarde',l:'l-prot',h:"<ul><li><b>AAR</b> : chute de toutes les grappes. Réarmement possible quand les grappes sont en bas et qu'aucun signal n'est présent.</li><li><b>IS</b> : injection d'eau borée à 2 500 ppm, sur pression < 119 bar ou manuelle. Arrêt autorisé si P > 140 bar, niveau pressu > 20 % et marge à la saturation > 20 °C.</li><li><b>Inhibition GS</b> : à faire après P6 lors d'une divergence.</li></ul><p>Seuils d'AAR : haut flux 109 % (25 % sous P10), gamme source 10⁵ c/s, ΔT surpuissance et surtempérature, pression 165 / 131 bar (au-dessus de P7), niveau pressu 92 %, niveau GV 15 %, perte de pompe primaire et déclenchement turbine au-dessus de P7.</p><p>AAR et IS manuelles demandent deux appuis.</p>"},
- trend:{t:'Tendances',l:null,h:"<p>Enregistrement à une seconde des grandeurs principales. Les puces choisissent les courbes ; la fenêtre va de 5 minutes à 8 heures. Le point au bout de chaque courbe est la valeur actuelle.</p><p>Conseils : <b>Puissance</b> + <b>Température</b> pour tout transitoire, <b>Grappes</b> + <b>Bore</b> + <b>Xénon</b> sur 8 h pour le suivi de charge, <b>Niveaux</b> pour les aléas eau alimentaire et RCV.</p>"},
- alarm:{t:'Alarmes et journal',l:null,h:"<p>Chaque voyant correspond à une alarme. Rouge : événement grave (AAR, IS, chute de grappe…). Ambre : écart à traiter. Bleu : information sur un état.</p><p>Un voyant qui apparaît <b>clignote</b> jusqu'à l'acquittement ; il s'éteint quand la cause disparaît. Le badge de l'onglet compte les alarmes non acquittées.</p><p>Le <b>journal de quart</b> horodate vos actions (bleu), les automatismes (ambre) et les apparitions d'alarmes : c'est votre premier outil de diagnostic.</p>"},
+ synop:{t:'Synoptique',l:'tuto',h:`<h3>En bref</h3><p>C'est le plan de la centrale, en direct. Deux circuits d'eau ne se mélangent jamais : le <b>primaire</b>, qui traverse le cœur et sort à plus de 300 °C, et le <b>secondaire</b>, qui reçoit sa chaleur dans les générateurs de vapeur et fait tourner la turbine. Une comparaison utile : le primaire est le radiateur, le secondaire la casserole posée dessus.</p>
+<h3>Ce que vous voyez</h3><ul><li><b>Cuve</b> : le cœur (sa couleur s'intensifie avec la puissance) et trois barres blanches, les groupes d'arrêt, les GCP et le groupe R. Plus une barre est longue, plus le groupe est inséré.</li><li><b>Branche chaude</b> en orange (Tch, sortie du cœur) et <b>branche froide</b> en bleu (Tfr, retour vers le cœur). Les trois boucles réelles sont regroupées en une.</li><li><b>Pressuriseur</b> : pression, niveau, aspersion. <b>GV</b> : niveau et pression vapeur.</li><li><b>Turbine</b> et alternateur ; le petit carré vert est le disjoncteur (vert = couplé au réseau).</li><li><b>GCT-c</b> : la vanne qui envoie la vapeur au condenseur sans passer par la turbine. <b>ARE</b> : l'eau alimentaire (en vert) qui retourne aux GV.</li></ul>
+<h3>Pourquoi c'est important</h3><p>Toute la conduite consiste à équilibrer ce que produit le cœur et ce que consomme le secondaire. Si la turbine prend plus de vapeur que le cœur ne fournit, le primaire se refroidit ; dans le cas inverse, il chauffe. Le synoptique permet de voir où se situe le déséquilibre.</p>
+<h3>Ordres de grandeur</h3><ul><li>Échauffement de l'eau dans le cœur : environ 37 °C à pleine puissance (286 → 323 °C).</li><li>Débit primaire : ~ 22 000 m³/h par boucle, soit une piscine olympique toutes les 7 secondes pour l'ensemble.</li><li>Rendement : 2 785 MW de chaleur pour ~ 905 MW électriques.</li></ul>`},
+ instr:{t:'Instrumentation neutronique',l:'l-cin',h:`<h3>En bref</h3><p>On ne mesure pas directement la puissance d'un réacteur : on compte les neutrons qui s'échappent de la cuve. Entre le réacteur arrêté et la pleine puissance, ce flux varie d'un facteur mille milliards. Aucun détecteur ne couvre une telle plage, d'où trois familles qui se relaient, comme les calibres d'un multimètre.</p>
+<h3>Ce que vous voyez</h3><ul><li><b>Gamme source</b> (GS) : compteurs d'impulsions, de 1 à 10⁶ coups par seconde. Utilisée à l'arrêt et pendant la divergence ; coupée au-dessus de P6 car elle saturerait.</li><li><b>Gamme intermédiaire</b> (GI) : chambres d'ionisation en courant, de 10⁻¹¹ à 10⁻³ A.</li><li><b>Gamme puissance</b> (GP) : chambres longues à deux sections (haute et basse), de 0 à 120 % PN. Elles fournissent aussi le ΔI.</li><li><b>Temps de doublement</b> : durée pour que la puissance double au rythme actuel. « Stable » : puissance constante ; « décroissance » : elle baisse.</li><li><b>ΔT / marge protection</b> : la puissance thermique mesurée par l'échauffement de l'eau, et la distance au seuil d'AAR.</li><li><b>Marge à la saturation</b> et <b>puissance résiduelle</b>.</li></ul>
+<h3>Pourquoi c'est important</h3><p>Le temps de doublement est le premier indicateur de sûreté lors d'une divergence : il dit à quelle vitesse la puissance évolue, avant même qu'elle ne soit élevée. La marge à la saturation dit si l'eau du cœur est loin de bouillir.</p>
+<h3>Ordres de grandeur</h3><ul><li>Td de 60 s ≈ +100 pcm ; Td sous 20 s : alarme, on ralentit.</li><li>Puissance résiduelle : ~ 6,5 % juste après l'arrêt, 1 à 2 % au bout d'une heure, encore ~ 0,5 % après un jour.</li><li>Marge à la saturation normale : ~ 22 °C à 155 bar et 100 %.</li></ul>
+<h3>Pièges fréquents</h3><ul><li>Juste après un mouvement de grappes, le temps de doublement affiché est faussé par le saut prompt : attendez quelques secondes avant de le lire.</li><li>Oublier d'inhiber la gamme source pendant une divergence provoque un AAR.</li></ul>`},
+ react:{t:'Bilan de réactivité',l:'l-fb',h:`<h3>En bref</h3><p>Un réacteur est une population de neutrons. Chaque génération peut être un peu plus nombreuse que la précédente (la puissance monte), un peu moins nombreuse (elle baisse) ou exactement égale (elle reste stable). La <b>réactivité</b> mesure cet écart. C'est un compte en banque : chaque élément du cœur ajoute ou retire des pcm, et le solde dit si la puissance va monter, baisser ou rester stable.</p>
+<h3>Ce que vous voyez</h3><ul><li><b>Réserve du cœur</b> : la réactivité que le combustible apporte (positive, constante ici).</li><li><b>Grappes</b>, <b>bore</b>, <b>modérateur</b>, <b>Doppler</b>, <b>xénon</b> : ce qui la consomme. Les barres partent du centre : bleu vers la gauche pour un terme négatif, orange vers la droite pour un positif.</li><li><b>Total ρ</b> : le solde. Sous-critique, il s'affiche avec la marge d'arrêt.</li></ul>
+<h3>Pourquoi c'est important</h3><p>Ce tableau explique tout mouvement de puissance. Si la puissance baisse sans raison apparente, une ligne a changé : le xénon monte, le bore a varié, une grappe est tombée… L'opérateur raisonne en permanence en « qui ajoute, qui retire ».</p>
+<h3>Ordres de grandeur</h3><ul><li>β = 600 pcm : au-delà, le réacteur est prompt-critique.</li><li>+100 pcm ≈ une période d'une minute.</li><li>Groupes d'arrêt 4 800 pcm, GCP 1 800, groupe R 1 100.</li><li>Bore : −9 pcm par ppm. Xénon à l'équilibre : −2 700 pcm. Défaut de puissance 0 → 100 % : ~ −1 400 pcm.</li></ul>
+<h3>Pièges fréquents</h3><ul><li>Un total proche de zéro ne veut pas dire « peu de puissance » : critique signifie seulement que la puissance est constante, à n'importe quel niveau.</li><li>Le coefficient modérateur α dépend du bore : en début de cycle, le réacteur réagit moins aux variations de température.</li></ul>`},
+ di:{t:'Diagramme ΔI',l:'l-di',h:`<h3>En bref</h3><p>La puissance ne se répartit pas uniformément sur la hauteur du cœur (environ 3,7 m). Le ΔI compare la moitié haute et la moitié basse. Une image : une bougie qui brûlerait plus fort en haut qu'en bas. Trop de déséquilibre, et un endroit du combustible travaille beaucoup plus que les autres.</p>
+<h3>Ce que vous voyez</h3><ul><li>En ordonnée la puissance, en abscisse le ΔI en % de la puissance nominale.</li><li>La bande verte est le domaine autorisé : le ΔI de référence ± 5 %. Elle est inclinée parce que la référence suit la puissance.</li><li>Le point blanc est l'état actuel ; il devient ambre hors domaine. La trace grise montre la dernière heure.</li></ul>
+<h3>Pourquoi c'est important</h3><p>Les marges de sûreté (crise d'ébullition, température du combustible en cas d'accident) sont calculées pour des formes de flux données. Rester dans le domaine garantit qu'elles restent valables. Un ΔI qui s'écarte réduit aussi le seuil de protection ΔT surtempérature.</p>
+<h3>Ce qui le fait bouger</h3><ul><li><b>Les grappes</b>, qui entrent par le haut : les insérer écrase le flux en haut, le ΔI devient plus négatif.</li><li><b>Le xénon</b>, avec plusieurs heures de retard : il se forme là où le flux était fort et peut entretenir une oscillation haut-bas d'environ 24 h.</li><li><b>Le bore</b>, lui, agit partout pareil : il ne change pas le ΔI. C'est pourquoi on compense les variations lentes au bore plutôt qu'avec les grappes.</li></ul>
+<h3>Pièges fréquents</h3><ul><li>Compenser le xénon en enfonçant R : la puissance est juste, mais le ΔI dérive.</li><li>Corriger trop tard une oscillation xénon : elle s'amplifie d'un cycle à l'autre.</li></ul>`},
+ rods:{t:'Grappes de commande',l:'l-fb',h:`<h3>En bref</h3><p>Les grappes sont des faisceaux de crayons absorbants qui coulissent dans le combustible, comme un frein qu'on enfonce plus ou moins. Elles agissent vite et localement, et assurent l'arrêt d'urgence : relâchées, elles tombent par gravité en moins de 2 secondes.</p>
+<h3>Ce que vous voyez</h3><ul><li><b>Groupes d'arrêt</b> (SA, SB, SC) : toujours extraits en fonctionnement. Ils sont la réserve qui garantit l'arrêt.</li><li><b>GCP</b> (G1, G2 dits « gris », N1, N2 « noirs », qui se chevauchent) : en mode G, ils prennent une position fixée par la charge turbine, la courbe de calibrage.</li><li><b>Groupe R</b> : il bouge seul pour tenir Tmoy sur Tref ; sa bande de manœuvre normale va de ~ 150 à 215 pas.</li><li>Position en <b>pas</b> extraits : 0 = complètement inséré, 225 = complètement extrait.</li></ul>
+<h3>Pourquoi c'est important</h3><p>Les grappes servent aux variations <b>rapides</b> : suivre la turbine, réguler la température, arrêter le réacteur. Elles déforment le flux (ΔI) et leur efficacité n'est pas linéaire. On ne les laisse donc pas longtemps profondément insérées : c'est le bore qui prend le relais.</p>
+<h3>Ordres de grandeur</h3><ul><li>Efficacité en <b>courbe en S</b> : presque nulle aux extrémités, maximale à mi-hauteur (~ 10 pcm par pas pour R).</li><li>Vitesses : 48 pas/min en manuel, 8 à 72 pas/min pour R en automatique.</li></ul>
+<h3>Pièges fréquents</h3><ul><li>Un groupe R en butée haute ne peut plus compenser une baisse de réactivité : Tmoy décroche sous Tref.</li><li>L'extraction est bloquée automatiquement au-dessus de 103 %, après une chute de grappe ou si la marge ΔT est faible.</li></ul>`},
+ bore:{t:'Bore — RCV / REA',l:'l-xe',h:`<h3>En bref</h3><p>L'eau du primaire contient de l'acide borique : le bore 10 absorbe les neutrons. Plus il y a de bore, moins le réacteur est réactif. Contrairement aux grappes, il agit partout à la fois et lentement, comme du sel dissous dans une casserole qu'on ne peut retirer qu'en ajoutant de l'eau.</p>
+<h3>Ce que vous voyez</h3><ul><li>La <b>concentration</b> en ppm (milligrammes de bore par kilogramme d'eau).</li><li><b>Dilution</b> : on injecte de l'eau pure, le bore baisse, la réactivité monte.</li><li><b>Borication</b> : on injecte de l'eau très borée (7 700 ppm), le bore monte, la réactivité baisse.</li><li>Débit et volume : l'appoint s'arrête seul au volume choisi.</li><li><b>Isoler l'appoint REA</b> : ferme toutes les vannes d'appoint, y compris celles qui fuiraient.</li></ul>
+<h3>Pourquoi c'est important</h3><p>Le bore compense ce qui évolue lentement : l'usure du combustible (de ~ 1 200 ppm en début de cycle à ~ 0 en fin), le xénon, et la position du groupe R. C'est le « réglage fin de long terme » de l'opérateur.</p>
+<h3>Ordres de grandeur</h3><ul><li>Vers 800 ppm : 1 m³ de dilution ≈ −3 ppm ≈ +27 pcm ; 100 L de borication ≈ +2,5 ppm ≈ −23 pcm.</li><li>L'effet arrive au rythme du mélange dans 270 m³ d'eau : plusieurs minutes.</li></ul>
+<h3>Pièges fréquents</h3><ul><li>Plus le bore est bas, plus une dilution coûte de volume pour le même effet.</li><li>Un bore élevé rend α moins négatif : le réacteur est moins autorégulé.</li><li>Une dilution qui continue sans demande (« Appoint REA en service » alors qu'on n'a rien lancé) est un incident classique.</li></ul>`},
+ turb:{t:'Turbine — GCT',l:'l-fb',h:`<h3>En bref</h3><p>La turbine transforme la vapeur en rotation, l'alternateur en électricité. En France, on pilote les réacteurs en <b>mode G</b> : c'est la turbine qui commande. On règle la charge demandée par le réseau, et le réacteur suit automatiquement, un peu comme un régulateur de vitesse où l'on choisit la vitesse et où le moteur s'adapte.</p>
+<h3>Ce que vous voyez</h3><ul><li><b>Charge</b> réelle et <b>consigne</b>, vitesse de variation en %/min, bouton <b>Maintenir</b> pour figer la charge.</li><li><b>Coupler / Découpler</b> l'alternateur ; <b>Recoupler au réseau</b> après un îlotage.</li><li><b>GCT-c</b> : contournement vers le condenseur. Turbine découplée, il règle la pression vapeur (mode P) ; couplée, il s'ouvre si le primaire est trop chaud (mode T).</li><li><b>GCT-a</b> : décharge de vapeur à l'atmosphère, utilisable à la main pour refroidir.</li></ul>
+<h3>Pourquoi c'est important</h3><p>La charge fixe la température de consigne : <b>Tref = 286 + 18,5 × charge</b>. Elle fixe aussi la position des GCP et le débit de vapeur. Changer la charge, c'est demander au réacteur de changer de puissance.</p>
+<h3>Ordres de grandeur</h3><ul><li>Couplage à partir de 6 % PN. Vitesses courantes : 1 à 5 %/min ; 30 %/min en baisse rapide.</li><li>GCT-c : jusqu'à 85 % du débit nominal ; GCT-a : 3 × 10 %.</li><li>Îlotage : la turbine tombe à ~ 5 % (les auxiliaires de la centrale) en une trentaine de secondes.</li></ul>
+<h3>Pièges fréquents</h3><ul><li>Monter la charge plus vite que le xénon et le bore ne le permettent : R finit en butée et Tmoy décroche.</li><li>Découpler au-dessus de 6 % : refusé, il faut d'abord réduire.</li></ul>`},
+ are:{t:'Eau alimentaire — ARE / ASG',l:'l-gv',h:`<h3>En bref</h3><p>Les générateurs de vapeur sont de grosses bouilloires : chaque kilogramme de vapeur qui part vers la turbine doit être remplacé par un kilogramme d'eau. C'est le rôle de l'ARE. Si l'eau manque, le GV s'assèche et ne refroidit plus le primaire ; s'il y en a trop, de l'eau part vers la turbine.</p>
+<h3>Ce que vous voyez</h3><ul><li><b>Niveau GV</b> (gamme étroite), tenu vers 50 %. <b>Débit ARE</b> et <b>débit vapeur</b> en % du nominal : à l'équilibre, ils sont égaux.</li><li><b>Pression GV</b> : c'est la pression d'ébullition de l'eau du GV.</li><li>Pompes : deux <b>TPA</b>, la motopompe <b>APD</b>, et l'<b>ASG</b> de secours.</li></ul>
+<h3>Pourquoi c'est important</h3><p>Le niveau GV est l'un des paramètres les plus nerveux de la tranche. Il est trompeur : quand la vapeur augmente, les bulles se multiplient et le niveau <b>monte</b> un instant alors qu'on perd de l'eau (gonflement). L'inverse se produit en baisse de charge (contraction). La régulation « trois éléments » combine niveau, débit vapeur et débit d'eau pour ne pas s'y laisser prendre.</p>
+<h3>Ordres de grandeur</h3><ul><li>Chaque TPA fournit 58 % du débit, l'APD 12 %, l'ASG 10 % d'eau froide.</li><li>Pression vapeur : 57,5 bar à 100 %, 70 bar à 0 %.</li><li>AAR à 15 %, déclenchement turbine à 80 %. Avec un débit d'eau inférieur de 40 % au débit vapeur, on perd environ 0,3 % de niveau par seconde.</li></ul>
+<h3>Pièges fréquents</h3><ul><li>Réagir au niveau seul pendant un transitoire : la contraction pousse à trop alimenter, puis le niveau dépasse.</li><li>Laisser l'ASG en service après stabilisation : l'eau froide refroidit inutilement le primaire.</li></ul>`},
+ pzr:{t:'Pressuriseur — RCV',l:'l-pzr',h:`<h3>En bref</h3><p>Le primaire est plein d'eau à 300 °C qui doit rester liquide : il faut donc une forte pression (155 bar). Le pressuriseur est un grand réservoir relié au circuit, rempli en bas d'eau et en haut de vapeur. Comme dans une cocotte-minute, la pression dépend uniquement de la température de cette eau. On chauffe pour monter la pression, on refroidit pour la baisser.</p>
+<h3>Ce que vous voyez</h3><ul><li><b>Pression</b> et <b>niveau</b>, avec la référence de niveau qui suit Tmoy.</li><li><b>Chaufferettes</b> : résistances électriques, en automatique, forcées ou arrêtées.</li><li><b>Aspersion</b> : pluie d'eau froide qui condense la vapeur ; isolable si une vanne reste bloquée.</li><li><b>RCV</b> : la <b>charge</b> injecte de l'eau, la <b>décharge</b> en retire. La différence fait varier le niveau.</li><li><b>SEBIM</b> : soupapes de protection.</li></ul>
+<h3>Pourquoi c'est important</h3><p>Le pressuriseur est le « vase d'expansion » du primaire. Quand l'eau chauffe, elle se dilate et y entre (insurge) ; quand elle refroidit, elle en sort (outsurge). Tout écart de température se lit donc d'abord au pressuriseur. Un niveau qui baisse sans changement de température signale une perte d'eau : une fuite.</p>
+<h3>Ordres de grandeur</h3><ul><li>1 °C de Tmoy ≈ 2,2 % de niveau et ~ 0,7 bar de pression.</li><li>Chaufferettes : 1 440 kW, soit ~ 1,5 bar/min. Aspersion pleine : ~ −9 bar/min.</li><li>AAR à 165 et 131 bar, SEBIM à 166,6 bar, IS à 119 bar.</li></ul>
+<h3>Pièges fréquents</h3><ul><li>Sous 14 % de niveau, la décharge s'isole et les chaufferettes se coupent pour ne pas fonctionner à sec.</li><li>Sans les pompes primaires 1 ou 2, l'aspersion ne fonctionne plus.</li></ul>`},
+ prot:{t:'Protection et sauvegarde',l:'l-prot',h:`<h3>En bref</h3><p>Le système de protection est un gardien automatique. Il compare en permanence des mesures redondantes à des seuils et, au moindre dépassement, arrête le réacteur ou injecte de l'eau, sans attendre l'opérateur. Les seuils sont fixés pour qu'aucun transitoire n'atteigne les limites physiques du combustible et du circuit.</p>
+<h3>Ce que vous voyez</h3><ul><li>État des trois pompes primaires (<b>GMPP</b>), de l'injection de sécurité et de la gamme source.</li><li><b>AAR manuel</b> et <b>IS manuelle</b> : deux appuis, armer puis confirmer.</li><li><b>Réarmer l'AAR</b> : possible quand les grappes sont en bas et qu'aucun signal n'est présent.</li><li><b>Inhiber GS</b> pendant une divergence, après P6.</li><li>La cause du dernier AAR et les éventuelles limites dépassées.</li></ul>
+<h3>Pourquoi c'est important</h3><p>Les protections couvrent les grands risques : excursion de puissance (haut flux), crise d'ébullition (ΔT surtempérature, basse pression), surpression du circuit (haute pression), perte de refroidissement (niveau GV, débit primaire). Les <b>permissifs</b> P6, P7 et P10 adaptent ces protections au niveau de puissance.</p>
+<h3>Ordres de grandeur</h3><ul><li>Haut flux 109 % (25 % tant que P10 n'est pas atteint), gamme source 10⁵ c/s.</li><li>Pression 165 / 131 bar, niveau pressu 92 %, niveau GV 15 %.</li><li>IS à 119 bar ; arrêt possible au-dessus de 140 bar, avec un niveau pressu supérieur à 20 % et une marge à la saturation supérieure à 20 °C.</li></ul>
+<h3>Pièges fréquents</h3><ul><li>Arrêter l'IS trop tôt : si la fuite continue, la pression rechute.</li><li>Hésiter à faire un AAR manuel quand une situation échappe au contrôle : c'est l'action la plus sûre.</li></ul>`},
+ trend:{t:'Tendances',l:null,h:`<h3>En bref</h3><p>Un chiffre dit où l'on est, une courbe dit où l'on va. Les tendances enregistrent chaque seconde les grandeurs principales pour voir les dérives lentes et la forme des transitoires.</p>
+<h3>Ce que vous voyez</h3><ul><li>Les puces choisissent les courbes ; la fenêtre va de 5 minutes à 8 heures.</li><li>Le point au bout de chaque courbe est la valeur actuelle ; les pointillés sont des références (Tref, ΔI de référence).</li></ul>
+<h3>Bonnes associations</h3><ul><li><b>Puissance + Température</b> pour tout transitoire.</li><li><b>Grappes + Bore + Xénon</b> sur 8 h pour le suivi de charge.</li><li><b>Niveaux + Pression</b> pour les aléas d'eau alimentaire ou de RCV.</li></ul>`},
+ alarm:{t:'Alarmes et journal',l:null,h:`<h3>En bref</h3><p>Les alarmes signalent un écart avant qu'il ne devienne grave. Le métier de l'opérateur consiste à les trier : laquelle est la cause, lesquelles en sont les conséquences.</p>
+<h3>Ce que vous voyez</h3><ul><li><b>Rouge</b> : événement grave (AAR, IS, chute de grappe…). <b>Ambre</b> : écart à traiter. <b>Bleu</b> : information.</li><li>Une alarme qui apparaît <b>clignote</b> jusqu'à l'acquittement et s'éteint quand sa cause disparaît. Le bandeau en haut résume les alarmes en cours.</li><li>Le <b>journal de quart</b> horodate vos actions (bleu), les automatismes (ambre) et les alarmes.</li></ul>
+<h3>Méthode</h3><p>Lisez le journal à rebours pour trouver la <b>première</b> alarme apparue : c'est souvent la cause. Regardez ensuite quels paramètres varient (en gras dans le bandeau) et vers quel seuil ils vont.</p>`},
 };
+const GLOSS=[
+ ['prompt-critique','prompt-critiques?',1,"Réactivité supérieure ou égale à β : la réaction s'emballe sur les seuls neutrons prompts, en millisecondes, sans que les neutrons retardés puissent la freiner. Situation à ne jamais atteindre."],
+ ['Saut prompt','sauts? prompts?( négatifs?)?',1,"Variation quasi instantanée de la puissance juste après un changement de réactivité, avant que les neutrons retardés n'imposent leur rythme plus lent. Environ ρ / (β − ρ) en valeur relative."],
+ ['Neutrons retardés','neutrons retardés',1,"Environ 0,6 % des neutrons de fission sont émis avec un retard de 0,2 s à une minute par certains produits de fission. Ils ralentissent la réaction au point de la rendre pilotable par un humain."],
+ ['Neutrons prompts','neutrons prompts',1,"Neutrons émis instantanément par la fission. Seuls, ils feraient évoluer la puissance en quelques millisecondes."],
+ ['β (fraction de neutrons retardés)','β',0,"Fraction des neutrons de fission qui sont retardés : environ 600 pcm ici. C'est l'étalon de la réactivité : tant que ρ reste petit devant β, le réacteur évolue lentement."],
+ ['pcm','pcm',0,"« Pour cent mille » : unité de réactivité. 1 pcm = 10⁻⁵, soit un écart de 0,001 % entre deux générations de neutrons. Repère : 600 pcm = β, +100 pcm ≈ une minute de période."],
+ ['Réactivité (ρ)','réactivité|ρ',1,"Écart à la criticité : de combien la population de neutrons grossit (ρ > 0) ou diminue (ρ < 0) d'une génération à la suivante. Exprimée en pcm."],
+ ['Antiréactivité','antiréactivité',1,"Réactivité négative, celle qu'apportent par exemple les grappes ou le bore."],
+ ['Sous-critique','sous-critiques?|sous-criticité',1,"Le réacteur perd des neutrons d'une génération à l'autre (k < 1) : la puissance décroît, ou se maintient au niveau entretenu par la source de neutrons."],
+ ['Surcritique','surcritiques?',1,"Le réacteur gagne des neutrons d'une génération à l'autre (k > 1) : la puissance augmente, au rythme fixé par la période."],
+ ['Criticité','criticité|critique',1,"Chaque fission entraîne exactement une nouvelle fission en moyenne (k = 1) : la puissance reste constante, à n'importe quel niveau. « Critique » ne veut pas dire dangereux, c'est l'état normal en fonctionnement."],
+ ['Divergence','divergence|divergez|diverger',1,"Démarrage du réacteur : passage de l'état sous-critique à l'état critique puis légèrement surcritique pour faire monter la puissance."],
+ ['Période','périodes?',1,"Temps nécessaire pour que la puissance soit multipliée par e ≈ 2,72. Positive si la puissance monte, négative si elle baisse. La décroissance la plus rapide possible correspond à environ −80 s."],
+ ['Temps de doublement','temps de doublement|Td',1,"Temps pour que la puissance double au rythme actuel ; c'est la période × 0,69. Indicateur clé pendant une divergence."],
+ ['Doppler','doppler',1,"Quand le combustible chauffe, les noyaux d'uranium 238 s'agitent et capturent davantage de neutrons : la réactivité baisse immédiatement. C'est le premier frein naturel du réacteur (≈ −1,8 pcm/°C ici)."],
+ ['Coefficient modérateur (α)','coefficient modérateur|α',1,"Variation de réactivité par degré de température de l'eau. Négatif dans un REP : si l'eau chauffe, elle ralentit moins bien les neutrons et la réactivité baisse. D'autant plus négatif que le bore est bas."],
+ ['Modérateur','modérateur',1,"Ce qui ralentit les neutrons pour qu'ils provoquent efficacement des fissions : ici l'eau du primaire. Moins dense quand elle chauffe, elle ralentit moins bien."],
+ ['Contre-réaction','contre-réactions?',1,"Effet par lequel l'état du réacteur agit sur sa propre réactivité. Négative, elle est stabilisante : la puissance monte, le combustible chauffe, la réactivité baisse."],
+ ['Défaut de puissance','défaut de puissance',1,"Réactivité « consommée » par les contre-réactions quand on monte en puissance (combustible et eau plus chauds) : environ 1 400 pcm entre 0 et 100 % ici. Il faut la compenser par les GCP."],
+ ['Point d\'échauffement nucléaire','point d\'échauffement nucléaire|point d\'échauffement',1,"Niveau de puissance (≈ 1 %) à partir duquel les fissions chauffent sensiblement le combustible : les contre-réactions apparaissent et la puissance se stabilise d'elle-même."],
+ ['Autorégulation','autorégulation|autorégulée?',1,"Capacité du réacteur à se stabiliser seul grâce à ses contre-réactions négatives, sans action sur les grappes."],
+ ['Réserve du cœur','réserve du cœur',1,"Réactivité apportée par le combustible au-delà de ce qui est nécessaire pour être critique. Elle diminue au fil du cycle à mesure que l'uranium s'use."],
+ ['Bore / ppm','bore|ppm|acide borique',1,"Acide borique dissous dans l'eau du primaire ; le bore 10 absorbe les neutrons. Concentration en ppm (mg de bore par kg d'eau). Agit uniformément dans tout le cœur, avec environ −9 pcm par ppm ici."],
+ ['Dilution','dilutions?|diluer|diluez',1,"Ajout d'eau pure dans le primaire : la concentration en bore baisse et la réactivité augmente."],
+ ['Borication','borications?|borer|borez',1,"Ajout d'eau très chargée en bore (7 700 ppm) : la concentration monte et la réactivité baisse."],
+ ['Xénon 135','xénon( 135)?',1,"Produit de fission qui absorbe énormément de neutrons. Il est surtout produit par la décroissance de l'iode 135 et détruit par le flux de neutrons. Son évolution sur plusieurs heures perturbe la réactivité après chaque changement de puissance."],
+ ['Iode 135','iode( 135)?',1,"Produit de fission de demi-vie 6,6 h qui se transforme en xénon 135 : c'est le « réservoir » qui alimente le xénon après une baisse de puissance."],
+ ['Empoisonnement','empoisonnement|poison',1,"Perte de réactivité due à des produits de fission très absorbants, principalement le xénon 135."],
+ ['ΔI (différence axiale de puissance)','ΔI',0,"Puissance de la moitié haute du cœur moins celle de la moitié basse, en % de la puissance nominale. Mesure la forme verticale du flux ; on la garde dans un domaine autour d'une référence."],
+ ['Axial offset (AO)','axial offset|AO',0,"ΔI divisé par la puissance : décrit la forme du flux indépendamment de son niveau."],
+ ['Facteur de forme','facteur de forme',1,"Rapport entre la puissance au point le plus chaud du cœur et la puissance moyenne. Plus il est élevé, plus les marges thermiques sont réduites."],
+ ['Oscillation xénon axiale','oscillations? xénon axiales?',1,"Balancement lent (~ 24 h) de la puissance entre le haut et le bas du cœur, entretenu par la formation et la destruction du xénon. Il peut s'amplifier si l'on ne l'amortit pas."],
+ ['Grappe','grappes?',1,"Faisceau de crayons absorbants (argent-indium-cadmium) qui coulisse dans les assemblages de combustible. Insérée, elle absorbe des neutrons et réduit la réactivité."],
+ ['Groupes d\'arrêt','groupes d\'arrêt|SA|SB|SC',0,"Grappes (SA, SB, SC) toujours extraites en fonctionnement : elles constituent la réserve qui garantit l'arrêt du réacteur."],
+ ['GCP','GCP',0,"Groupes de compensation de puissance (G1, G2, N1, N2). En mode G, ils prennent une position fixée par la charge turbine pour compenser le défaut de puissance."],
+ ['Groupe R','groupe R',0,"Groupe de régulation de température : il bouge automatiquement pour tenir Tmoy sur Tref. Bande de manœuvre normale ~ 150 à 215 pas."],
+ ['Pas','(?<=\\d\\s?)pas',0,"Unité de déplacement des grappes : 225 pas sur toute la hauteur du cœur, soit ≈ 1,6 cm par pas. 0 = inséré, 225 = extrait."],
+ ['Courbe en S','courbe en S',1,"Forme de l'efficacité intégrale d'une grappe : presque aucun effet près des extrémités, effet maximal quand elle est à mi-hauteur."],
+ ['Courbe de calibrage','courbe de calibrage',1,"Position programmée des GCP en fonction de la charge turbine, calculée pour compenser le défaut de puissance."],
+ ['Mode G','mode G',0,"Mode de pilotage des REP français : le réacteur suit la turbine. Les GCP sont positionnés selon la charge, R régule la température, le bore compense les évolutions lentes."],
+ ['Tmoy','Tmoy',0,"Température moyenne de l'eau primaire, entre branche chaude et branche froide. Elle suit un programme : 286 °C à 0 %, 304,5 °C à 100 %."],
+ ['Tref','Tref',0,"Température de consigne calculée à partir de la charge turbine. Le groupe R agit pour que Tmoy reste égale à Tref."],
+ ['Branche chaude / froide','branches? (chaude|froide)',1,"Tuyauteries du primaire : la branche chaude va de la cuve au GV (≈ 323 °C à 100 %), la branche froide revient du GV à la cuve (≈ 286 °C)."],
+ ['Primaire','primaire',1,"Circuit d'eau sous 155 bar qui traverse le cœur et cède sa chaleur aux GV. Fermé et radioactif."],
+ ['Secondaire','secondaire',1,"Circuit eau-vapeur qui reçoit la chaleur dans les GV, fait tourner la turbine puis est recondensé. Il n'est pas en contact avec le cœur."],
+ ['Pressuriseur','pressuriseur|pressu',1,"Réservoir relié au primaire, contenant de l'eau en bas et de la vapeur en haut. Il fixe la pression du circuit et absorbe les dilatations de l'eau."],
+ ['Chaufferettes','chaufferettes',1,"Résistances électriques au fond du pressuriseur (1 440 kW) : elles vaporisent de l'eau pour faire monter la pression."],
+ ['Aspersion','aspersion',1,"Pulvérisation d'eau de branche froide en haut du pressuriseur : elle condense de la vapeur et fait baisser la pression."],
+ ['Insurge / outsurge','insurge|outsurge',1,"Entrée d'eau dans le pressuriseur quand le primaire se dilate (insurge), sortie quand il se contracte (outsurge)."],
+ ['SEBIM','SEBIM',0,"Soupapes de protection du pressuriseur, qui s'ouvrent à 166,6 bar pour éviter la surpression."],
+ ['RCV','RCV',0,"Circuit de contrôle chimique et volumétrique : il ajuste la quantité d'eau du primaire (charge et décharge) et sa composition, dont le bore."],
+ ['REA','REA',0,"Circuit d'appoint qui fournit l'eau déminéralisée et l'acide borique injectés par le RCV."],
+ ['Charge / décharge','charge RCV|décharge',1,"Débit d'eau injecté dans le primaire (charge) ou prélevé (décharge) par le RCV. Leur différence fait varier le niveau du pressuriseur."],
+ ['GV (générateur de vapeur)','GV|générateurs? de vapeur',0,"Échangeur où l'eau primaire, circulant dans ~ 3 300 tubes en U, fait bouillir l'eau secondaire sans s'y mélanger. Trois GV sur un REP 900."],
+ ['Gonflement / contraction','gonflement|contraction',1,"Variation apparente du niveau GV due aux bulles de vapeur. Quand le débit vapeur augmente, le niveau monte un instant (gonflement) alors qu'on perd de l'eau, et inversement (contraction)."],
+ ['ARE','ARE',0,"Alimentation normale en eau des GV, régulée pour remplacer exactement la vapeur produite."],
+ ['TPA','TPA',0,"Turbopompe alimentaire : grosse pompe de l'ARE entraînée par une petite turbine à vapeur. Deux TPA de 58 % chacune ici."],
+ ['APD','APD',0,"Motopompe électrique de l'ARE (12 %), utilisée au démarrage ou en appoint."],
+ ['ASG','ASG',0,"Alimentation de secours des GV, qui démarre automatiquement sur AAR ou niveau bas. Elle injecte de l'eau froide."],
+ ['GCT-c','GCT-c',0,"Contournement de la turbine vers le condenseur : envoie la vapeur directement au condenseur quand la turbine ne la consomme pas."],
+ ['GCT-a','GCT-a',0,"Décharge de vapeur à l'atmosphère, le panache visible sur le toit des bâtiments. Utilisée pour refroidir quand le condenseur n'est pas disponible."],
+ ['Condenseur','condenseur',1,"Échangeur refroidi par l'eau d'une rivière ou de la mer, qui retransforme la vapeur en eau."],
+ ['Îlotage','îlotage|îlotée',1,"Perte du réseau sans arrêt du réacteur : la tranche continue de tourner en alimentant seulement ses propres auxiliaires (~ 5 %)."],
+ ['Couplage','couplage|coupler|couplée?',1,"Raccordement de l'alternateur au réseau électrique : la turbine commence alors à fournir de la puissance."],
+ ['AAR','AAR',0,"Arrêt automatique du réacteur : toutes les grappes tombent en moins de 2 s, apportant plus de 7 000 pcm d'antiréactivité."],
+ ['IS (injection de sécurité)','IS',0,"Injection d'eau borée dans le primaire en cas de chute de pression ou de perte d'eau, pour garder le cœur noyé et sous-critique."],
+ ['Permissif','permissifs?',1,"Seuil de puissance qui active ou inhibe certaines protections, pour qu'elles ne s'appliquent que là où elles ont un sens."],
+ ['P6','P6',0,"Permissif atteint quand la gamme intermédiaire dépasse 10⁻¹⁰ A : autorise l'inhibition de la gamme source."],
+ ['P7','P7',0,"Permissif à 10 % de puissance : au-dessus, les AAR sur basse pression, niveau pressu haut, perte de pompe primaire et déclenchement turbine sont actifs."],
+ ['P10','P10',0,"Permissif à 10 % en gamme puissance : au-dessus, le seuil bas de haut flux (25 %) est bloqué."],
+ ['Gamme source','gamme source|GS',0,"Détecteurs de neutrons les plus sensibles (1 à 10⁶ coups/s), utilisés à l'arrêt et pendant la divergence."],
+ ['Gamme intermédiaire','gamme intermédiaire|GI',0,"Détecteurs couvrant les puissances intermédiaires, de 10⁻¹¹ à 10⁻³ A."],
+ ['Gamme puissance','gamme puissance|GP',0,"Détecteurs de 0 à 120 % de puissance, à deux sections (haute et basse) qui donnent aussi le ΔI."],
+ ['Marge à la saturation','marge à la saturation',1,"Écart entre la température d'ébullition à la pression actuelle et la température de la branche chaude. Si elle s'annule, l'eau bout dans le cœur."],
+ ['Saturation','saturation|Tsat',1,"État où l'eau bout : à chaque pression correspond une température d'ébullition (345 °C à 155 bar, 286 °C à 70 bar)."],
+ ['Crise d\'ébullition','crise d\'ébullition',1,"Régime où un film de vapeur isole la gaine du combustible de l'eau : la gaine n'est plus refroidie et surchauffe. Les protections ΔT et basse pression sont faites pour l'éviter."],
+ ['Puissance résiduelle','puissance résiduelle',1,"Chaleur dégagée par la radioactivité des produits de fission, même réacteur arrêté : ~ 6,5 % juste après l'arrêt, 1 à 2 % au bout d'une heure. Il faut toujours l'évacuer."],
+ ['ΔT surtempérature / surpuissance','ΔT surtempérature|ΔT surpuissance|surtempérature|surpuissance',1,"Protections calculées à partir de l'écart de température entre branches chaude et froide (image de la puissance). Le seuil de surtempérature baisse si Tmoy monte, si la pression baisse ou si le ΔI s'écarte."],
+ ['PN','PN',0,"Puissance nominale : 100 % = 2 785 MW thermiques."],
+ ['MWth / MWe','MWth|MWe',0,"Mégawatts thermiques produits par le cœur, mégawatts électriques fournis au réseau. Rendement d'environ 33 %."],
+ ['1/M','1/M',0,"Inverse de la multiplication sous-critique. Il tend vers 0 à l'approche de la criticité ; en le prolongeant, on prédit la position critique des grappes."],
+ ['Multiplication sous-critique','multiplication sous-critique|multiplication',1,"Amplification du comptage due aux chaînes de fission, qui s'éteignent d'autant plus lentement que le réacteur est proche du critique."],
+ ['Marge d\'arrêt','marge d\'arrêt',1,"Antiréactivité dont dispose le réacteur arrêté : de combien il est sous-critique. Elle doit couvrir les évolutions futures (disparition du xénon, refroidissement)."],
+ ['GMPP','GMPP|pompes? primaires?',0,"Groupes motopompes primaires : les trois grosses pompes (~ 6 MW chacune) qui font circuler l'eau du primaire."],
+ ['KRT','KRT',0,"Chaînes de mesure de la radioactivité (air, eau, vapeur). Une hausse d'activité dans l'enceinte signale une fuite primaire."],
+ ['Réarmement','réarmement|réarmer|réarmez',1,"Remise en service de la logique d'AAR après un arrêt, une fois les causes disparues : condition pour pouvoir extraire de nouveau les grappes."],
+ ['Dispatching','dispatching',1,"Centre de conduite du réseau électrique qui demande aux centrales de moduler leur production selon la consommation."],
+ ['Cuve','cuve',1,"Récipient en acier de ~ 20 cm d'épaisseur qui contient le cœur et l'eau du primaire."],
+];
+const GRE=GLOSS.map(([k,p,ci,d])=>({k,d,re:new RegExp('(?<![\\p{L}\\p{N}_])(?:'+p+')(?![\\p{L}\\p{N}_])','u'+(ci?'i':''))}));
+function glossDom(root){
+  if(!root) return;
+  const used=new Set();
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest('.g,kbd,button,.info,h2,h3,.t,.mis-title,.stepok,.tag,.bigstars,.log,.why-no,small.num,table')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+  const nodes=[]; while(w.nextNode()) nodes.push(w.currentNode);
+  for(const node of nodes){
+    let txt=node.nodeValue, parts=[], changed=false;
+    for(;;){
+      let best=null;
+      GRE.forEach((g,i)=>{ if(used.has(i)) return; const m=g.re.exec(txt); if(m&&(!best||m.index<best.m.index||(m.index===best.m.index&&m[0].length>best.m[0].length))) best={m,i}; });
+      if(!best) break;
+      used.add(best.i); changed=true;
+      parts.push(document.createTextNode(txt.slice(0,best.m.index)));
+      const sp=document.createElement('span'); sp.className='g'; sp.dataset.g=best.i; sp.tabIndex=0; sp.textContent=best.m[0]; parts.push(sp);
+      txt=txt.slice(best.m.index+best.m[0].length);
+    }
+    if(changed){ parts.push(document.createTextNode(txt)); const f=document.createDocumentFragment(); parts.forEach(x=>f.appendChild(x)); node.parentNode.replaceChild(f,node); }
+  }
+}
+function showGloss(i){ const g=GRE[i]; if(!g) return; $('#gpop').innerHTML='<div class="gp-h"><b>'+g.k+'</b><button class="ib" id="gpX" aria-label="Fermer">✕</button></div><p>'+g.d+'</p><button class="gp-l" id="gpL">Tout le lexique</button>'; $('#gpop').hidden=false; $('#gpX').onclick=()=>$('#gpop').hidden=true; $('#gpL').onclick=()=>{ $('#gpop').hidden=true; openLex(); }; }
+function openLex(){
+  if(A.s){ helpWasPaused=$('#help').hidden?A.paused:helpWasPaused; A.paused=true; syncAll(); }
+  const L=GRE.map(g=>g).sort((a,b)=>a.k.localeCompare(b.k,'fr'));
+  $('#helpBox').innerHTML='<h2>Lexique</h2><div class="t">Les mots de la salle de commande</div><p>Dans tous les textes, les termes soulignés en pointillés renvoient ici : touchez-les pour leur définition.</p><dl class="lex">'+L.map(g=>'<dt>'+g.k+'</dt><dd>'+g.d+'</dd>').join('')+'</dl><div class="row" style="margin-top:14px"><button class="btn" id="hClose">Fermer</button></div>';
+  $('#help').hidden=false; $('#hClose').onclick=closeHelp;
+}
+
 let helpWasPaused=true;
 function openHelp(k){
   const x=HELP[k]; if(!x) return;
   helpWasPaused=A.paused; A.paused=true; syncAll();
   const ls=x.l?byId(x.l):null;
-  $('#helpBox').innerHTML='<h2>Aide</h2><div class="t">'+x.t+'</div>'+x.h+'<div class="row" style="margin-top:14px">'+(ls?'<button class="btn pri" id="hLes">Leçon guidée : '+ls.title+'</button>':'')+'<button class="btn" id="hClose">Fermer</button></div>';
-  $('#help').hidden=false;
-  $('#hClose').onclick=closeHelp;
+  $('#helpBox').innerHTML='<h2>Aide</h2><div class="t">'+x.t+'</div>'+x.h+'<div class="row" style="margin-top:14px">'+(ls?'<button class="btn pri" id="hLes">Leçon guidée : '+ls.title+'</button>':'')+'<button class="btn" id="hLex">Lexique</button><button class="btn" id="hClose">Fermer</button></div>';
+  $('#help').hidden=false; glossDom($('#helpBox'));
+  $('#hClose').onclick=closeHelp; $('#hLex').onclick=openLex;
   if(ls) $('#hLes').onclick=()=>{ $('#help').hidden=true; launch(ls.id); };
 }
 function closeHelp(){ $('#help').hidden=true; if(A.s) A.paused=helpWasPaused; syncAll(); }
