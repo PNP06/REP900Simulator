@@ -8,9 +8,13 @@ Simulateur pédagogique de conduite d'un réacteur à eau pressurisée de 900 MW
 
 Simulateur pédagogique d'un REP **générique**. Aucun document interne d'entreprise (exploitant, constructeur ou autorité) n'a été utilisé : il repose uniquement sur des connaissances publiques (physique des réacteurs, ouvrages d'enseignement, informations publiques). Les valeurs, seuils, automatismes et conduites sont génériques et simplifiés et ne reproduisent aucune installation réelle ni ses procédures. Projet personnel et indépendant.
 
+## Sources
+
+Le simulateur repose sur des sources publiques, listées dans la rubrique « Sources » du menu : IRSN, *Éléments de sûreté nucléaire – Les réacteurs à eau sous pression* (2020) ; ASN, rapport annuel 2019, chapitre « Les centrales nucléaires d'EDF » ; ANCCLI, fiche thématique n° 5 ; DOE Fundamentals Handbook *Nuclear Physics and Reactor Theory* ; NRC, *Reactor Concepts Manual* ; AIEA, Training Course Series n° 65 ; IAPWS-IF97 ; ouvrages d'enseignement de neutronique.
+
 ## Contenu
 
-- **Visite guidée de la centrale** : 19 chapitres illustrés et animés, sans manipulation (fission, réaction en chaîne, neutrons retardés, combustible, modérateur, circuits, mode G, xénon, sûreté, puissance résiduelle).
+- **Visite guidée de la centrale** : 26 chapitres illustrés, rangés en 6 thèmes et animés, sans manipulation (fission, réaction en chaîne, neutrons retardés, combustible, modérateur, circuits, mode G, xénon, sûreté, puissance résiduelle).
 - **Tutoriel** de prise de quart, avec repères animés et flèche vers les commandes.
 - **8 leçons guidées** : cinétique et temps de doublement, contre-réactions et mode G, ΔI et diagramme de pilotage, xénon 135, pressuriseur et RCV, générateurs de vapeur et eau alimentaire, protections et permissifs, divergence guidée.
 - **4 exercices notés** : divergence, couplage et montée en charge, suivi de charge et xénon, mise à l'arrêt à chaud.

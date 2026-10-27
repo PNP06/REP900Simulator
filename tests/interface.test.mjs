@@ -40,7 +40,9 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
     await pg.evaluate(() => setSpeed(300)); await pg.waitForTimeout(500); await pg.evaluate(() => finish());
   }
   await pg.evaluate(() => openTour(0));
-  for (let i = 0; i < 19; i++) { await pg.evaluate(i => tourGo(i), i); await pg.waitForTimeout(120); }
+  const nT = await pg.evaluate(() => TOUR.length); for (let i = 0; i < nT; i++) { await pg.evaluate(i => tourGo(i), i); await pg.waitForTimeout(120); }
+  check(`${w}px : visite en 6 thèmes`, await pg.evaluate(() => new Set(TOUR.map(c => c.th)).size === 6));
+  await pg.evaluate(() => { document.querySelector('#srcov').hidden = false; });
   await pg.evaluate(() => { closeTour(); openFB('new'); });
   const sw = await pg.evaluate(() => document.documentElement.scrollWidth);
   check(`${w}px : pas de défilement horizontal`, sw <= w, `${sw}px`);
