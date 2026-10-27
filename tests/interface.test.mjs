@@ -58,6 +58,10 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
     launch('div'); const pl = !!document.querySelector('#mis-body details.plan'); return { miss, d, e, pl }; });
   check('Explication « En clair » pour chaque étape de leçon', ec.miss.length === 0, ec.miss.join(', '));
   check('Niveau Débutant / Confirmé appliqué à la consigne', ec.d && ec.e && ec.pl);
+  const sp = await pg.evaluate(() => { document.querySelector('#sndBtn').click(); const open = !document.querySelector('#sndPop').hidden;
+    const cb = document.querySelector('#sndPop [data-snd="amb"]'); const before = SND.pref.amb; cb.click(); const changed = SND.pref.amb === !before && document.querySelector('#menu [data-snd="amb"]').checked === SND.pref.amb; cb.click();
+    document.body.click(); return open && changed && document.querySelector('#sndPop').hidden; });
+  check('Pictogramme son : réglages d\'ambiance accessibles depuis le cockpit', sp);
   check('Leçons : aucune erreur JavaScript', errs.length === 0, errs.slice(0, 2).join(' | ')); }
 await browser.close();
 console.log(fails ? `\n${fails} test(s) en échec` : '\nTous les tests passent');

@@ -736,6 +736,27 @@ body.bandfocus .band .rd:not(.mb){display:block}
 .btn.lvb.on{border-color:color-mix(in srgb,var(--warn) 60%,var(--line-2));color:var(--fg)}
 .btn.lvb::before{content:"💡";margin-right:4px;filter:grayscale(1);opacity:.6}
 .btn.lvb.on::before{filter:none;opacity:1}
+
+/* Réglages du son (pictogramme de l'en-tête et menu) */
+.sndpop{position:fixed;z-index:60;width:min(340px,calc(100vw - 16px));max-height:calc(100vh - 80px);overflow:auto;background:var(--panel);border:1px solid var(--line-2);border-radius:10px;box-shadow:0 12px 32px #0006;padding:10px 14px 12px}
+.sndpop .sp-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.sndpop .sp-h b{font:700 13px var(--f-disp);letter-spacing:.08em;text-transform:uppercase}
+.sndpop .sp-h .ib{height:28px;min-width:28px}
+.sndctl{display:flex;flex-direction:column;gap:2px;max-width:560px}
+.sndctl .chk{margin-top:6px;align-items:flex-start;color:var(--fg)}
+.sndctl .chk input{margin-top:3px}
+.sndctl .chk small{display:block;color:var(--mute);font-size:12px;line-height:1.35}
+.sndctl .chk.main{font-weight:600}
+.sndctl .sl{display:flex;align-items:center;gap:8px;margin:6px 0 2px;color:var(--mute);font-size:13px}
+.sndctl .sl input{flex:1;min-width:90px;accent-color:var(--accent)}
+.sndctl .sl output{font:600 12px var(--f-mono,monospace);min-width:38px;text-align:right;color:var(--fg)}
+.sndctl .sl.sub{margin-left:26px}
+.sndctl .sl.dis{opacity:.4}
+.sndctl .sgrp{border-top:1px solid var(--line);margin-top:6px;padding-top:2px}
+.sndctl.muted .sgrp,.sndctl.muted .sl{opacity:.45}
+.sndctl .sp-f{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.sndctl .note{margin:8px 0 0;font-size:12.5px}
+.ib.snd.act{border-color:var(--accent);color:var(--accent)}
 </style>
 </head>
 <body>
@@ -749,11 +770,12 @@ body.bandfocus .band .rd:not(.mb){display:block}
     <select id="spdSel" class="spdsel" aria-label="Vitesse de simulation"><option value="1">×1</option><option value="2">×2</option><option value="5">×5</option><option value="10">×10</option><option value="60">×60</option><option value="300">×300</option></select>
     <button class="ib bandt" id="bandBtn" aria-label="Afficher le bandeau détaillé" aria-expanded="false">▾</button>
     <button class="ib thm" id="themeBtn" aria-label="Thème"></button>
-    <button class="ib snd" id="sndBtn" aria-label="Couper le son"></button>
+    <button class="ib snd" id="sndBtn" aria-label="Réglages du son" aria-haspopup="true" aria-expanded="false"></button>
     <button class="ib" id="pauseBtn" aria-label="Pause">❚❚</button>
     <button class="ib" id="menuBtn" aria-label="Menu">☰<span class="lab"> Menu</span></button>
   </div>
 </div>
+<div class="sndpop" id="sndPop" hidden role="dialog" aria-label="Ambiance sonore du cockpit"><div class="sp-h"><b>Ambiance sonore</b><button class="ib" id="sndPopX" aria-label="Fermer">✕</button></div><div class="sndctl" data-sndctl></div></div>
 <div class="wrap bandw"><section class="band" id="band" aria-label="Grandeurs principales"></section>
 <div class="alb" id="alb" hidden><span class="lamp" id="alb-l"></span><span class="alb-n" id="alb-n"></span><span class="alb-t" id="alb-t"></span><button class="ib" id="alb-see">Voir</button><button class="ib" id="alb-ack">Acquitter</button></div></div>
 </header>
@@ -1033,9 +1055,7 @@ body.bandfocus .band .rd:not(.mb){display:block}
   <div id="menuCards"></div>
   <div class="sec">Apparence</div><div class="row"><div class="seg" data-key="theme"><button data-v="auto">Automatique</button><button data-v="light">Clair</button><button data-v="dark">Sombre</button></div></div>
   <div class="sec">Explications</div><div class="lvlseg" role="group" aria-label="Niveau des explications"><button type="button" data-lvl="deb">Débutant</button><button type="button" data-lvl="exp">Confirmé</button><span style="flex-basis:100%;margin-top:4px">« Débutant » ajoute, au-dessus de chaque consigne, une explication simple (« En clair ») et, pour les exercices, un plan pas à pas. « Confirmé » n'affiche que le texte technique.</span></div>
-  <div class="sec">Son</div><div class="sndset"><label class="chk"><input type="checkbox" id="sndOn"> Sons activés</label><label class="chk"><input type="checkbox" id="sndAmb"> Ambiance des machines</label><label class="chk"><input type="checkbox" id="sndCnt"> Comptage neutronique audible (gamme source)</label></div>
-  <div class="sndsl"><label>Volume général <input type="range" id="sndVol" min="0" max="100" step="5"> <output id="sndVolO"></output></label><label>Ambiance des machines <input type="range" id="sndAmv" min="0" max="100" step="5"> <output id="sndAmvO"></output></label><button class="btn sm" id="sndTest" type="button">Écouter les alarmes</button></div>
-  <p class="note" style="margin:6px 0 0;font-size:13px">Comme en salle de commande, une alarme rouge fait retentir un klaxon et une alarme ambre un ronfleur, en continu, jusqu'à ce que vous appuyiez sur <kbd>Acquitter</kbd>. Acquitter signifie « j'ai vu » : la cause reste à traiter.</p>
+  <div class="sec">Son</div><div class="sndctl" data-sndctl></div>
   <label class="chk"><input type="checkbox" id="rndAlea"> Déclencher des aléas aléatoires en pilotage libre</label>
   <p class="foot">Modèle pédagogique : cinétique ponctuelle à 6 groupes de neutrons retardés, contre-réactions Doppler et modérateur (fonction du bore), chaîne iode-xénon, efficacités intégrales des grappes, thermohydraulique primaire et secondaire en paramètres concentrés, gonflement/contraction GV, régulations (température, GCP en mode G, pressuriseur, RCV, ARE, GCT) et protections RPR simplifiées. Les valeurs sont des ordres de grandeur d'un REP générique de 900 MWe, simplifiés : ce n'est pas un outil de formation agréé.</p>
 </div></div>
@@ -2650,7 +2670,7 @@ function updateBand(s){
 }
 
 /* ================= Sons ================= */
-const SND={ctx:null,m:null,pref:{on:true,amb:true,cnt:true,vol:0.7,amv:0.25},lastAl:0,lastRed:0,amb:null,clickBuf:null,horn:null,hs:{r:0,a:0}};
+const SND={ctx:null,m:null,pref:{on:true,amb:true,cnt:true,alm:true,ui:true,vol:0.7,amv:0.25},lastAl:0,lastRed:0,amb:null,clickBuf:null,horn:null,hs:{r:0,a:0}};
 const sndMaster=()=>SND.pref.on?0.75*SND.pref.vol:0;
 { const p=store('snd'); if(p&&typeof p==='object') Object.assign(SND.pref,p); }
 function sndInit(){
@@ -2688,6 +2708,18 @@ const SFX={
   ack:()=>tone(1046.5,0.06,'sine',0.05),
   page:()=>noise(0.18,0.06,3000,0,600),
 };
+for(const k of ['tick','step','obj','done','page','ack']){ const f=SFX[k]; SFX[k]=()=>{ if(SND.pref.ui) f(); }; }
+for(const k of ['info','amber','red','aar']){ const f=SFX[k]; SFX[k]=()=>{ if(SND.pref.alm) f(); }; }
+const SNDCTL='<label class="chk sw main"><input type="checkbox" data-snd="on"> <span>Son activé</span></label>'
+ +'<label class="sl">Volume général <input type="range" data-sndr="vol" min="0" max="100" step="5"> <output data-sndo="vol"></output></label>'
+ +'<div class="sgrp"><label class="chk"><input type="checkbox" data-snd="amb"> <span>Ambiance des machines<small>Souffle de vapeur et ronronnement des pompes, selon la puissance</small></span></label>'
+ +'<label class="sl sub">Niveau de l\'ambiance <input type="range" data-sndr="amv" min="0" max="100" step="5"> <output data-sndo="amv"></output></label>'
+ +'<label class="chk"><input type="checkbox" data-snd="alm"> <span>Avertisseurs d\'alarme<small>Klaxon (rouge), ronfleur (ambre), carillon (information), bruit d\'AAR</small></span></label>'
+ +'<label class="chk"><input type="checkbox" data-snd="cnt"> <span>Comptage neutronique audible<small>Les « clics » de la gamme source au démarrage</small></span></label>'
+ +'<label class="chk"><input type="checkbox" data-snd="ui"> <span>Bruitages d\'interface<small>Clics des boutons, étape réussie, fin d\'exercice</small></span></label></div>'
+ +'<div class="sp-f"><button class="btn sm" type="button" data-sndtest>Écouter les alarmes</button><button class="btn sm" type="button" data-sndq="calme">Calme</button><button class="btn sm" type="button" data-sndq="tout">Tout</button></div>'
+ +'<p class="note">Comme en salle de commande, le klaxon et le ronfleur retentissent jusqu\'à l\'appui sur <kbd>Acquitter</kbd>, qui signifie « j\'ai vu » : la cause reste à traiter.</p>';
+$$('[data-sndctl]').forEach(e=>e.innerHTML=SNDCTL);
 function sndClicks(rd,cps){
   if(!sndOK()||!SND.pref.cnt||!SND.clickBuf) return;
   const r=Math.min(45,Math.pow(Math.max(cps,0),0.6)); let k=0; const lam=r*rd;
@@ -2709,8 +2741,11 @@ function sndAmbient(s,active){
   SND.amb.gS.gain.setTargetAtTime(steam,c.currentTime,0.6); SND.amb.gH.gain.setTargetAtTime(hum,c.currentTime,0.6);
 }
 function sndApply(){ store('snd',SND.pref); if(SND.m) SND.m.gain.setTargetAtTime(sndMaster(),SND.ctx.currentTime,0.05); const b=$('#sndBtn'); if(b){ b.innerHTML=SND.pref.on?'<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>':'<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>'; b.setAttribute('aria-label',SND.pref.on?'Couper le son':'Activer le son'); b.classList.toggle('off',!SND.pref.on); }
-  ['sndOn','sndAmb','sndCnt'].forEach((id,i)=>{ const e=document.getElementById(id); if(e) e.checked=!!SND.pref[['on','amb','cnt'][i]]; });
-  [['sndVol','vol'],['sndAmv','amv']].forEach(([id,k])=>{ const e=document.getElementById(id); if(e){ e.value=Math.round(SND.pref[k]*100); const o=document.getElementById(id+'O'); if(o) o.textContent=Math.round(SND.pref[k]*100)+' %'; } }); }
+  $$('[data-snd]').forEach(e=>{ e.checked=!!SND.pref[e.dataset.snd]; });
+  $$('[data-sndr]').forEach(e=>{ e.value=Math.round(SND.pref[e.dataset.sndr]*100); });
+  $$('[data-sndo]').forEach(e=>{ e.textContent=Math.round(SND.pref[e.dataset.sndo]*100)+' %'; });
+  $$('.sndctl').forEach(e=>e.classList.toggle('muted',!SND.pref.on));
+  $$('.sndctl .sl.sub').forEach(e=>e.classList.toggle('dis',!SND.pref.amb)); }
 function alarmSound(sev){
   /* Les alarmes rouges et ambre sont annoncées par l'avertisseur continu (sndHorn) ; les informations par un simple carillon. */
   const now=performance.now(); if(now-SND.lastAl<900) return; SND.lastAl=now;
@@ -2731,7 +2766,7 @@ function hornPat(sev,t){ if(sev==='r'){ return (t%0.9)<0.55?1:0; } const u=t%2.6
 function sndHorn(live){
   if(!SND.ctx||SND.ctx.state!=='running') return;
   if(!SND.horn) hornInit();
-  const s=A.s, un=sev=>live&&SND.pref.on&&s&&ALM.some(([id,,sv])=>sv===sev&&s.alarms[id]&&s.alarms[id].on&&!s.alarms[id].ack);
+  const s=A.s, un=sev=>live&&SND.pref.on&&SND.pref.alm&&s&&ALM.some(([id,,sv])=>sv===sev&&s.alarms[id]&&s.alarms[id].on&&!s.alarms[id].ack);
   const t=SND.ctx.currentTime, red=un('r'), amb=!red&&un('a');
   const lv={r:red?hornPat('r',t)*HV.r:0, a:amb?hornPat('a',t)*HV.a:0};
   for(const k of ['r','a']) if(lv[k]!==SND.hs[k]){ SND.hs[k]=lv[k]; SND.horn[k].gain.setTargetAtTime(lv[k],t,0.006); }
@@ -3347,10 +3382,18 @@ $('#tvNext').onclick=()=>{ if(TV.i>=TOUR.length-1){ const d=store('done')||{}; d
 $('#tvAuto').onclick=()=>{ TV.auto=!TV.auto; tourTimer(); };
 $('#tvClose').onclick=closeTour;
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#fb').hidden){ closeFB(); return; } if($('#tour').hidden) return; if(e.key==='ArrowRight'){ TV.auto=false; tourGo(TV.i+1); } else if(e.key==='ArrowLeft'){ TV.auto=false; tourGo(TV.i-1); } else if(e.key==='Escape') closeTour(); });
-$('#sndBtn').onclick=()=>{ sndInit(); SND.pref.on=!SND.pref.on; sndApply(); if(SND.pref.on) setTimeout(SFX.ack,80); };
-[['sndOn','on'],['sndAmb','amb'],['sndCnt','cnt']].forEach(([id,k])=>{ const e=document.getElementById(id); if(e) e.addEventListener('change',()=>{ sndInit(); SND.pref[k]=e.checked; sndApply(); }); });
-[['sndVol','vol'],['sndAmv','amv']].forEach(([id,k])=>{ const e=document.getElementById(id); if(e) e.addEventListener('input',()=>{ sndInit(); SND.pref[k]=e.value/100; sndApply(); }); });
-$('#sndTest')&&($('#sndTest').onclick=()=>{ sndInit(); if(!SND.ctx) return; hornInit(); const t=SND.ctx.currentTime; ['r','a'].forEach((k,j)=>{ const g=SND.horn[k].gain; for(let i=0;i<(k==='r'?3:2);i++){ const t0=t+j*2.9+(k==='r'?i*0.9:i*0.24); g.setValueAtTime(HV[k],t0); g.setValueAtTime(0,t0+(k==='r'?0.55:0.16)); } }); SND.hs={r:-1,a:-1}; });
+function sndPop(open){ const p=$('#sndPop'), b=$('#sndBtn'); if(open==null) open=p.hidden; p.hidden=!open; b.setAttribute('aria-expanded',open?'true':'false'); b.classList.toggle('act',open);
+  if(open){ const r=b.getBoundingClientRect(); const w=p.offsetWidth; p.style.top=(r.bottom+6)+'px'; p.style.left=Math.max(8,Math.min(innerWidth-w-8,r.right-w))+'px'; } }
+$('#sndBtn').onclick=e=>{ e.stopPropagation(); sndInit(); sndPop(); };
+$('#sndPopX').onclick=()=>sndPop(false);
+document.addEventListener('click',e=>{ if(!$('#sndPop').hidden&&!e.target.closest('#sndPop,#sndBtn')) sndPop(false); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#sndPop').hidden) sndPop(false); });
+addEventListener('resize',()=>{ if(!$('#sndPop').hidden) sndPop(true); });
+document.addEventListener('change',e=>{ const c=e.target.closest('[data-snd]'); if(!c) return; sndInit(); SND.pref[c.dataset.snd]=c.checked; sndApply(); if(c.checked&&SND.pref.ui&&(c.dataset.snd==='on'||c.dataset.snd==='ui')) setTimeout(SFX.ack,80); });
+document.addEventListener('input',e=>{ const r=e.target.closest('[data-sndr]'); if(!r) return; sndInit(); SND.pref[r.dataset.sndr]=r.value/100; sndApply(); });
+document.addEventListener('click',e=>{ const q=e.target.closest('[data-sndq]'); if(!q) return; sndInit(); Object.assign(SND.pref,q.dataset.sndq==='calme'?{on:true,amb:false,cnt:false,alm:true,ui:false}:{on:true,amb:true,cnt:true,alm:true,ui:true}); sndApply(); });
+document.addEventListener('click',e=>{ if(!e.target.closest('[data-sndtest]')) return; sndTest(); });
+function sndTest(){ sndInit(); if(!SND.ctx) return; hornInit(); const t=SND.ctx.currentTime; ['r','a'].forEach((k,j)=>{ const g=SND.horn[k].gain; for(let i=0;i<(k==='r'?3:2);i++){ const t0=t+j*2.9+(k==='r'?i*0.9:i*0.24); g.setValueAtTime(HV[k],t0); g.setValueAtTime(0,t0+(k==='r'?0.55:0.16)); } }); SND.hs={r:-1,a:-1}; }
 sndApply();
 $('#fbLv').innerHTML=FB.lv.map(v=>'<label class="lvo '+v[3]+'"><input type="radio" name="fblv" value="'+v[0]+'"><span class="lvt">'+v[1]+'</span><span class="lvd">'+v[2]+'</span></label>').join('');
 $('#fbPart').innerHTML=FB.parts.map(x=>'<option>'+x+'</option>').join(''); $('#fbPart').addEventListener('change',()=>$('#fbPart').dataset.touched=1);
