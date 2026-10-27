@@ -25,6 +25,12 @@ lesson('l-di',{1:{pre:s=>{act('modeR','man');act('rodSel','R');for(let i=0;i<4;i
 lesson('l-pzr',{1:{pre:s=>{act('ramp','10');s.LtSet=.8;}},2:{pre:s=>act('heatMode','on')},3:{pre:s=>act('heatMode','auto')},4:{pre:s=>{act('chgMode','man');s.chgMan=5;}},5:{pre:s=>act('chgMode','auto')}});
 lesson('l-gv',{1:{pre:s=>{act('ramp','30');s.LtSet=.7;}},2:{pre:s=>{act('areMode','man');s.areMan=.55;}},3:{pre:s=>act('areMode','auto')}});
 lesson('l-prot',{1:{pre:s=>{act('sprayMode','man');s.sprayMan=.4;}},2:{pre:s=>act('sprayMode','auto')}});
+lesson('l-div',{1:{pre:s=>{act('rodSel','R');act('rod','100');}},2:{pre:s=>act('rod','40')},3:{pre:s=>act('rod','20')},
+  4:{each:(()=>{ let l=0; return s=>{ if(s.t-l>40&&s.Td>300){ act('rod','2'); l=s.t; } }; })()},
+  5:{each:s=>{ if(s.n>1e-7&&!s.srInhib) act('srInhib'); }},
+  6:{t:7200,each:(()=>{ let l=0; return s=>{ if(s.t-l<25) return; l=s.t; const lo=Math.LN2/900, td=s.rate>0?Math.LN2/s.rate:1e9;
+    if(s.n<0.006){ if(td>120) act('rod','1'); else if(td<50) act('rod','-1'); } else if(s.n>0.025&&s.rate>-lo) act('rod','-1'); else if(s.n<0.012&&s.rate<lo) act('rod','1');
+    else if(s.n>=0.012&&s.n<=0.025){ if(s.rate>Math.LN2/400) act('rod','-1'); else if(s.rate<-Math.LN2/400) act('rod','1'); } }; })()}});
 return out; })()`;
 
 const browser = await chromium.launch();

@@ -47,6 +47,10 @@ check('Psat(273 °C) ≈ 57,5 bar', near(psat(273), 57.5, 1.5), psat(273).toFixe
 { const s = makeState({ P: 0, critR: 170, R: 170, G: 'cal', SD: 225, coupled: false, xe: 0 }); run(s, 30); s.srInhib = true;
   check('Arrêt à chaud critique à R = 170', Math.abs(s.rho.tot) < 5, s.rho.tot.toFixed(1) + ' pcm'); }
 
+{ const s = makeState({ P: 1e-5, critR: 110, R: 110, G: 'cal', coupled: false, xe: 0, modeR: 'man', modeG: 'man' }); s.rodWd = true; let pmax = 0;
+  for (let i = 0; i < 300 / DT && !s.tripped; i++) { step(s); pmax = Math.max(pmax, s.n); }
+  check('Retrait incontrôlé à puissance nulle : AAR par le seuil bas (25 %) non bloqué', s.tripped && /seuil bas/.test(s.tripCause) && pmax < 0.6, s.tripCause + ', max ' + (pmax * 100).toFixed(0) + ' %'); }
+
 { // pic xénon après arrêt
   const lI=2.87e-5,lX=2.09e-5,sg=7.5e-5,gI=0.0639,gX=0.00237; let I=1,X=1,mx=1,tm=0;
   for (let t=0;t<=48*3600;t+=60){ I+=lI*(0-I)*60; X+=((lX+sg)*(gI*I)/(gI+gX)-lX*X)*60; if(X>mx){mx=X;tm=t/3600;} }
