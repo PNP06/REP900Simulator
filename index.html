@@ -456,6 +456,116 @@ table.kv td{padding:3px 0;font-size:13px}
   .band .rd .v{font-size:14px}
   .gz{margin-top:3px;height:3px}
 }
+
+/* ===== attention, pointeur, son, visite ===== */
+.focus{position:relative;z-index:2;outline:2px solid var(--accent)!important;outline-offset:3px;box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 22%,transparent),0 0 22px color-mix(in srgb,var(--accent) 45%,transparent)!important;animation:glow 1.4s ease-in-out infinite}
+.focus-sm{animation:glow 1.4s ease-in-out infinite,nudge 2.6s ease-in-out infinite}
+@keyframes glow{50%{outline-color:color-mix(in srgb,var(--accent) 35%,transparent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 10%,transparent),0 0 6px transparent}}
+@keyframes nudge{0%,62%,100%{transform:none}66%{transform:translateX(-4px) rotate(-2deg)}70%{transform:translateX(4px) rotate(2deg)}74%{transform:translateX(-3px) rotate(-1deg)}78%{transform:translateX(3px)}82%{transform:none}88%{transform:scale(1.06)}94%{transform:none}}
+body.bandfocus .band .rd:not(.mb){display:block}
+.ptr{position:fixed;z-index:85;transform:translateX(-50%);pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;filter:drop-shadow(0 4px 10px #000c)}
+.ptr .pa2{font:700 26px/1 var(--f-num);color:var(--accent);animation:bob 0.9s ease-in-out infinite}
+.ptr.pb{flex-direction:column-reverse}
+.ptr .pl{font:700 12px/1 var(--f-disp);letter-spacing:.07em;text-transform:uppercase;background:var(--accent);color:#0d1418;border-radius:12px;padding:5px 10px;white-space:nowrap}
+.ptr .pl:empty{display:none}
+.ptr.down,.ptr.tab{flex-direction:column-reverse}
+@keyframes bob{50%{transform:translateY(6px)}}
+.ptr.pb .pa2,.ptr.up .pa2{animation-name:bobu}
+@keyframes bobu{50%{transform:translateY(-6px)}}
+.snd svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.snd.off{color:var(--dim)}
+.sndset{display:flex;flex-wrap:wrap;gap:0 22px}
+.sndset .chk{margin-top:6px}
+.tourc{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--panel))}
+.tour{position:fixed;inset:0;z-index:75;background:var(--bg-2);display:flex;padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.tour[hidden]{display:none!important}
+.tw{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:10px;width:100%;max-width:1320px;margin:0 auto;min-height:0}
+.th{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.tk{font:600 12px var(--f-disp);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.tt{font:700 clamp(22px,3.4vw,34px)/1.05 var(--f-disp);letter-spacing:.01em;text-transform:none;color:var(--fg);margin:4px 0 0;display:block;text-wrap:balance}
+.tb{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:18px;min-height:0}
+.tstage{min-height:0;align-self:start;aspect-ratio:16/10;max-height:100%;display:flex;align-items:center;justify-content:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;overflow:hidden}
+#tplant,#tinset{width:100%;height:100%;display:flex;align-items:center;justify-content:center;min-height:0}
+#tplant[hidden],#tinset[hidden]{display:none}
+.ttx{overflow:auto;font-size:15.5px;line-height:1.55;padding-right:6px;max-width:62ch}
+.ttx p{margin:0 0 10px}.ttx ul,.ttx ol{margin:0 0 10px;padding-left:20px}.ttx li{margin-bottom:5px}
+.ttx b{color:var(--accent);font-weight:600}
+.chainx{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 12px}
+.chainx span{font:600 12.5px var(--f-disp);letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:5px;background:var(--panel-2);border:1px solid var(--line-2)}
+.chainx span:nth-child(1){color:var(--hot)}.chainx span:nth-child(2){color:var(--warn)}.chainx span:nth-child(3){color:var(--steam)}.chainx span:nth-child(4){color:var(--accent)}.chainx span:nth-child(5){color:var(--ok)}
+.tprog{height:3px;background:var(--line);border-radius:2px;overflow:hidden}.tprog i{display:block;height:100%;width:0;background:var(--accent)}
+.tf{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tdots{display:flex;gap:5px;flex:1;justify-content:center;flex-wrap:wrap;min-width:0}
+.tdot{width:10px;height:10px;padding:0;border-radius:50%;border:1px solid var(--line-2);background:var(--panel-2)}
+.tdot.seen{background:color-mix(in srgb,var(--accent) 40%,var(--panel-2))}.tdot.on{background:var(--accent);border-color:var(--accent);transform:scale(1.3)}
+#tvAuto.on{border-color:var(--accent);color:var(--accent)}
+@media (max-width:860px){
+  .tw{grid-template-rows:auto auto minmax(0,1fr) auto auto}
+  .tb{display:contents}
+  .tstage{height:min(42vh,320px);aspect-ratio:auto;align-self:stretch}
+  .ttx{max-width:none;font-size:15px}
+  .tdots{order:-1;flex-basis:100%}
+  .tf .btn{flex:1}
+}
+.plant{width:100%;height:100%;max-height:100%}
+.plant text{font-family:var(--f-disp);letter-spacing:.04em}
+.plant .pl-t{font-size:14px;font-weight:600;fill:var(--mute);text-transform:uppercase;letter-spacing:.1em}
+.plant .pl-s{font-size:12px;fill:var(--fg)}
+.plant .cl{fill:#fff;font-weight:600}
+.plant .pl-ground{stroke:var(--line-2);stroke-width:2}
+.plant .bld{fill:color-mix(in srgb,var(--panel-2) 70%,transparent);stroke:var(--line-2);stroke-width:2}
+.plant .bld2{fill:color-mix(in srgb,var(--panel-2) 40%,transparent);stroke:var(--line-2);stroke-width:1.5;stroke-dasharray:6 4}
+.plant .ln{fill:none;stroke-width:6;stroke-linejoin:round;stroke-linecap:round}
+.plant .hot{stroke:var(--hot)}.plant .cold{stroke:var(--cold)}.plant .steam{stroke:var(--steam);stroke-width:5}.plant .feed{stroke:var(--feed);stroke-width:5}.plant .cool{stroke:var(--cold);stroke-width:4}.plant .warm{stroke:color-mix(in srgb,var(--cold) 50%,var(--hot));stroke-width:4}.plant .elec{stroke:var(--warn);stroke-width:3}
+.plant .fl{stroke-dasharray:10 7;animation:flow 1s linear infinite}
+.plant .steam.fl{animation-duration:.6s}
+@keyframes flow{to{stroke-dashoffset:-17}}
+.plant .vessel{fill:var(--panel);stroke:var(--fg);stroke-width:2.5}
+.plant .crdm{fill:var(--panel-2);stroke:var(--line-2)}
+.plant .core{fill:var(--hot);animation:coreg 2.4s ease-in-out infinite}
+@keyframes coreg{50%{fill:var(--warn)}}
+.plant .rod{stroke:var(--fg);stroke-width:4;stroke-linecap:round}
+.plant.rodsmove .rodsg{animation:rods 5s ease-in-out infinite}
+@keyframes rods{0%,100%{transform:translateY(0)}40%,55%{transform:translateY(-62px)}}
+.plant .shell{fill:var(--panel);stroke:var(--fg);stroke-width:2}
+.plant .pzw{fill:var(--hot);opacity:.55}.plant .sgw{fill:var(--cold);opacity:.45}
+.plant .utube{stroke:var(--hot);stroke-width:3;stroke-dasharray:4 3}
+.plant .pmp{fill:var(--ok);stroke:var(--fg);stroke-width:2}.plant .mot{fill:var(--panel-2);stroke:var(--fg)}
+.plant .turb{fill:var(--panel-2);stroke:var(--steam);stroke-width:2}.plant .shaft{stroke:var(--fg);stroke-width:4}
+.plant .alt{fill:var(--panel-2);stroke:var(--fg);stroke-width:2}
+.plant .pyl{fill:none;stroke:var(--mute);stroke-width:2}
+.plant .cond{fill:var(--panel);stroke:var(--steam);stroke-width:2}.plant .ctube{stroke:var(--cold);stroke-width:2}
+.plant .river{fill:color-mix(in srgb,var(--cold) 45%,transparent)}
+.plant .tower{fill:var(--panel-2);stroke:var(--mute);stroke-width:2}
+.plant .plume{fill:color-mix(in srgb,var(--fg) 12%,transparent);animation:plume 4s ease-in-out infinite}
+.plant .p2{animation-delay:-1.3s}.plant .p3{animation-delay:-2.6s}
+@keyframes plume{0%{transform:translateY(10px);opacity:0}30%{opacity:1}100%{transform:translateY(-30px);opacity:0}}
+.plant>g{transition:opacity .4s}
+.plant.dim>g:not(.hl){opacity:.14}
+.plant.dim>g.hl{filter:drop-shadow(0 0 8px color-mix(in srgb,var(--accent) 45%,transparent))}
+.tcv{width:100%;height:100%;display:block}
+.chartx{width:100%;height:100%;max-height:100%}
+.chartx .gr{stroke:var(--line);stroke-width:1}
+.chartx .ax{font:500 11.5px var(--f-num);fill:var(--mute)}
+.chartx .ax.lb{font:600 12px var(--f-disp);letter-spacing:.05em}
+.chartx .sr{fill:none;stroke-width:3;stroke-linejoin:round}
+.chartx .sl{font:600 12.5px var(--f-disp)}
+.chartx .nt{font:600 13px var(--f-disp);fill:var(--fg)}
+.chartx .arw{fill:none;stroke:var(--mute);stroke-width:2;marker-end:none}
+.chartx .pel{fill:var(--hot);stroke:color-mix(in srgb,var(--hot) 50%,#000)}.chartx .pelt{fill:var(--warn)}
+.chartx .clad{fill:var(--panel-2);stroke:var(--fg);stroke-width:1.5}
+.chartx .asm{fill:var(--panel-2);stroke:var(--fg)}.chartx .fz{fill:var(--hot)}
+.chartx .vsl{fill:none;stroke:var(--fg);stroke-width:2}.chartx .fa{fill:var(--hot);opacity:.75}
+.chartx .b3{fill:color-mix(in srgb,var(--mute) 18%,transparent);stroke:var(--mute);stroke-width:3}
+.chartx .b2{fill:color-mix(in srgb,var(--cold) 22%,transparent);stroke:var(--cold);stroke-width:3}
+.chartx .b1{fill:color-mix(in srgb,var(--warn) 20%,transparent);stroke:var(--warn);stroke-width:3}
+.chartx .b0{fill:var(--hot)}
+.chartx.fb .fbn rect{fill:var(--panel-2);stroke:var(--line-2);stroke-width:1.5}
+.chartx.fb .fbn text{font:600 13px var(--f-disp);fill:var(--fg)}
+.chartx.fb .fbn{animation:fbn 4.4s ease-in-out infinite}
+@keyframes fbn{0%,30%,100%{opacity:.45}8%,22%{opacity:1}}
+.chartx.fb .arw{stroke:var(--accent);stroke-width:2.5}
+@media (prefers-reduced-motion:reduce){.focus,.focus-sm,.ptr .pa2,.plant .fl,.plant .core,.plant .plume,.plant.rodsmove .rodsg,.chartx.fb .fbn{animation:none}}
 </style>
 </head>
 <body>
@@ -468,6 +578,7 @@ table.kv td{padding:3px 0;font-size:13px}
     </div>
     <select id="spdSel" class="spdsel" aria-label="Vitesse de simulation"><option value="1">×1</option><option value="2">×2</option><option value="5">×5</option><option value="10">×10</option><option value="60">×60</option><option value="300">×300</option></select>
     <button class="ib bandt" id="bandBtn" aria-label="Afficher le bandeau détaillé" aria-expanded="false">▾</button>
+    <button class="ib snd" id="sndBtn" aria-label="Couper le son"></button>
     <button class="ib" id="pauseBtn" aria-label="Pause">❚❚</button>
     <button class="ib" id="menuBtn" aria-label="Menu">☰<span class="lab"> Menu</span></button>
   </div>
@@ -751,10 +862,11 @@ table.kv td{padding:3px 0;font-size:13px}
   <div class="hero">
     <h1>Simulateur <span>REP 900</span></h1>
     <p>Prenez le quart en salle de commande d'une tranche REP de 900 MWe à trois boucles. Apprenez avec le tutoriel, entraînez-vous aux manœuvres d'exploitation, puis gérez les aléas.</p>
-    <div class="row" style="margin-top:12px"><button class="btn" id="lexBtn">Lexique des termes</button></div>
+    <div class="row" style="margin-top:12px"><button class="btn pri" data-tourgo="0">Découvrir la centrale</button><button class="btn" id="lexBtn">Lexique des termes</button></div>
     <div class="spec"><span>2 785 MWth</span><span>155 bar</span><span>Tmoy 286 → 304,5 °C</span><span>β = 600 pcm</span><span>mode G</span></div>
   </div>
   <div id="menuCards"></div>
+  <div class="sec">Son</div><div class="sndset"><label class="chk"><input type="checkbox" id="sndOn"> Sons activés</label><label class="chk"><input type="checkbox" id="sndAmb"> Ambiance des machines</label><label class="chk"><input type="checkbox" id="sndCnt"> Comptage neutronique audible (gamme source)</label></div>
   <label class="chk"><input type="checkbox" id="rndAlea"> Déclencher des aléas aléatoires en pilotage libre</label>
   <p class="foot">Modèle pédagogique : cinétique ponctuelle à 6 groupes de neutrons retardés, contre-réactions Doppler et modérateur (fonction du bore), chaîne iode-xénon, efficacités intégrales des grappes, thermohydraulique primaire et secondaire en paramètres concentrés, gonflement/contraction GV, régulations (température, GCP en mode G, pressuriseur, RCV, ARE, GCT) et protections RPR simplifiées. Les valeurs sont représentatives d'un palier CPY mais simplifiées : ce n'est pas un outil de formation agréé.</p>
 </div></div>
@@ -763,6 +875,15 @@ table.kv td{padding:3px 0;font-size:13px}
 <div class="ov" id="help" hidden><div class="box wrap"><div class="brief" id="helpBox"></div></div></div>
 <div class="ov" id="debrief" hidden><div class="box wrap"><div class="brief" id="debriefBox"></div></div></div>
 <div class="toast" id="toast" hidden></div>
+<div class="ptr" id="ptr" hidden><span class="pa2" id="ptra">▼</span><span class="pl" id="ptrl"></span></div>
+<div class="tour" id="tour" hidden role="dialog" aria-label="Visite de la centrale">
+ <div class="tw">
+  <div class="th"><div><div class="tk" id="tk"></div><h2 class="tt" id="tt"></h2></div><button class="ib" id="tvClose" aria-label="Fermer la visite">✕</button></div>
+  <div class="tb"><div class="tstage"><div id="tplant"></div><div id="tinset" hidden></div></div><div class="ttx" id="ttx"></div></div>
+  <div class="tprog" id="tprog"><i></i></div>
+  <div class="tf"><button class="btn" id="tvPrev">Précédent</button><div class="tdots" id="tdots"></div><button class="btn" id="tvAuto">Lecture auto</button><button class="btn pri" id="tvNext">Suivant</button></div>
+ </div>
+</div>
 <div class="gpop" id="gpop" hidden role="dialog" aria-label="Définition"></div>
 
 <script>
@@ -824,7 +945,7 @@ function makeState(o){
   else { s.Tref=286; const gq=Math.max(0,Qsg-0.005); s.gct=gq; s.Ts=tsat(70.1+gq/0.5); s.Tavg=s.Ts+Qsg/K.UA; }
   s.Tf=s.Tavg+K.DTF*P; s.Psg=psat(s.Ts);
   const w=s.Lt+0.005+s.gct; s.Wst=w; s.Wf=w; s.Wslow=w; s.sw=0; s.Linv=50; s.Lsg=50;
-  const xe=o.xe||0, lX=2.09e-5, sg=3.6e-5;
+  const xe=o.xe||0, lX=2.09e-5, sg=7.5e-5;
   s.I=xe; s.X=xe>0?(lX+sg)*xe/(lX+sg*xe):0;
   s.Ppzr=155; s.Lref=20+41*clamp((s.Tavg-286)/18.5,0,1); s.Lpzr=s.Lref; s.hEff=0.075;
   const rSave=s.rods.R.p; if(o.critR!=null) s.rods.R.p=o.critR;
@@ -843,7 +964,7 @@ function ctxAct(code){ const c=A.ctx; if(c && c.acts[code]==null) c.acts[code]=A
 function startASG(s){ if(!s.asg){ s.asg=true; logEv(s,'auto','Démarrage ASG'); } }
 function trip(s,cause,src){
   if(s.tripped) return;
-  s.tripped=true; s.tripCause=cause; s.tripT=s.t; s.modeR='man'; s.modeG='man'; s.rodWd=false;
+  s.tripped=true; s.tripCause=cause; s.tripT=s.t; if(typeof SFX!=='undefined') SFX.aar(); s.modeR='man'; s.modeG='man'; s.rodWd=false;
   for(const b of Object.values(s.rods)) b.tg=0;
   logEv(s,src==='op'?'op':'auto','AAR '+(src==='op'?'manuel':'automatique')+' — '+cause);
   if(s.coupled){ s.coupled=false; s.ilot=false; s.Lt=0; s.LtSet=0; s.turbTripped=true; logEv(s,'auto','Turbine déclenchée sur AAR'); }
@@ -997,7 +1118,7 @@ function step(s){
   s.Cb+=((Qd*(0-s.Cb)+Qb*(7700-s.Cb)+QisH*(2500-s.Cb))/3600/270)*dt;
   if(s.Cb<0) s.Cb=0;
   /* xénon */
-  const lI=2.87e-5,lX=2.09e-5,sg=3.6e-5,gI=0.0639,gX=0.00237;
+  const lI=2.87e-5,lX=2.09e-5,sg=7.5e-5,gI=0.0639,gX=0.00237;
   s.I+=lI*(n-s.I)*dt;
   s.X+=((lX+sg)*(gX*n+gI*s.I)/(gI+gX)-(lX+sg*n)*s.X)*dt;
   /* ΔI */
@@ -1078,13 +1199,14 @@ const ALM=[
  ['p6','P6 — gamme source à inhiber','i',s=>!s.srInhib&&s.n>1e-7],
  ['blk','Blocage extraction grappes','i',s=>!s.tripped&&(s.n>1.03||s.dropped||s.dtMargin<3)],
 ];
-function evalAlarms(s){
+function evalAlarms(s){ let nw=null; const rk={r:0,a:1,i:2};
   for(const [id,lab,sev,f] of ALM){
     let a=s.alarms[id]; if(!a) a=s.alarms[id]={on:false,ack:true};
     const c=!!f(s);
-    if(c&&!a.on){ a.on=true; a.ack=false; a.since=s.t; logEv(s,'alarm','Alarme : '+lab); }
+    if(c&&!a.on){ a.on=true; a.ack=false; a.since=s.t; logEv(s,'alarm','Alarme : '+lab); if(nw==null||rk[sev]<rk[nw]) nw=sev; }
     else if(!c&&a.on){ a.on=false; a.ack=true; }
   }
+  if(nw&&typeof alarmSound==='function'&&!A.paused) alarmSound(nw);
 }
 
 /* ================= Scénarios ================= */
@@ -1099,8 +1221,8 @@ const SCN=[
  brief:"<p>Durée : 15 à 20 minutes. La tranche est à 50 % de puissance, régulations en automatique. Chaque étape vous demande une action ; le bouton <kbd>Suivant</kbd> s'active quand elle est réalisée.</p>",
  steps:[
  {t:'Bienvenue en salle de commande',h:"<p>Vous êtes l'opérateur réacteur de la tranche 1, un REP 900 MWe à trois boucles (2 785 MWth). Le réacteur fonctionne à <b>50 %</b>, groupes de grappes et régulations en automatique.</p><p>L'écran comporte quatre zones : la <b>Vue d'ensemble</b> (synoptique, courbes clés, actions en cours, ΔI, physique du cœur), les <b>Commandes</b>, les <b>Tendances</b> et les <b>Alarmes</b>. Sur téléphone, passez de l'une à l'autre avec les onglets en bas. Le bandeau du haut résume les grandeurs clés et reste toujours visible ; une valeur qui varie s'y affiche en gras avec une flèche. Chaque carte se replie en touchant son titre.</p><p>La simulation tourne en temps réel. La vitesse se règle en haut (×1 à ×300) : accélérez pour les phénomènes lents (bore, xénon), revenez à ×1 pour les transitoires rapides.</p>"},
- {t:'Les grandeurs essentielles',h:"<p>Dans le bandeau : <b>P nucléaire</b> (chambres gamme puissance) et <b>P électrique</b>. <b>Tmoy</b> est la température moyenne du primaire ; elle suit un programme linéaire de 286 °C à 0 % à 304,5 °C à 100 %. <b>Tref</b> est calculée à partir de la charge turbine : en mode G, c'est le réacteur qui suit la turbine.</p><p>La <b>pression pressuriseur</b> est régulée à 155 bar par les chaufferettes et l'aspersion. Le <b>niveau GV</b> est tenu vers 50 % par l'eau alimentaire (ARE).</p>"},
- {t:'Le bilan de réactivité',h:"<p>Ouvrez le <b>Synoptique</b> et regardez le bilan de réactivité. La réserve du cœur (combustible neuf) est compensée par les <b>grappes</b>, le <b>bore</b> dissous (environ −9 pcm/ppm), l'effet <b>modérateur</b> (coefficient α, d'autant plus négatif que le bore est bas), l'effet <b>Doppler</b> du combustible et l'empoisonnement <b>xénon</b>.</p><p>Quand la somme vaut 0 pcm, le réacteur est critique. Un ρ positif fait apparaître un <b>temps de doublement</b> : avec β = 600 pcm, +100 pcm donnent environ une minute.</p>"},
+ {t:'Les grandeurs essentielles',h:"<p>Le bandeau du haut est rangé en quatre familles. <b>Cœur</b> : puissance nucléaire, réactivité, groupe R, ΔI, bore. <b>Primaire</b> : Tmoy, températures de branche, pression et niveau du pressuriseur. <b>Secondaire</b> : puissance électrique, pression et niveau des GV. <b>Sûreté</b> : les marges aux protections. Sous chaque valeur, une ligne de contexte ; sous certaines, une jauge : vert pour la plage normale, traits rouges pour les seuils.</p><p><b>P nucléaire</b> vient des chambres gamme puissance, <b>P électrique</b> de l'alternateur. <b>Tmoy</b> est la température moyenne du primaire ; elle suit un programme linéaire de 286 °C à 0 % à 304,5 °C à 100 %. <b>Tref</b> est calculée à partir de la charge turbine : en mode G, c'est le réacteur qui suit la turbine.</p><p>La <b>pression pressuriseur</b> est régulée à 155 bar par les chaufferettes et l'aspersion. Le <b>niveau GV</b> est tenu vers 50 % par l'eau alimentaire (ARE).</p>"},
+ {t:'Le bilan de réactivité',h:"<p>Dans la <b>Vue d'ensemble</b>, regardez la carte « Bilan de réactivité » ; le total ρ et le temps de doublement sont aussi dans le bandeau, case « Réactivité ». La réserve du cœur (combustible neuf) est compensée par les <b>grappes</b>, le <b>bore</b> dissous (environ −9 pcm/ppm), l'effet <b>modérateur</b> (coefficient α, d'autant plus négatif que le bore est bas), l'effet <b>Doppler</b> du combustible et l'empoisonnement <b>xénon</b>.</p><p>Quand la somme vaut 0 pcm, le réacteur est critique. Un ρ positif fait apparaître un <b>temps de doublement</b> : avec β = 600 pcm, +100 pcm donnent environ une minute.</p>"},
  {t:'Passez le groupe R en manuel',h:"<p>Dans <b>Commandes › Grappes</b>, réglez <kbd>Mode R</kbd> sur <kbd>Manuel</kbd>. Le groupe R (régulation de température) ne bougera plus seul.</p>",ok:s=>s.modeR==='man'},
  {t:'Extrayez R de 6 pas',h:"<p>Sélectionnez la carte <b>Groupe R</b> puis appuyez six fois sur <kbd>+1</kbd>.</p><p>Observez : ρ devient positif, la puissance monte, Tmoy monte. Le Doppler et l'effet modérateur, tous deux négatifs, ramènent ρ à zéro et la puissance se stabilise un peu plus haut. C'est l'<b>autorégulation</b> du REP. Attendez une quarantaine de secondes.</p>",
   enter:(s,c,k)=>{k.r0=s.rods.R.p;k.tm=null;},ok:(s,c,k)=>{ if(s.rods.R.p>=k.r0+5.5){ if(k.tm==null)k.tm=s.t; return s.t-k.tm>40; } return false; }},
@@ -1145,7 +1267,7 @@ const SCN=[
  ]},
 {id:'l-di',kind:'lecon',title:'Le ΔI et le diagramme de pilotage',desc:'Distribution axiale de puissance : effet des grappes, du bore et du xénon.',diff:2,speed:5,
  init:{P:.5,xe:.5,R:190,G:'cal',coupled:true,modeR:'auto',modeG:'auto'},
- brief:"<p>Tranche à 50 %. Vous allez déformer la distribution axiale de puissance avec le groupe R, puis la corriger. Gardez le <b>diagramme ΔI</b> visible (Synoptique) et passez en ×10 pendant les appoints.</p>",
+ brief:"<p>Tranche à 50 %. Vous allez déformer la distribution axiale de puissance avec le groupe R, puis la corriger. Gardez le <b>diagramme ΔI</b> visible (Vue d'ensemble) ; l'écart à la référence est aussi dans le bandeau, case « ΔI » et passez en ×10 pendant les appoints.</p>",
  info:s=>'ΔI '+fmt(s.DI,2)+' % PN · réf. '+fmt(-1.5*s.n,2)+' · écart '+sgn(s.DI+1.5*s.n,2)+' · R '+fmt(s.rods.R.p,0)+' · Tmoy − Tref '+sgn(s.Tavg-s.Tref,1)+' °C',
  steps:[
  {t:"Qu'est-ce que le ΔI ?",tab:'synop',h:"<p>Les chambres gamme puissance ont deux sections, haute et basse. <b>ΔI = P(haut) − P(bas)</b>, en % de la puissance nominale. Rapporté à la puissance, c'est l'<b>axial offset</b> : AO = ΔI / P.</p><p>Pourquoi le surveiller : un flux trop concentré en haut ou en bas crée des points chauds (facteur de forme), qui réduisent les marges à la crise d'ébullition et en cas d'accident de perte de réfrigérant. Il favorise aussi les <b>oscillations xénon axiales</b>.</p><p>En exploitation on garde ΔI dans un domaine autour d'un <b>ΔI de référence</b> (ici −1,5 % × P) ± 5 % PN : la bande verte du diagramme, inclinée parce que la référence suit la puissance. Sur les tranches réelles, le domaine s'élargit souvent à basse puissance. Une marge ΔI dégradée réduit aussi le seuil de protection ΔT surtempérature.</p>"},
@@ -1168,7 +1290,7 @@ const SCN=[
  {t:'Observez 4 heures',tab:'trend',h:"<p>Passez en ×300 et regardez la courbe Xénon. ρ Xe devient plus négatif pendant plusieurs heures. R s'extrait pour compenser jusqu'à sa butée haute, puis Tmoy décroche sous Tref.</p><p>Gardez Tmoy sur Tref par de petites <b>dilutions</b> (10 m³/h, 300 L à 1 m³). La leçon avance après 4 h simulées.</p>",
   enter:(s,c,k)=>{k.t0=s.t;},ok:(s,c,k)=>s.t-k.t0>=4*3600,info:(s,c,k)=>'Écoulé '+dur(s.t-(k.t0||s.t))+' / 4 h · ρ Xe '+fmt(s.rho.xe,0)+' pcm · Tmoy − Tref '+sgn(s.Tavg-s.Tref,1)+' °C'},
  {t:'Remontez à 100 %',tab:'cmd',h:"<p>Consigne <b>100 %</b> à 5 %/min. Le flux augmente, le xénon est brûlé plus vite qu'il ne se forme : il libère de la réactivité. R s'insère ; si ça ne suffit pas, il faut <b>borer</b>. Gardez un œil sur ΔI.</p>",ok:s=>s.Lt>=0.995},
- {t:'Le pic xénon après arrêt (facultatif)',tab:'cmd',h:"<p>Faites un <b>AAR manuel</b> et laissez tourner 10 h en ×300. Sans flux, plus de brûlage : le xénon culmine vers 8 à 11 h après l'arrêt, plusieurs milliers de pcm au-dessus de l'équilibre, puis décroît en deux jours.</p><p>Pendant ce pic, redémarrer peut être impossible, faute de réactivité disponible : c'est l'empoisonnement post-arrêt. Utilisez <kbd>Suivant</kbd> pour passer cette étape.</p>",
+ {t:'Le pic xénon après arrêt (facultatif)',tab:'cmd',h:"<p>Faites un <b>AAR manuel</b> et laissez tourner 10 h en ×300. Sans flux, plus de brûlage : le xénon culmine vers 8 à 11 h après l'arrêt, environ 2 000 à 2 500 pcm au-delà de l'équilibre, puis décroît en deux jours.</p><p>Pendant ce pic, redémarrer peut être impossible, faute de réactivité disponible : c'est l'empoisonnement post-arrêt. Utilisez <kbd>Suivant</kbd> pour passer cette étape.</p>",
   enter:(s,c,k)=>{k.pk=0;},ok:s=>s.tripped&&s.t-s.tripT>=10*3600,info:(s,c,k)=>{ k.pk=Math.min(k.pk||0,s.rho.xe); return 'ρ Xe '+fmt(s.rho.xe,0)+' pcm · minimum atteint '+fmt(k.pk,0)+' pcm'+(s.tripped?' · '+dur(s.t-s.tripT)+' après AAR':''); },opt:true},
  {t:'Leçon terminée',h:"<p>Le xénon impose le rythme des variations de charge : toute baisse se paie par une dilution quelques heures plus tard, toute remontée par une borication. Anticiper vaut mieux que corriger.</p>",last:true}
  ]},
@@ -1204,7 +1326,7 @@ const SCN=[
  info:s=>'Marge ΔT '+fmt(s.dtMargin,1)+' % · seuil surtempérature '+fmt(s.OTsp,1)+' % · surpuissance '+fmt(s.OPsp,1)+' % · P '+fmt(s.Ppzr,1)+' bar',
  steps:[
  {t:'La chaîne de protection',tab:'cmd',h:"<p>Le système de protection compare des mesures redondantes à des seuils et déclenche l'<b>AAR</b> (chute de toutes les grappes) ou l'<b>injection de sécurité</b>. Seuils principaux du simulateur :</p><ul><li>haut flux 109 % (25 % tant que P10 n'est pas franchi), gamme source 10⁵ c/s ;</li><li>pression pressu 165 bar et 131 bar, IS à 119 bar ;</li><li>niveau GV très bas 15 %, perte de pompe primaire au-dessus de P7 ;</li><li><b>ΔT surpuissance</b> et <b>ΔT surtempérature</b>.</li></ul><p>Le ΔT entre branches chaude et froide mesure la puissance thermique. Le seuil de surtempérature baisse quand Tmoy monte, quand la pression baisse ou quand ΔI s'écarte : il protège contre la <b>crise d'ébullition</b>.</p>"},
- {t:'Réduisez la marge ΔT',tab:'cmd',h:"<p>Passez l'<b>aspersion</b> en <kbd>Manuel</kbd> à 40 % (×2 conseillé). La pression baisse. Sous ~149 bar, le seuil de surtempérature devient le plus restrictif et la marge ΔT diminue de 1 % par bar. Regardez la ligne d'information.</p><p>Arrêtez-vous quand la marge passe sous 9 %. L'alarme sonne à 5 %, l'AAR tombe à 0 %.</p>",ok:s=>s.sprayMode==='man'&&s.dtMargin<9},
+ {t:'Réduisez la marge ΔT',tab:'cmd',h:"<p>Passez l'<b>aspersion</b> en <kbd>Manuel</kbd> à 40 % (×2 conseillé). La pression baisse. Sous ~149 bar, le seuil de surtempérature devient le plus restrictif et la marge ΔT diminue de 1 % par bar. Suivez-la dans le bandeau, famille Sûreté : sa jauge se rapproche du trait rouge.</p><p>Arrêtez-vous quand la marge passe sous 9 %. L'alarme sonne à 5 %, l'AAR tombe à 0 %.</p>",ok:s=>s.sprayMode==='man'&&s.dtMargin<9},
  {t:"Repassez l'aspersion en auto",tab:'cmd',h:"<p>Repassez l'aspersion en <kbd>Auto</kbd> : les chaufferettes remontent la pression et la marge revient à 12 %.</p>",ok:s=>s.sprayMode==='auto'&&s.Ppzr>153},
  {t:'Les permissifs',h:"<p>Certaines protections n'ont de sens que dans une plage de puissance. Les <b>permissifs</b> les activent ou les inhibent :</p><ul><li><b>P6</b> (GI > 10⁻¹⁰ A) : autorise l'inhibition de la gamme source, qui saturerait au-delà ;</li><li><b>P7</b> (10 %) : active les AAR sur basse pression, niveau pressu haut, perte de pompe primaire, déclenchement turbine ;</li><li><b>P10</b> (10 % GP) : bloque le seuil bas de haut flux à 25 %.</li></ul><p>En redescendant sous ces seuils, les protections se réarment automatiquement.</p>"},
  {t:'Leçon terminée',h:"<p>Les seuils d'AAR sont calculés pour qu'aucun transitoire ne dépasse les limites de sûreté (crise d'ébullition, fusion à cœur, pression du circuit). Le rôle de l'opérateur est de garder ses marges, pas de « jouer » avec les seuils. Les aléas <b>Aspersion bloquée ouverte</b> et <b>Retrait incontrôlé</b> s'appuient sur cette leçon.</p>",last:true}
@@ -1377,7 +1499,7 @@ const STEPX={
   {f:['[data-bank="R"]','#rd-td','#rd-pn'],hint:"Commandes › Grappes : touchez « Groupe R » puis cinq fois « +1 ».",
    sub:[['Groupe R sélectionné',RB],['R extrait de 5 pas',(s,c,k)=>s.rods.R.p>=k.r0+4.5],['30 s d\'observation',(s,c,k)=>k.tm!=null&&s.t-k.tm>30]],
    after:s=>{ const r=s.rho.tot; const th=r>2?0.69*(600-r)/(0.08*r):NaN; return `Réactivité : ${sgn(r,0)} pcm. Temps de doublement mesuré : ${TdTxt(s)}. La relation T ≈ (β − ρ)/(λ·ρ), avec λ ≈ 0,08 s⁻¹, donne ${Number.isFinite(th)?f0(th)+' s':'—'} : l'ordre de grandeur est juste. L'écart vient des six groupes de précurseurs, que la formule résume en un seul.`; }},
-  {f:['#rd-td','[data-c="react"]','.spdseg','#spdSel'],hint:"Passez en ×5 en haut de l'écran. Ne touchez plus aux grappes : regardez la ligne Doppler du bilan de réactivité se creuser pendant que la puissance monte.",
+  {f:['#rd-td','[data-c="react"]','.spdseg','#spdSel'],hint:"Passez en ×5 en haut de l'écran. Ne touchez plus aux grappes : regardez la ligne Doppler du bilan de réactivité (Vue d'ensemble) se creuser pendant que la puissance monte. Le temps de doublement s'allonge dans le bandeau, case « Réactivité ».",
    after:(s,c,k)=>`À ${f1(s.n*100)} %, le Doppler a repris ${sgn(s.rho.dop-k.rh0.dop,0)} pcm : ρ est passé de ${sgn(k.rh0.tot,0)} à ${sgn(s.rho.tot,0)} pcm et le temps de doublement s'est allongé (${TdTxt(s)}). Encore un peu et la puissance s'arrêtera seule.`},
   {f:['[data-act="rod"][data-v="-10"]','#rd-td','#rd-pn'],hint:"Touchez « −10 » une fois, puis observez pendant 40 s.",
    after:s=>`Période mesurée : ${s.rate<0?f0(1/s.rate)+' s':'—'}. Malgré une forte antiréactivité, elle reste proche de −80 s : c'est le précurseur le plus lent (55 s de demi-vie) qui fixe cette limite. C'est aussi pour cela que la puissance met des minutes à disparaître après un AAR.`},
@@ -1401,7 +1523,7 @@ const STEPX={
   {f:['[data-c="rods"]','[data-c="di"]','#rd-di'],hint:"Commandes › Grappes : Mode R › « Manuel », touchez « Groupe R », puis « −10 » quatre fois. Gardez un œil sur le point du diagramme ΔI.",
    sub:[['R en manuel',RM],['Groupe R sélectionné',RB],['R inséré de 40 pas',(s,c,k)=>s.rods.R.p<=k.r0-39.5]],
    after:(s,c,k)=>`ΔI : ${f2(k.DI0)} → ${f2(s.DI)} % PN (référence ${f2(-1.5*s.n)}). Tmoy est ${f1(Math.abs(s.Tavg-s.Tref))} °C sous Tref : la turbine tire toujours 50 %, c'est donc la température qui a baissé.`},
-  {f:['[data-c="bore"]','#rd-tm'],hint:"Bore : « Dilution », « 30 », « Continu », « Lancer l'appoint ». Passez en ×10. Surveillez « Tmoy − Tref » dans la ligne bleue ci-dessus ; sous 0,5 °C, touchez « Arrêter ». Il faut environ 7 m³.",
+  {f:['[data-c="bore"]','#rd-tm'],hint:"Bore : « Dilution », « 30 », « Continu », « Lancer l'appoint ». Passez en ×10. Surveillez l'écart affiché sous Tmoy dans le bandeau (famille Primaire) ; sous 0,5 °C, touchez « Arrêter ». Il faut environ 7 m³.",
    sub:[['Dilution lancée',(s,c,k)=>s.volDil-k.v0>0.01],['Écart Tmoy − Tref < 0,6 °C',s=>Math.abs(s.Tavg-s.Tref)<0.6],['Appoint arrêté',s=>!s.rea.run]],
    after:(s,c,k)=>`${f1(s.volDil-k.v0)} m³ injectés, bore ${f1(k.Cb0)} → ${f1(s.Cb)} ppm. Tmoy est revenue sur Tref, mais ΔI vaut toujours ${f2(s.DI)} %. Le bore a compensé la réactivité, pas la forme du flux.`},
   {f:['.seg[data-key="modeR"]','[data-c="bore"]','[data-bank="R"]'],hint:"Mode R › « Auto ». Bore : « Borication », « 10 », « Continu », « Lancer ». Quand R dépasse 185 pas, « Arrêter ».",
@@ -1417,7 +1539,7 @@ const STEPX={
    after:(s,c,k)=>`ρ Xe : ${f0(k.rh0.xe)} → ${f0(s.rho.xe)} pcm en 4 h. Vous avez dilué ${f1(s.volDil-k.vD0)} m³, soit ${f1(k.Cb0-s.Cb)} ppm, pour compenser.`},
   {f:['[data-c="turb"]','[data-c="bore"]'],hint:"Consigne 100 % à 5 %/min. Si Tmoy passe au-dessus de Tref de plus de 1 °C, borez 100 L à 5 m³/h.",
    after:(s,c,k)=>`ρ Xe : ${f0(k.rh0.xe)} → ${f0(s.rho.xe)} pcm. Borication totale pendant la remontée : ${f1(s.volBor-k.vB0)} m³.`},
-  {f:['#aarBtn','[data-c="trend"]'],hint:"Protection › « AAR manuel » (deux appuis), puis ×300. La ligne bleue indique le minimum atteint.",
+  {f:['#aarBtn','[data-c="trend"]'],hint:"Protection › « AAR manuel » (deux appuis), puis ×300. La ligne de mesures de l'étape indique le minimum atteint.",
    after:(s,c,k)=>`Pic xénon : ${f0(k.pk)} pcm, à comparer aux −2 700 pcm de l'équilibre à pleine puissance.`},
   {}
  ],
@@ -1443,7 +1565,7 @@ const STEPX={
  ],
  'l-prot':[
   {f:['[data-c="prot"]']},
-  {f:['.seg[data-key="sprayMode"]','#sprayMan','[data-c="instr"]'],hint:"Pressuriseur : Aspersion › « Manuel », curseur vers 40 %. Passez en ×2. La ligne bleue montre la marge ΔT ; arrêtez-vous sous 9 %.",
+  {f:['.seg[data-key="sprayMode"]','#sprayMan','#rd-dtm'],hint:"Pressuriseur : Aspersion › « Manuel », curseur vers 40 %. Passez en ×2. La marge ΔT est dans le bandeau, famille Sûreté : arrêtez-vous quand elle passe sous 9 %.",
    sub:[['Aspersion en manuel',s=>s.sprayMode==='man'],['Ouverture ≈ 40 %',s=>s.sprayMan>=0.3],['Marge ΔT < 9 %',s=>s.dtMargin<9]],
    after:(s,c,k)=>`Pression ${f1(s.Ppzr)} bar, marge ΔT ${f1(s.dtMargin)} %. Le seuil de surtempérature est passé de ${f1(k.OT0)} à ${f1(s.OTsp)} % : à basse pression, l'eau est plus près de l'ébullition, la protection devient plus exigeante.`},
   {f:['.seg[data-key="sprayMode"]','#rd-pp'],hint:"Aspersion › « Auto ».",after:s=>`Pression ${f1(s.Ppzr)} bar, marge ${f1(s.dtMargin)} %.`},
@@ -1452,16 +1574,16 @@ const STEPX={
  ],
  'l-div':[
   {f:['[data-c="instr"]']},
-  {f:['[data-bank="R"]','[data-act="rod"][data-v="10"]','[data-c="instr"]'],hint:"Touchez « Groupe R », puis « +10 » dix fois (ou « Tout ext. » puis « Stop » à 100). Passez en ×10 et attendez que le temps de doublement redevienne « stable ».",sub:[['R ≥ 100 pas',s=>s.rods.R.p>=99.5],['Comptage stabilisé',(s,c,k)=>(k.st||0)>5]],
+  {f:['[data-bank="R"]','[data-act="rod"][data-v="10"]','#rd-td'],hint:"Touchez « Groupe R », puis « +10 » dix fois (ou « Tout ext. » puis « Stop » à 100). Passez en ×10 et attendez que le temps de doublement (bandeau, case Réactivité) redevienne « ∞ ». Le comptage et 1/M s'affichent dans la ligne de mesures.",sub:[['R ≥ 100 pas',s=>s.rods.R.p>=99.5],['Comptage stabilisé',(s,c,k)=>(k.st||0)>5]],
    after:(s,c,k)=>`1/M = ${fmt(c.k.c0/s.n,3)} à 100 pas. Notez-le : c'est votre premier point.`},
-  {f:['[data-act="rod"][data-v="10"]','[data-c="instr"]'],hint:"« +10 » quatre fois, puis attendez la stabilisation.",sub:[['R ≥ 140 pas',s=>s.rods.R.p>=139.5],['Comptage stabilisé',(s,c,k)=>(k.st||0)>5]],
+  {f:['[data-act="rod"][data-v="10"]','#rd-td'],hint:"« +10 » quatre fois, puis attendez la stabilisation.",sub:[['R ≥ 140 pas',s=>s.rods.R.p>=139.5],['Comptage stabilisé',(s,c,k)=>(k.st||0)>5]],
    after:(s,c,k)=>{ const m=c.k.c0/s.n; return `1/M = ${fmt(m,3)} à 140 pas. Pente depuis 100 pas : ${fmt((m-0.574)/40,4)} par pas → cote critique extrapolée ≈ ${f0(140+m/((0.574-m)/40))} pas.`; }},
-  {f:['[data-act="rod"][data-v="10"]','[data-c="instr"]'],hint:"« +10 » deux fois. Près du critique, la stabilisation prend plusieurs minutes : ×10.",sub:[['R ≥ 160 pas',s=>s.rods.R.p>=159.5],['Comptage stabilisé',(s,c,k)=>(k.st||0)>5]],
+  {f:['[data-act="rod"][data-v="10"]','#rd-td'],hint:"« +10 » deux fois. Près du critique, la stabilisation prend plusieurs minutes : ×10.",sub:[['R ≥ 160 pas',s=>s.rods.R.p>=159.5],['Comptage stabilisé',(s,c,k)=>(k.st||0)>5]],
    after:(s,c,k)=>{ const m=c.k.c0/s.n; return `1/M = ${fmt(m,3)} à 160 pas. Nouvelle extrapolation ≈ ${f0(160+m/((0.2-m)/20))} pas. L'estimation se resserre à mesure qu'on approche.`; }},
   {f:['[data-act="rod"][data-v="1"]','#rd-td'],hint:"« +1 », attendez 30 à 60 s ; recommencez jusqu'à voir un temps de doublement constant entre 60 et 120 s. S'il passe sous 40 s, « −1 ».",
    after:s=>`Critique à R ≈ ${f0(s.rods.R.p)} pas, temps de doublement ${TdTxt(s)}.`},
   {f:['[data-act="srInhib"]'],hint:"Quand l'alarme bleue « P6 » apparaît : Commandes › Protection › « Inhiber GS »."},
-  {f:['[data-bank="R"]','#rd-pn','#rd-td'],hint:"Laissez monter. Au-dessus de 3 %, « −1 » ; si la puissance redescend sous 1 %, « +1 ». Visez « stable »."},
+  {f:['[data-bank="R"]','#rd-pn','#rd-td'],hint:"Laissez monter. Au-dessus de 3 %, « −1 » ; si la puissance redescend sous 1 %, « +1 ». Visez un temps de doublement « ∞ » dans le bandeau."},
   {}
  ],
 };
@@ -1508,7 +1630,7 @@ const COACH={
   [(s,c)=>s.coupled,"Charge à 5 % : découplez la turbine. Les groupes passeront en manuel."],
   [(s,c)=>s.n>0.001,"Insérez les grappes : sélectionnez GCP puis « Tout ins. », ensuite le groupe R. La puissance décroîtra avec une période d'environ −80 s."],
   [(s,c)=>-s.rho.tot<3000&&!s.rea.run,"Borez pour atteindre 3 000 pcm de marge : Borication, 20 m³/h, 1 m³ (≈ 200 pcm par m³ ici)."],
-  [(s,c)=>-s.rho.tot<3000,"Borication en cours : surveillez la marge d'arrêt dans la ligne bleue."],
+  [(s,c)=>-s.rho.tot<3000,"Borication en cours : surveillez la marge d'arrêt dans la ligne de mesures de la mission, ou ρ dans le bandeau (case Réactivité)."],
   [(s,c)=>Math.abs(s.Tavg-286)>=2,"Attendez que Tmoy se stabilise vers 286 °C : le GCT-c en mode pression s'en charge."],
   [(s,c)=>true,"Tous les critères sont proches : vérifiez la marge et Tmoy."],
  ],
@@ -1577,8 +1699,8 @@ function tick(s,c){
   }
   if(scn.kind==='libre'&&c.cur){ const sc=byId(c.cur); if(sc.update) sc.update(s,c); }
   else if(scn.update) scn.update(s,c);
-  if(scn.obj) for(const o of scn.obj) if(c.o[o.id]==null&&o.test(s,c)){ c.o[o.id]=s.t; c.dirty=true; }
-  if(scn.steps){ const stp=scn.steps[c.step], k=c.sk; k.minLg=Math.min(k.minLg,s.Lsg); k.maxLg=Math.max(k.maxLg,s.Lsg); k.minP=Math.min(k.minP,s.Ppzr); k.maxP=Math.max(k.maxP,s.Ppzr); k.minLp=Math.min(k.minLp,s.Lpzr); if(stp.ok&&!c.stepOk&&stp.ok(s,c,k)){ c.stepOk=true; c.dirty=true; try{ c.after=stp.after?stp.after(s,c,k):''; }catch(e){ c.after=''; } } }
+  if(scn.obj) for(const o of scn.obj) if(c.o[o.id]==null&&o.test(s,c)){ c.o[o.id]=s.t; c.dirty=true; SFX.obj(); }
+  if(scn.steps){ const stp=scn.steps[c.step], k=c.sk; k.minLg=Math.min(k.minLg,s.Lsg); k.maxLg=Math.max(k.maxLg,s.Lsg); k.minP=Math.min(k.minP,s.Ppzr); k.maxP=Math.max(k.maxP,s.Ppzr); k.minLp=Math.min(k.minLp,s.Lpzr); if(stp.ok&&!c.stepOk&&stp.ok(s,c,k)){ c.stepOk=true; c.dirty=true; SFX.step(); try{ c.after=stp.after?stp.after(s,c,k):''; }catch(e){ c.after=''; } } }
   if(scn.end&&!A.done&&scn.end.call(scn,s,c)){ A.done=true; setTimeout(finish,600); }
 }
 
@@ -1687,11 +1809,15 @@ twoStep($('#isBtn'),'IS manuelle','Confirmer l\'IS',()=>act('is'));
 
 document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('g')){ e.preventDefault(); showGloss(+e.target.dataset.g); } if(e.key==='Escape') $('#gpop').hidden=true; });
 document.addEventListener('click',e=>{
+  if(e.target.closest('button,.seg button,.bank')&&!e.target.closest('#ackBtn,#alb-ack,#tour')) SFX.tick();
+  const tg=e.target.closest('[data-tourgo]'); if(tg){ openTour(+tg.dataset.tourgo); return; }
+  const tv=e.target.closest('[data-tv]'); if(tv){ TV.auto=false; tourGo(+tv.dataset.tv); return; }
+  const pt=e.target.closest('#ptr'); if(pt){ if(pt._tab) setTab(pt._tab); if(pt._el) pt._el.scrollIntoView({behavior:'smooth',block:'center'}); return; }
   const gq=e.target.closest('.g'); if(gq){ showGloss(+gq.dataset.g); return; }
   if(!e.target.closest('#gpop')) $('#gpop').hidden=true;
   if(e.target.closest('#lexBtn')){ openLex(); return; }
   if(e.target.closest('#alb-see')){ if(innerWidth<1080) setTab('alarm'); else document.querySelector('[data-c="alarm"]').scrollIntoView({behavior:'smooth',block:'center'}); return; }
-  if(e.target.closest('#alb-ack')){ if(A.s){ for(const a of Object.values(A.s.alarms)) if(a.on) a.ack=true; updateAlarms(); } return; }
+  if(e.target.closest('#alb-ack')){ SFX.ack(); if(A.s){ for(const a of Object.values(A.s.alarms)) if(a.on) a.ack=true; updateAlarms(); } return; }
   const fb=e.target.closest('.fold'); if(fb){ toggleFold(fb.closest('.card')); return; }
   const h2c=e.target.closest('.card[data-c] > h2'); if(h2c&&!e.target.closest('button,.seg,input,select')){ toggleFold(h2c.parentElement); return; }
   const hq=e.target.closest('[data-help]'); if(hq){ openHelp(hq.dataset.help); return; }
@@ -1715,7 +1841,7 @@ $('#gcta').addEventListener('change',()=>{ if(A.s) op('GCT-a manuel '+fmt(A.s.gc
 bindRange('#areMan',v=>{ A.s.areMan=v/100; if(A.s.areMode!=='man') toast('Passez l\'ARE en manuel pour que ce réglage agisse.'); });
 bindRange('#sprayMan',v=>{ A.s.sprayMan=v/100; if(A.s.sprayMode!=='man') toast('Passez l\'aspersion en manuel pour que ce réglage agisse.'); });
 bindRange('#chgMan',v=>{ A.s.chgMan=v; if(A.s.chgMode!=='man') toast('Passez la charge RCV en manuel pour que ce réglage agisse.'); });
-$('#ackBtn').onclick=()=>{ if(!A.s) return; for(const a of Object.values(A.s.alarms)) if(a.on) a.ack=true; updateAlarms(); };
+$('#ackBtn').onclick=()=>{ if(!A.s) return; SFX.ack(); for(const a of Object.values(A.s.alarms)) if(a.on) a.ack=true; updateAlarms(); };
 $('#pauseBtn').onclick=()=>{ if(!A.s) return; A.paused=!A.paused; syncAll(); };
 $('#menuBtn').onclick=()=>openMenu();
 $('#spdSel').addEventListener('change',e=>setSpeed(+e.target.value));
@@ -1878,8 +2004,8 @@ function renderMission(force){
     foot='<button class="btn" id="mEnd">Terminer</button>';
   }
   T('mis-title',title); $('#mis-body').innerHTML=body; glossDom($('#mis-body')); $('#mis-foot').innerHTML=foot;
-  $$('.focus').forEach(e=>e.classList.remove('focus'));
-  if(scn.steps&&!c.stepOk){ const fs=scn.steps[c.step].f||[]; fs.forEach(q=>$$(q).forEach(e=>e.classList.add('focus'))); }
+  $$('.focus').forEach(e=>e.classList.remove('focus','focus-sm')); A.ptrT=[];
+  if(scn.steps&&!c.stepOk){ const fs=scn.steps[c.step].f||[]; fs.forEach(q=>$$(q).forEach(e=>e.classList.add('focus'))); applyFocus(); } else document.body.classList.remove('bandfocus');
   const on=(id,f)=>{ const e=document.getElementById(id); if(e) e.onclick=f; };
   on('tNext',()=>{ if(c.step<scn.steps.length-1) enterStep(c.step+1); });
   on('tPrev',()=>enterStep(c.step-1));
@@ -1909,7 +2035,7 @@ function finish(){
     else{
       const cr=scn.evaluate.call(scn,s,c);
       const okN=cr.filter(x=>x.ok).length;
-      stars=Math.round(okN/cr.length*3); if(c.hint&&stars>0) stars--;
+      stars=Math.round(okN/cr.length*3); if(c.hint&&stars>0) stars--; setTimeout(()=>{ if(stars===3) SFX.done(); else if(stars>0) SFX.obj(); },250);
       h='<h2>Débriefing'+(scn.mystery?' · aléa mystère':'')+'</h2><div class="t">'+realTitle+'</div>';
       h+='<div class="bigstars" aria-label="'+stars+' sur 3">'+'★'.repeat(stars)+'<span style="color:var(--dim)">'+'★'.repeat(3-stars)+'</span></div>';
       h+='<p class="note">'+okN+' critère(s) sur '+cr.length+(c.hint?' · indice utilisé (−1 étoile)':'')+'</p>';
@@ -1939,7 +2065,7 @@ function openMenu(){
   const best=store('best')||{}, done=store('done')||{};
   const card=x=>'<button class="sc" data-scn="'+x.id+'"><span class="t">'+x.title+'</span><span class="d">'+x.desc+'</span><span class="m"><span>'+(x.kind==='lecon'?'Leçon · '+(x.speed>=60?'longue (×300)':'15 à 25 min'):x.diff?'Difficulté '+'●'.repeat(x.diff)+'○'.repeat(3-x.diff):'Sans évaluation')+'</span>'+(done[x.id]?'<span class="done-tag">✓ terminé</span>':'')+(best[x.id]!=null?'<span class="stars">'+'★'.repeat(best[x.id])+'☆'.repeat(3-best[x.id])+'</span>':'')+'</span></button>';
   const grp=(t,f)=>'<div class="sec">'+t+'</div><div class="cards">'+SCN.filter(f).map(card).join('')+'</div>';
-  $('#menuCards').innerHTML=(A.s&&!A.done?'<div class="row" style="margin-bottom:6px"><button class="btn pri" id="resume">Reprendre le quart en cours</button></div>':'')+grp('Apprendre',x=>x.kind==='tuto')+grp('Comprendre — leçons guidées',x=>x.kind==='lecon')+grp("S'entraîner",x=>x.kind==='exo')+grp('Gérer un aléa',x=>x.kind==='alea')+grp('Pilotage libre',x=>x.kind==='libre');
+  $('#menuCards').innerHTML=(A.s&&!A.done?'<div class="row" style="margin-bottom:6px"><button class="btn pri" id="resume">Reprendre le quart en cours</button></div>':'')+'<div class="sec">Apprendre</div><div class="cards"><button class="sc tourc" data-tourgo="0"><span class="t">Découvrir la centrale</span><span class="d">Visite illustrée, sans manipulation : fission, réaction en chaîne, circuits, pilotage, xénon, sûreté.</span><span class="m"><span>18 chapitres · 15 à 20 min</span>'+(done.tour?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'+SCN.filter(x=>x.kind==='tuto').map(card).join('')+'</div>'+grp('Comprendre — leçons guidées',x=>x.kind==='lecon')+grp("S'entraîner",x=>x.kind==='exo')+grp('Gérer un aléa',x=>x.kind==='alea')+grp('Pilotage libre',x=>x.kind==='libre');
   $('#menu').hidden=false; $('#debrief').hidden=true; $('#brief').hidden=true;
   const r=$('#resume'); if(r) r.onclick=()=>{ $('#menu').hidden=true; A.paused=false; syncAll(); };
 }
@@ -2173,6 +2299,276 @@ function updateBand(s){
   }
 }
 
+/* ================= Sons ================= */
+const SND={ctx:null,m:null,pref:{on:true,amb:true,cnt:true},lastAl:0,lastRed:0,amb:null,clickBuf:null};
+{ const p=store('snd'); if(p&&typeof p==='object') Object.assign(SND.pref,p); }
+function sndInit(){
+  try{
+    if(!SND.ctx){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return; SND.ctx=new AC(); SND.m=SND.ctx.createGain(); SND.m.gain.value=SND.pref.on?0.55:0; SND.m.connect(SND.ctx.destination);
+      const b=SND.ctx.createBuffer(1,Math.round(SND.ctx.sampleRate*0.004),SND.ctx.sampleRate), d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(d.length/5)); SND.clickBuf=b; }
+    if(SND.ctx.state==='suspended') SND.ctx.resume();
+  }catch(e){}
+}
+document.addEventListener('pointerdown',sndInit,true);
+document.addEventListener('keydown',sndInit,true);
+function sndOK(){ return SND.ctx&&SND.pref.on&&SND.ctx.state==='running'; }
+function tone(f,dur,type,vol,when,f2){
+  if(!sndOK()) return; const c=SND.ctx, t=c.currentTime+(when||0);
+  const o=c.createOscillator(), g=c.createGain(); o.type=type||'sine'; o.frequency.setValueAtTime(f,t); if(f2) o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.1,t+0.012); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(SND.m); o.start(t); o.stop(t+dur+0.05);
+}
+function noise(dur,vol,fc,when,fc2){
+  if(!sndOK()) return; const c=SND.ctx, t=c.currentTime+(when||0), n=Math.round(c.sampleRate*dur);
+  const b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); for(let i=0;i<n;i++) d[i]=Math.random()*2-1;
+  const s=c.createBufferSource(); s.buffer=b; const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(fc,t); if(fc2) f.frequency.exponentialRampToValueAtTime(fc2,t+dur);
+  const g=c.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  s.connect(f); f.connect(g); g.connect(SND.m); s.start(t);
+}
+const SFX={
+  tick:()=>tone(2200,0.025,'square',0.018),
+  step:()=>{ [523.3,659.3,784].forEach((f,i)=>tone(f,0.22,'triangle',0.11,i*0.085)); },
+  obj:()=>{ tone(659.3,0.16,'triangle',0.1); tone(987.8,0.3,'triangle',0.1,0.12); },
+  done:()=>{ [523.3,659.3,784,1046.5].forEach((f,i)=>tone(f,0.35,'triangle',0.1,i*0.12)); tone(784,0.6,'sine',0.06,0.5); },
+  info:()=>tone(1320,0.08,'sine',0.05),
+  amber:()=>{ tone(880,0.16,'sine',0.11); tone(698.5,0.3,'sine',0.1,0.18); },
+  red:()=>{ for(let i=0;i<3;i++){ tone(587,0.14,'square',0.05,i*0.32); tone(784,0.14,'square',0.05,i*0.32+0.16); } },
+  aar:()=>{ noise(0.9,0.35,2400,0,120); tone(110,0.7,'sine',0.25,0.05,38); tone(55,0.9,'triangle',0.12,0.1,30); },
+  ack:()=>tone(1046.5,0.06,'sine',0.05),
+  page:()=>noise(0.18,0.06,3000,0,600),
+};
+function sndClicks(rd,cps){
+  if(!sndOK()||!SND.pref.cnt||!SND.clickBuf) return;
+  const r=Math.min(45,Math.pow(Math.max(cps,0),0.6)); let k=0; const lam=r*rd;
+  let L=Math.exp(-lam),p=1; do{ k++; p*=Math.random(); }while(p>L&&k<80); k--;
+  const c=SND.ctx;
+  for(let i=0;i<k;i++){ const s=c.createBufferSource(); s.buffer=SND.clickBuf; const g=c.createGain(); g.gain.value=0.22; s.connect(g); g.connect(SND.m); s.start(c.currentTime+0.02+Math.random()*rd); }
+}
+function sndAmbient(s,active){
+  if(!SND.ctx||SND.ctx.state!=='running') return;
+  const c=SND.ctx;
+  if(!SND.amb){
+    const n=Math.round(c.sampleRate*2), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); let last=0; for(let i=0;i<n;i++){ last=(last+0.02*(Math.random()*2-1))/1.02; d[i]=last*3.5; }
+    const src=c.createBufferSource(); src.buffer=b; src.loop=true; const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=380; const gS=c.createGain(); gS.gain.value=0; src.connect(f); f.connect(gS); gS.connect(SND.m); src.start();
+    const o1=c.createOscillator(); o1.frequency.value=100; const o2=c.createOscillator(); o2.frequency.value=150; o2.type='triangle'; const gH=c.createGain(); gH.gain.value=0; o1.connect(gH); o2.connect(gH); gH.connect(SND.m); o1.start(); o2.start();
+    SND.amb={gS,gH};
+  }
+  const on=active&&SND.pref.amb;
+  const steam=on?0.05+0.22*Math.min(1,s.Wst):0, hum=on?0.006+0.008*s.pumps.filter(Boolean).length/3:0;
+  SND.amb.gS.gain.setTargetAtTime(steam*0.5,c.currentTime,0.4); SND.amb.gH.gain.setTargetAtTime(hum,c.currentTime,0.4);
+}
+function sndApply(){ store('snd',SND.pref); if(SND.m) SND.m.gain.setTargetAtTime(SND.pref.on?0.55:0,SND.ctx.currentTime,0.05); const b=$('#sndBtn'); if(b){ b.innerHTML=SND.pref.on?'<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>':'<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>'; b.setAttribute('aria-label',SND.pref.on?'Couper le son':'Activer le son'); b.classList.toggle('off',!SND.pref.on); }
+  ['sndOn','sndAmb','sndCnt'].forEach((id,i)=>{ const e=document.getElementById(id); if(e) e.checked=!!SND.pref[['on','amb','cnt'][i]]; }); }
+function alarmSound(sev){
+  const now=performance.now(); if(now-SND.lastAl<900) return; SND.lastAl=now;
+  if(sev==='r'){ SND.lastRed=now; SFX.red(); } else if(sev==='a') SFX.amber(); else SFX.info();
+}
+
+/* ================= Repères d'attention ================= */
+function applyFocus(){
+  document.body.classList.remove('bandfocus');
+  const els=$$('.focus');
+  els.forEach(e=>{
+    const fc=e.matches('.card.folded')?e:e.closest('.card.folded'); if(fc) fc.classList.remove('folded');
+    if(e.closest('#band')&&!e.matches('.mb')&&innerWidth<=760) document.body.classList.add('bandfocus');
+  });
+  requestAnimationFrame(()=>els.forEach(e=>{ const r=e.getBoundingClientRect(); if(r.width*r.height<45000) e.classList.add('focus-sm'); }));
+  A.ptrT=els;
+}
+function tgtName(el){
+  const k=el.closest('.rd'); if(k&&k.querySelector('.k')) return k.querySelector('.k').textContent;
+  const cd=el.closest('.card'); if(cd){ const h=cd.querySelector('h2'); if(h) return h.textContent.replace(/[?]/g,'').trim(); }
+  if(el.closest('header.top')) return 'en haut';
+  return '';
+}
+function updPtr(){
+  const p=$('#ptr'); const c=A.ctx, scn=A.scn;
+  const ok=scn&&scn.steps&&c&&!c.stepOk&&$('#brief').hidden&&$('#menu').hidden&&$('#help').hidden&&$('#debrief').hidden&&$('#tour').hidden&&!A.paused;
+  const L=ok?(A.ptrT||[]).filter(e=>e.isConnected&&!e.matches('header.top,#band,.card[data-c="synop"]')):[];
+  if(!L.length){ p.hidden=true; return; }
+  const vis=e=>e.getClientRects().length>0;
+  const hb=$('header.top').getBoundingClientRect().bottom, tb=$('#tabs'), vb=innerHeight-(tb&&getComputedStyle(tb).display!=='none'?tb.getBoundingClientRect().height:0);
+  let el=L.find(e=>{ if(!vis(e)) return false; const r=e.getBoundingClientRect(); return r.bottom>hb+4&&r.top<vb-4; });
+  let mode='on';
+  if(!el){ el=L.find(vis); if(el){ const r=el.getBoundingClientRect(); mode=r.top>=vb-4?'down':'up'; } else { el=L[0]; mode='tab'; } }
+  p.hidden=false; p.className='ptr '+mode; p._el=el;
+  const lab=$('#ptrl');
+  if(mode==='on'){ const r=el.getBoundingClientRect(); const above=r.top-hb>46; p.style.left=clamp(r.left+r.width/2,24,innerWidth-24)+'px'; p.style.top=(above?r.top-40:r.bottom+6)+'px'; p.classList.add(above?'pa':'pb'); T('ptrl',''); $('#ptra').textContent=above?'▼':'▲'; }
+  else if(mode==='tab'){ const pn=el.closest('.panel'); const nm={synop:'Vue',cmd:'Commandes',trend:'Tendances',alarm:'Alarmes'}[pn&&pn.dataset.p]||''; p.style.left='50%'; p.style.top=(vb-52)+'px'; $('#ptra').textContent='▼'; T('ptrl','Onglet '+nm); p._tab=pn&&pn.dataset.p; }
+  else { const r=el.getBoundingClientRect(); p.style.left=clamp(r.left+r.width/2,90,innerWidth-90)+'px'; p.style.top=(mode==='down'?vb-52:hb+8)+'px'; $('#ptra').textContent=mode==='down'?'▼':'▲'; T('ptrl',tgtName(el)); }
+}
+
+/* ================= Visite guidée de la centrale ================= */
+const PLANT=`<svg class="plant" id="plant" viewBox="16 40 984 480" role="img" aria-label="Schéma d'une centrale nucléaire à eau pressurisée">
+<path class="pl-ground" d="M0 470 H1000"/>
+<g id="pl-bat"><path class="bld" d="M30 470 V205 A190 115 0 0 1 410 205 V470 Z"/><text class="pl-t" x="220" y="122" text-anchor="middle">Bâtiment réacteur</text></g>
+<g id="pl-salle"><rect class="bld2" x="440" y="118" width="400" height="352" rx="4"/><text class="pl-t" x="770" y="292" text-anchor="middle">Salle des machines</text></g>
+<g id="pl-prim"><path class="ln hot fl" d="M160 300 H272 V372 H290"/><path class="ln cold fl" d="M354 372 H362 V440 H254"/><path class="ln cold fl" d="M226 440 H176 V398 H160"/><path class="ln hot" d="M205 280 V300" style="stroke-width:3"/></g>
+<g id="pl-vap"><path class="ln steam fl" d="M322 180 V138 H495 V166"/><path class="ln steam fl" d="M530 172 Q585 112 652 150"/><path class="ln steam fl" d="M577 227 V300 M652 227 V300"/></g>
+<g id="pl-are"><path class="ln feed fl" d="M600 362 V420 H534"/><path class="ln feed fl" d="M510 420 H385 V330 H354"/><circle class="pmp" cx="522" cy="420" r="12"/><text class="pl-s" x="522" y="448" text-anchor="middle">Pompe alimentaire</text></g>
+<g id="pl-froid"><path class="river" d="M440 492 Q470 484 500 492 T560 492 T620 492 T680 492 T740 492 T800 492 T860 492 T920 492 T980 492 V520 H440 Z"/><path class="ln cool fl" d="M660 500 V362"/><path class="ln warm fl" d="M690 330 H880"/><path class="ln cool fl" d="M925 470 V496"/><text class="pl-s" x="470" y="512">Fleuve</text>
+ <g id="pl-tour"><path class="tower" d="M880 470 Q906 390 886 302 H964 Q944 390 970 470 Z"/><circle class="plume p1" cx="925" cy="290" r="18"/><circle class="plume p2" cx="935" cy="270" r="22"/><circle class="plume p3" cx="920" cy="248" r="26"/><text class="pl-s" x="925" y="460" text-anchor="middle">Réfrigérant</text></g></g>
+<g id="pl-cuve"><rect x="100" y="205" width="50" height="22" rx="3" class="crdm"/><rect class="vessel" x="90" y="225" width="70" height="195" rx="32"/><rect class="core" x="103" y="312" width="44" height="86" rx="4"/>
+ <g class="rodsg"><path class="rod" d="M113 222 V336 M125 222 V336 M137 222 V336"/></g><text class="pl-t" x="125" y="446" text-anchor="middle">Cuve</text><text class="pl-s cl" x="125" y="360" text-anchor="middle">Cœur</text></g>
+<g id="pl-pzr"><rect class="shell" x="188" y="185" width="34" height="95" rx="16"/><rect class="pzw" x="191" y="232" width="28" height="45" rx="6"/><text class="pl-s" x="205" y="176" text-anchor="middle">Pressuriseur</text></g>
+<g id="pl-gv"><rect class="shell" x="290" y="180" width="64" height="220" rx="28"/><rect class="sgw" x="294" y="260" width="56" height="136" rx="10"/><path class="ln utube" d="M310 396 V262 Q322 236 334 262 V396"/><text class="pl-s" x="322" y="214" text-anchor="middle">GV</text></g>
+<g id="pl-pump"><circle class="pmp" cx="240" cy="440" r="14"/><rect class="mot" x="232" y="412" width="16" height="14" rx="2"/><text class="pl-s" x="240" y="466" text-anchor="middle">Pompe primaire</text></g>
+<g id="pl-turb"><path class="shaft" d="M470 186 H720"/><polygon class="turb" points="480,172 530,160 530,212 480,200"/><polygon class="turb" points="545,160 610,145 610,227 545,212"/><polygon class="turb" points="620,160 685,145 685,227 620,212"/><text class="pl-s" x="505" y="232" text-anchor="middle">HP</text><text class="pl-s" x="615" y="244" text-anchor="middle">Turbine BP</text></g>
+<g id="pl-alt"><rect class="alt" x="720" y="160" width="80" height="52" rx="8"/><text class="pl-t" x="760" y="191" text-anchor="middle">~</text><text class="pl-s" x="760" y="228" text-anchor="middle">Alternateur</text></g>
+<g id="pl-reseau"><path class="ln elec" d="M800 186 H850"/><rect class="alt" x="850" y="168" width="32" height="38" rx="3"/><path class="ln elec" d="M882 186 H966"/><path class="pyl" d="M962 205 L976 62 L990 205 M966 102 H986 M958 114 H994 M968 162 H984 M976 62 V205"/><text class="pl-s" x="866" y="222" text-anchor="middle">Transfo</text><text class="pl-s" x="958" y="52" text-anchor="middle">Réseau 400 kV</text></g>
+<g id="pl-cond"><rect class="cond" x="550" y="300" width="150" height="62" rx="8"/><path class="ctube" d="M562 318 H688 M562 331 H688 M562 344 H688"/><text class="pl-s" x="598" y="382" text-anchor="middle">Condenseur</text></g>
+</svg>`;
+
+const TOUR=[
+ {k:'Vue d\'ensemble',t:'Une centrale, c\'est d\'abord une bouilloire',hl:null,h:`<p>Une centrale nucléaire produit de l'électricité comme une centrale au charbon : on fait bouillir de l'eau, la vapeur fait tourner une turbine, la turbine entraîne un alternateur. Seule la source de chaleur change : ici, la fission de l'uranium.</p><p>La chaîne d'énergie se lit de gauche à droite sur le schéma :</p><div class="chainx"><span>Fission</span><span>Chaleur</span><span>Vapeur</span><span>Rotation</span><span>Électricité</span></div><p>Un REP 900 produit 2 785 MW de chaleur pour environ 905 MW d'électricité. Les deux tiers de la chaleur repartent vers le fleuve ou l'atmosphère : c'est la limite imposée par la thermodynamique à toute machine à vapeur.</p>`},
+ {k:'Physique',t:'La fission',inset:'fission',h:`<p>Le combustible est de l'uranium. Quand un <b>neutron</b> lent frappe un noyau d'uranium 235, le noyau se déforme et se casse en deux morceaux, les <b>produits de fission</b>.</p><p>Ces morceaux partent à grande vitesse : en freinant dans la matière, ils la chauffent. C'est cette énergie (≈ 200 MeV par fission) que l'on récupère.</p><p>La fission libère aussi <b>2 à 3 nouveaux neutrons</b>. C'est tout l'intérêt : ils peuvent provoquer d'autres fissions.</p><p>Ordre de grandeur : 1 gramme d'uranium 235 entièrement fissionné libère autant de chaleur qu'environ 2 tonnes de pétrole.</p>`},
+ {k:'Physique',t:'La réaction en chaîne',inset:'chain',h:`<p>Chaque génération de neutrons provoque une nouvelle génération de fissions. Tout dépend du nombre moyen de neutrons d'une génération qui en produisent un à la suivante : le <b>facteur de multiplication k</b>.</p><ul><li><b>k &lt; 1</b> : la population diminue, le réacteur est <b>sous-critique</b>.</li><li><b>k = 1</b> : elle reste constante, le réacteur est <b>critique</b>. C'est l'état normal en fonctionnement, à n'importe quelle puissance.</li><li><b>k &gt; 1</b> : elle augmente, le réacteur est <b>surcritique</b>.</li></ul><p>En pratique, k reste extrêmement proche de 1. On mesure l'écart avec la <b>réactivité</b>, en <b>pcm</b> (pour cent mille) : k = 1,001 correspond à +100 pcm.</p>`},
+ {k:'Physique',t:'Les neutrons retardés',inset:'delayed',h:`<p>Une génération de neutrons ne dure que quelques dizaines de microsecondes. Si tous les neutrons naissaient immédiatement, +100 pcm multiplieraient la puissance par 10 en une fraction de seconde : impossible à piloter.</p><p>Heureusement, environ <b>0,6 %</b> des neutrons sont émis avec un retard de quelques secondes à une minute, par certains produits de fission. Cette petite fraction, notée <b>β</b> (600 pcm ici), impose son rythme à toute la population.</p><p>Résultat : avec +100 pcm, la puissance double en un peu moins d'une minute. Le <b>temps de doublement</b> est l'indicateur que l'on surveille pendant un démarrage. La règle d'or est de rester très loin de β : au-delà, le réacteur deviendrait <b>prompt-critique</b>.</p>`},
+ {k:'Le cœur',t:'Le combustible',inset:'fuel',h:`<p>L'uranium est transformé en oxyde (UO₂) et pressé en <b>pastilles</b> de la taille d'un bout de doigt, enrichies à environ 3,5 % en uranium 235.</p><p>Les pastilles sont empilées dans des tubes en alliage de zirconium, les <b>crayons</b>. La gaine du crayon est la <b>première barrière</b> qui retient les produits radioactifs.</p><p>264 crayons forment un <b>assemblage</b> de 4 m de haut ; 157 assemblages forment le <b>cœur</b>, soit environ 72 tonnes d'uranium. Un assemblage reste 3 à 4 ans dans le cœur ; on en remplace un tiers ou un quart à chaque arrêt pour rechargement.</p>`},
+ {k:'Physique',t:'Le modérateur : l\'eau',inset:'moder',h:`<p>Les neutrons sortent de la fission très rapides, à environ 20 000 km/s. À cette vitesse, ils ont peu de chances de provoquer une nouvelle fission dans l'uranium 235.</p><p>Il faut les ralentir : c'est le rôle du <b>modérateur</b>. Dans un REP, c'est l'eau elle-même. À chaque choc contre un noyau d'hydrogène, le neutron perd une bonne partie de sa vitesse. Après une vingtaine de chocs, il ne va plus qu'à environ 2 km/s : il est « thermique », et la fission devient très probable.</p><p>Conséquence essentielle : si l'eau chauffe, elle se dilate, ralentit moins bien les neutrons, et la réactivité baisse. C'est le <b>coefficient modérateur</b>, négatif dans un REP. L'eau sert donc à la fois de modérateur et de fluide de refroidissement.</p>`},
+ {k:'Pilotage',t:'Agir sur la réaction : grappes et bore',hl:['pl-cuve'],rods:true,h:`<p>Pour piloter, on ajoute ou on retire des matériaux qui absorbent les neutrons. Le REP en utilise deux, aux rôles complémentaires.</p><p><b>Les grappes</b> sont des faisceaux de crayons absorbants qui coulissent dans le cœur par le haut. Elles agissent vite, en quelques secondes, mais localement : enfoncées, elles déforment la distribution de puissance. Relâchées, elles tombent par gravité en moins de 2 secondes : c'est l'<b>arrêt automatique du réacteur</b>.</p><p><b>Le bore</b>, sous forme d'acide borique dissous dans l'eau du circuit, agit partout à la fois mais lentement : il faut mélanger de l'eau pure (<b>dilution</b>) ou très borée (<b>borication</b>) dans 270 m³. On l'utilise pour les évolutions lentes : usure du combustible, xénon.</p>`},
+ {k:'Physique',t:'Le réacteur se stabilise tout seul',inset:'feedback',h:`<p>Un REP est conçu pour être naturellement stable. Si la puissance augmente, deux effets la freinent aussitôt :</p><ul><li>l'<b>effet Doppler</b> : le combustible chauffe et l'uranium 238 capture davantage de neutrons. L'effet est immédiat ;</li><li>l'<b>effet modérateur</b> : l'eau chauffe, ralentit moins bien les neutrons. L'effet suit en quelques secondes.</li></ul><p>Ces <b>contre-réactions</b> ramènent la réactivité vers zéro : la puissance se stabilise un peu plus haut, sans aucune action. Inversement, si la turbine prend plus de vapeur, le primaire se refroidit et la puissance du réacteur monte d'elle-même.</p><p>Le prix à payer : monter en puissance « consomme » de la réactivité (le <b>défaut de puissance</b>, ~ 1 400 pcm ici), qu'il faut compenser avec les grappes.</p>`},
+ {k:'Circuits',t:'Le circuit primaire',hl:['pl-cuve','pl-prim','pl-pump','pl-gv','pl-pzr'],h:`<p>L'eau du <b>circuit primaire</b> traverse le cœur de bas en haut, s'y échauffe d'environ 37 °C (de 286 à 323 °C à pleine puissance), puis cède sa chaleur dans les générateurs de vapeur avant de revenir vers la cuve.</p><p>Elle est maintenue à <b>155 bar</b>, environ 150 fois la pression atmosphérique. À cette pression, l'eau ne bout qu'à 345 °C : elle reste donc liquide dans tout le circuit. C'est le sens de « réacteur à eau <b>pressurisée</b> ».</p><p>Trois <b>pompes primaires</b> d'environ 6 MW chacune font circuler l'eau : une piscine olympique toutes les 7 secondes. Le circuit forme la <b>deuxième barrière</b> : il est fermé et l'eau qu'il contient est radioactive.</p>`},
+ {k:'Circuits',t:'Le pressuriseur',hl:['pl-pzr'],h:`<p>Le <b>pressuriseur</b> est un grand réservoir relié à la branche chaude, à moitié rempli d'eau et à moitié de vapeur. Comme dans une cocotte-minute, la pression est fixée par la température de cette eau à saturation.</p><ul><li>Pour monter la pression, des <b>chaufferettes</b> électriques vaporisent un peu d'eau.</li><li>Pour la baisser, l'<b>aspersion</b> pulvérise de l'eau plus froide dans la vapeur, qui se condense.</li></ul><p>C'est aussi le vase d'expansion du circuit : quand le primaire chauffe, l'eau se dilate et monte dans le pressuriseur. Son niveau est donc un excellent témoin de la température et des éventuelles fuites.</p>`},
+ {k:'Circuits',t:'Les générateurs de vapeur',hl:['pl-gv','pl-are'],h:`<p>Dans chaque <b>générateur de vapeur</b>, l'eau primaire circule dans environ 3 300 tubes en U. L'eau du circuit <b>secondaire</b> les entoure et se met à bouillir.</p><p>Les deux circuits ne se mélangent jamais : la vapeur envoyée à la turbine n'est pas radioactive. Les tubes, très fins, font partie de la deuxième barrière : leur étanchéité est surveillée en permanence.</p><p>La vapeur sort à environ 57 bar à pleine puissance. L'<b>eau alimentaire</b> (ARE) remplace en continu l'eau évaporée : le niveau dans le GV doit rester stable, ni trop bas (le GV ne refroidirait plus le primaire), ni trop haut (de l'eau partirait vers la turbine).</p>`},
+ {k:'Production',t:'Turbine et alternateur',hl:['pl-vap','pl-turb','pl-alt','pl-reseau'],h:`<p>La vapeur se détend dans la <b>turbine</b> : d'abord dans le corps haute pression (HP), puis dans les corps basse pression (BP). Elle fait tourner l'arbre à 1 500 tours par minute.</p><p>L'<b>alternateur</b>, sur le même arbre, transforme la rotation en électricité à 50 Hz. Un transformateur élève la tension à 400 000 V pour le réseau.</p><p>Si la turbine ne peut pas prendre la vapeur (démarrage, arrêt, perte du réseau), des vannes de <b>contournement</b> l'envoient directement au condenseur (GCT-c) ou à l'atmosphère (GCT-a).</p>`},
+ {k:'Production',t:'Le condenseur et la source froide',hl:['pl-cond','pl-froid','pl-are'],h:`<p>En sortie de turbine, la vapeur est envoyée dans le <b>condenseur</b>, où elle redevient liquide au contact de milliers de tubes parcourus par l'eau froide d'un fleuve ou de la mer. L'eau condensée repart vers les GV grâce aux pompes alimentaires : le circuit secondaire est une boucle fermée.</p><p>Le condenseur est indispensable : c'est en refroidissant la vapeur qu'on crée l'écart de pression qui la fait traverser la turbine. Il rejette environ 1 900 MW de chaleur, les deux tiers de la puissance du cœur.</p><p>Sur certains sites, un <b>réfrigérant</b> (la grande tour) évacue une partie de cette chaleur dans l'air. Le panache blanc est de la vapeur d'eau du circuit de refroidissement, sans lien avec le réacteur.</p>`},
+ {k:'Pilotage',t:'Le pilotage en mode G',inset:'tref',h:`<p>En France, on pilote les réacteurs en <b>mode G</b> : c'est la turbine qui commande. L'exploitant fixe la puissance demandée par le réseau ; le réacteur suit.</p><p>À chaque charge correspond une température moyenne de consigne, <b>Tref</b> : 286 °C à vide, 304,5 °C à pleine puissance. Le graphique montre ce programme.</p><ul><li>Les <b>GCP</b> se placent automatiquement selon la charge, pour compenser le défaut de puissance.</li><li>Le <b>groupe R</b> ajuste finement pour que <b>Tmoy</b> suive Tref.</li><li>Le <b>bore</b> compense les évolutions lentes, sur décision de l'opérateur.</li></ul><p>Un REP français peut ainsi varier de 100 % à 30 % et revenir plusieurs fois par jour pour suivre la consommation.</p>`},
+ {k:'Physique',t:'Le xénon',inset:'xenon',h:`<p>Parmi les produits de fission, le <b>xénon 135</b> absorbe énormément de neutrons. Il est surtout produit par la décroissance de l'<b>iode 135</b> (6,6 h de demi-vie), et détruit par le flux de neutrons lui-même.</p><p>À pleine puissance, l'équilibre coûte environ −2 700 pcm. Quand on baisse la puissance, le flux détruit moins de xénon alors que l'iode accumulé continue d'en produire : le xénon <b>augmente</b> pendant plusieurs heures. Après un arrêt, il culmine vers 8 à 11 h, au point de pouvoir empêcher un redémarrage.</p><p>Le graphique montre ces deux cas, calculés avec le même modèle que le simulateur. Le xénon impose le rythme du suivi de charge : chaque baisse se paie par une dilution, chaque remontée par une borication.</p>`},
+ {k:'Sûreté',t:'Trois barrières et des protections',inset:'barriers',h:`<p>La sûreté repose d'abord sur trois <b>barrières</b> successives entre les produits radioactifs et l'environnement :</p><ol><li>la <b>gaine</b> du combustible ;</li><li>le <b>circuit primaire</b> : cuve en acier de 20 cm, tuyauteries, tubes des GV ;</li><li>l'<b>enceinte de confinement</b> : le bâtiment réacteur, en béton d'environ 1 m d'épaisseur.</li></ol><p>Pour les protéger, un système automatique surveille en permanence puissance, températures, pressions et niveaux. Au moindre dépassement de seuil, il déclenche l'<b>arrêt automatique du réacteur</b> (AAR) et, si le circuit perd de l'eau ou de la pression, l'<b>injection de sécurité</b> d'eau borée.</p><p>Les seuils sont fixés pour qu'aucun incident n'approche les limites physiques, notamment la <b>crise d'ébullition</b> qui empêcherait de refroidir la gaine.</p>`},
+ {k:'Sûreté',t:'Après l\'arrêt : la puissance résiduelle',inset:'decay',h:`<p>Quand les grappes tombent, la réaction en chaîne s'arrête en quelques minutes. Mais les produits de fission, très radioactifs, continuent de dégager de la chaleur : c'est la <b>puissance résiduelle</b>.</p><p>Elle vaut environ 6 % de la puissance juste après l'arrêt, soit plus de 160 MW ; encore 1 % au bout d'une heure (près de 30 MW) et quelques dixièmes de pour-cent après plusieurs jours.</p><p>Il faut donc <b>toujours</b> pouvoir évacuer cette chaleur, même réacteur arrêté : par les générateurs de vapeur et l'<b>alimentation de secours</b> (ASG) dans un premier temps, puis par des circuits de refroidissement dédiés. C'est une préoccupation centrale de la sûreté.</p>`},
+ {k:'Conduite',t:'La salle de commande',hl:null,last:true,h:`<p>Vous connaissez maintenant les grands principes. Dans le simulateur, vous retrouverez chacun d'eux :</p><ul><li>le <b>bandeau</b> du haut regroupe les grandeurs du cœur, du primaire, du secondaire et de la sûreté, avec leurs limites ;</li><li>la <b>vue d'ensemble</b> montre le synoptique, les courbes, ce qui est en cours, le ΔI et le bilan de réactivité ;</li><li>les <b>commandes</b> donnent accès aux grappes, au bore, à la turbine, à l'eau alimentaire, au pressuriseur et aux protections.</li></ul><p>Chaque carte a son <b>?</b> pour approfondir, et tous les termes soulignés renvoient au lexique. Prochaine étape : le <b>tutoriel de prise de quart</b>, puis les leçons guidées.</p>`},
+];
+
+/* --- graphiques SVG --- */
+function svgChart(o){
+  const W=o.w||520,H=o.h||300,L=66,R=16,Tp=18,B=40;
+  const xl=o.xlog, X=v=>L+((xl?Math.log10(v):v)-(xl?Math.log10(o.x0):o.x0))/((xl?Math.log10(o.x1):o.x1)-(xl?Math.log10(o.x0):o.x0))*(W-L-R), Y=v=>Tp+(1-(v-o.y0)/(o.y1-o.y0))*(H-Tp-B);
+  let s='<svg class="chartx" viewBox="0 0 '+W+' '+H+'">';
+  for(const t of o.yt){ s+='<line class="gr" x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(t[0])+'" y2="'+Y(t[0])+'"/><text class="ax" x="'+(L-6)+'" y="'+(Y(t[0])+4)+'" text-anchor="end">'+t[1]+'</text>'; }
+  for(const t of o.xt){ s+='<line class="gr" y1="'+Tp+'" y2="'+(H-B)+'" x1="'+X(t[0])+'" x2="'+X(t[0])+'"/><text class="ax" y="'+(H-B+16)+'" x="'+X(t[0])+'" text-anchor="middle">'+t[1]+'</text>'; }
+  s+='<text class="ax lb" x="'+((L+W-R)/2)+'" y="'+(H-6)+'" text-anchor="middle">'+o.xlab+'</text><text class="ax lb" x="14" y="'+((Tp+H-B)/2)+'" text-anchor="middle" transform="rotate(-90 14 '+((Tp+H-B)/2)+')">'+o.ylab+'</text>';
+  for(const sr of o.series){ const d=sr.pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(clamp(p[1],o.y0,o.y1)).toFixed(1)).join(''); s+='<path class="sr" d="'+d+'" style="stroke:var(--'+sr.c+')'+(sr.dash?';stroke-dasharray:6 4':'')+'"/>'; if(sr.lab){ const p=sr.lp||sr.pts[sr.pts.length-1]; s+='<text class="sl" x="'+(X(p[0])+(sr.dx||0))+'" y="'+(Y(p[1])+(sr.dy||-6))+'" style="fill:var(--'+sr.c+')" text-anchor="'+(sr.ta||'end')+'">'+sr.lab+'</text>'; } }
+  for(const a of o.notes||[]) s+='<text class="nt" x="'+X(a[0])+'" y="'+Y(a[1])+'" text-anchor="'+(a[3]||'start')+'">'+a[2]+'</text>';
+  return s+'</svg>';
+}
+const INSET={
+ delayed(){ const rho=100,b=600,T=(b-rho)/(0.08*rho), pts=[]; for(let t=0;t<=120;t+=1) pts.push([t,t<5?1:(b/(b-rho))*Math.exp((t-5)/T)]);
+  return svgChart({x0:0,x1:120,y0:0,y1:8,xt:[[0,'0'],[30,'30'],[60,'60'],[90,'90'],[120,'120 s']],yt:[[1,'×1'],[2,'×2'],[4,'×4'],[8,'×8']],xlab:'temps après +100 pcm (s)',ylab:'puissance relative',
+   series:[{pts:[[0,1],[5,1],[5.05,8]],c:'crit',dash:1,lab:'sans neutrons retardés',lp:[5.05,7.4],ta:'start',dx:6},{pts,c:'accent',lab:'réalité : ×2 en ~45 s',lp:[118,pts[118][1]],dy:16}],
+   notes:[[8,7.9,'×10 en moins d\'une seconde']]}); },
+ tref(){ const P=[],Tm=[],Tc=[],Tf=[],Tv=[]; for(let L=0;L<=100;L+=5){ const l=L/100; Tm.push([L,286+18.5*l]); Tc.push([L,286+37*l]); Tf.push([L,286]); Tv.push([L,286-13*l]); }
+  return svgChart({x0:0,x1:100,y0:265,y1:330,xt:[[0,'0'],[25,'25'],[50,'50'],[75,'75'],[100,'100 %']],yt:[[270,'270'],[290,'290'],[310,'310'],[330,'330 °C']],xlab:'charge turbine (%)',ylab:'température (°C)',
+   series:[{pts:Tc,c:'hot',lab:'branche chaude'},{pts:Tm,c:'accent',lab:'Tmoy = Tref',dy:-8},{pts:Tf,c:'cold',lab:'branche froide',dy:14},{pts:Tv,c:'steam',lab:'vapeur GV',dy:14}]}); },
+ xenon(){ const lI=2.87e-5,lX=2.09e-5,sg=7.5e-5,gI=0.0639,gX=0.00237, run=n=>{ let I=1,X=1; const o=[[-4,-2700],[0,-2700]]; for(let t=0;t<=48*3600;t+=60){ I+=lI*(n-I)*60; X+=((lX+sg)*(gX*n+gI*I)/(gI+gX)-(lX+sg*n)*X)*60; if(t%1800===0) o.push([t/3600,-2700*X]); } return o; };
+  const a=run(0.5),z=run(0), mn=Math.min(...z.map(p=>p[1])), pk=z.find(p=>p[1]===mn);
+  return svgChart({x0:-4,x1:48,y0:Math.floor(mn/1000)*1000-500,y1:0,xt:[[0,'0'],[12,'12 h'],[24,'24 h'],[36,'36 h'],[48,'48 h']],yt:[[0,'0'],[-1000,'−1 000'],[-2000,'−2 000'],[-3000,'−3 000'],[-4000,'−4 000'],[-5000,'−5 000'],[-6000,'−6 000']].filter(t=>t[0]>=Math.floor(mn/1000)*1000-500),xlab:'heures après le changement de puissance',ylab:'réactivité du xénon (pcm)',
+   series:[{pts:a,c:'feed',lab:'baisse à 50 %',lp:[47,a[a.length-1][1]],dy:-8},{pts:z,c:'crit',lab:'arrêt du réacteur',lp:[pk[0]+3,pk[1]],ta:'start',dy:4}],notes:[[pk[0],pk[1]-420,'pic ≈ '+Math.round(pk[0])+' h','middle'],[-3,-2400,'équilibre à 100 %']]}); },
+ decay(){ const pts=[]; for(let e=0;e<=6.42;e+=0.08){ const t=Math.pow(10,e); pts.push([t,100*0.0622*(Math.pow(t,-0.2)-Math.pow(t+3.15e7,-0.2))]); }
+  return svgChart({x0:1,x1:2.6e6,xlog:1,y0:0,y1:7,xt:[[1,'1 s'],[60,'1 min'],[3600,'1 h'],[86400,'1 jour'],[2.6e6,'1 mois']],yt:[[0,'0'],[2,'2 %'],[4,'4 %'],[6,'6 %']],xlab:'temps après l\'arrêt (échelle logarithmique)',ylab:'puissance résiduelle (% PN)',
+   series:[{pts,c:'hot'}],notes:[[3600,1.6,'≈ 1 % au bout d\'une heure (≈ 28 MW)','middle'],[86400,0.95,'≈ 0,4 % après un jour','middle'],[2,6.6,'≈ 6 % juste après l\'arrêt']]}); },
+ fuel(){ let g=''; for(let i=0;i<9;i++) for(let j=0;j<9;j++) g+='<circle cx="'+(318+i*9)+'" cy="'+(108+j*9)+'" r="3.2" class="fz"/>';
+  let c=''; const rings=[[0,0]]; for(let i=-4;i<=4;i++) for(let j=-4;j<=4;j++) if(i*i+j*j<=18) c+='<rect x="'+(477+i*11)+'" y="'+(144+j*11)+'" width="10" height="10" class="fa"/>';
+  return '<svg class="chartx fuel" viewBox="0 0 560 300"><g><rect class="pel" x="40" y="128" width="34" height="40" rx="5"/><ellipse class="pelt" cx="57" cy="128" rx="17" ry="5"/><text class="nt" x="57" y="200" text-anchor="middle">Pastille</text><text class="ax" x="57" y="218" text-anchor="middle">UO₂ · 8 mm</text><text class="ax" x="57" y="234" text-anchor="middle">~3,5 % d\'U 235</text></g>'+
+   '<path class="arw" d="M90 148 H120"/><g><rect class="clad" x="160" y="30" width="16" height="236" rx="7"/>'+[...Array(14)].map((_,i)=>'<rect class="pel" x="163" y="'+(38+i*16)+'" width="10" height="14" rx="2"/>').join('')+'<text class="nt" x="168" y="284" text-anchor="middle">Crayon</text><text class="ax" x="186" y="140">gaine en</text><text class="ax" x="186" y="156">zirconium</text><text class="ax" x="186" y="176">4 m</text></g>'+
+   '<path class="arw" d="M282 148 H304"/><g><rect class="asm" x="312" y="102" width="84" height="84" rx="3"/>'+g+'<text class="nt" x="354" y="210" text-anchor="middle">Assemblage</text><text class="ax" x="354" y="228" text-anchor="middle">264 crayons</text></g>'+
+   '<path class="arw" d="M402 148 H414"/><g><circle class="vsl" cx="482" cy="149" r="64"/>'+c+'<text class="nt" x="482" y="236" text-anchor="middle">Cœur</text><text class="ax" x="482" y="254" text-anchor="middle">157 assemblages</text><text class="ax" x="482" y="270" text-anchor="middle">≈ 72 t d\'uranium</text></g></svg>'; },
+ barriers(){ return '<svg class="chartx" viewBox="0 0 560 300"><rect class="b3" x="24" y="20" width="300" height="262" rx="80"/><rect class="b2" x="70" y="70" width="208" height="170" rx="40"/><rect class="b1" x="138" y="126" width="72" height="60" rx="14"/><circle class="b0" cx="174" cy="156" r="16"/>'+
+  '<path class="arw" d="M210 140 H360"/><path class="arw" d="M278 104 H360"/><path class="arw" d="M318 50 H360"/>'+
+  '<text class="nt" x="368" y="54">3. Enceinte de confinement</text><text class="ax" x="368" y="70">béton, ≈ 1 m d\'épaisseur</text>'+
+  '<text class="nt" x="368" y="108">2. Circuit primaire</text><text class="ax" x="368" y="124">cuve 20 cm d\'acier, 155 bar</text>'+
+  '<text class="nt" x="368" y="144">1. Gaine du combustible</text><text class="ax" x="368" y="160">alliage de zirconium</text>'+
+  '<text class="ax" x="174" y="210" text-anchor="middle">combustible et</text><text class="ax" x="174" y="224" text-anchor="middle">produits de fission</text></svg>'; },
+ feedback(){ const N=[['Puissance ↑',280,40],['Combustible et eau chauffent',470,150],['Doppler et modérateur : réactivité ↓',280,260],['Puissance ↓, retour à l\'équilibre',90,150]];
+  return '<svg class="chartx fb" viewBox="0 0 560 300"><path class="arw c" d="M350 62 Q440 80 455 120"/><path class="arw c" d="M455 182 Q440 230 360 250"/><path class="arw c" d="M200 250 Q120 230 105 182"/><path class="arw c" d="M105 120 Q120 80 210 62"/>'+
+   N.map((n,i)=>'<g class="fbn" style="animation-delay:'+(i*1.1)+'s"><rect x="'+(n[1]-88)+'" y="'+(n[2]-24)+'" width="176" height="48" rx="10"/><text x="'+n[1]+'" y="'+(n[2]+5)+'" text-anchor="middle">'+n[0]+'</text></g>').join('')+'</svg>'; },
+};
+/* --- animations canvas --- */
+let tourRAF=0;
+function tourCanvas(kind){
+  const cv=document.createElement('canvas'); cv.className='tcv'; const box=$('#tinset'); box.appendChild(cv);
+  const t0=performance.now();
+  const loop=now=>{ const w=cv.clientWidth,h=cv.clientHeight; if(!w){ tourRAF=requestAnimationFrame(loop); return; } const dpr=devicePixelRatio||1; if(cv.width!==Math.round(w*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); }
+    const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h); ANIM[kind](g,w,h,(now-t0)/1000); tourRAF=requestAnimationFrame(loop); };
+  tourRAF=requestAnimationFrame(loop);
+}
+const rnd=(i)=>{ const x=Math.sin(i*127.1+311.7)*43758.5453; return x-Math.floor(x); };
+const ANIM={
+ fission(g,w,h,t){
+  const T=t%5, cx=w*0.42, cy=h*0.48, R=Math.min(w,h)*0.13, F=getComputedStyle(document.body).getPropertyValue('--f-disp');
+  const txt=(s,x,y,c,sz,al)=>{ g.fillStyle=c; g.font='600 '+(sz||13)+'px '+F; g.textAlign=al||'center'; g.fillText(s,x,y); };
+  const dot=(x,y,r,c)=>{ g.fillStyle=c; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); };
+  if(T<1.3){ const k=T/1.3; dot(w*0.04+(cx-R-w*0.04)*k,cy,5,COL.accent); txt('neutron lent',w*0.04+(cx-R-w*0.04)*k,cy-14,COL.accent,12); }
+  if(T<1.7){ const wob=T>1.3?Math.sin((T-1.3)*40)*0.12*((T-1.3)/0.4):0; g.save(); g.translate(cx,cy); g.scale(1+wob+(T>1.3?(T-1.3)*0.5:0),1-wob*0.6);
+    for(let i=0;i<40;i++){ const a=rnd(i)*6.283, r=Math.sqrt(rnd(i+50))*R*0.85; dot(Math.cos(a)*r,Math.sin(a)*r,R*0.17,i%2?COL.hot:COL.warn); } g.restore(); txt('uranium 235',cx,cy+R+22,COL.mute,12); }
+  else { const k=Math.min(1,(T-1.7)/1.6), d=k*w*0.28, fade=T>4.4?1-(T-4.4)/0.6:1; g.globalAlpha=Math.max(0,fade);
+    const fr=(sx,sy,lab)=>{ const x=cx+sx*d, y=cy+sy*d*0.55; for(let i=0;i<18;i++){ const a=rnd(i+(sx>0?9:3))*6.283, r=Math.sqrt(rnd(i+70))*R*0.6; dot(x+Math.cos(a)*r,y+Math.sin(a)*r,R*0.15,i%2?COL.hot:COL.warn); } txt(lab,x,y+R*0.8+16,COL.fg,12); };
+    fr(-1,-1,'produit de fission'); fr(1,1,'produit de fission');
+    [[1.0,-0.9],[1.2,-0.1],[-0.6,1.1]].forEach(v=>{ const dd=Math.min(1,(T-1.7)/1.1)*w*0.42; dot(cx+v[0]*dd,cy+v[1]*dd*0.6,5,COL.accent); });
+    if(T<2.3){ g.strokeStyle=COL.warn; g.lineWidth=3; g.globalAlpha=Math.max(0,1-(T-1.7)/0.6); g.beginPath(); g.arc(cx,cy,R*(1+(T-1.7)*4),0,7); g.stroke(); g.globalAlpha=Math.max(0,fade); }
+    if(T>2.0) txt('≈ 200 MeV de chaleur',cx,cy-R-24,COL.warn,14);
+    if(T>2.4) txt('2 à 3 nouveaux neutrons',w*0.82,cy-h*0.36,COL.accent,12);
+    g.globalAlpha=1; }
+ },
+ chain(g,w,h,t){
+  const C=[[0.6,'k = 0,6 · sous-critique : la réaction s\'éteint','cold'],[1,'k = 1 · critique : population constante','ok'],[1.4,'k = 1,4 · surcritique : la population croît','hot']];
+  const ci=Math.floor(t/7.5)%3, tt=t%7.5, k=C[ci][0], F=getComputedStyle(document.body).getPropertyValue('--f-disp');
+  const G=7, gx=i=>w*0.07+i*(w*0.86)/(G-1), n=[5]; for(let i=1;i<G;i++) n.push(k===1?5:Math.max(0,Math.min(26,Math.round(n[i-1]*k+(k<1?-0.2:0.3)))));
+  const pos=(i,j)=>[gx(i),h*0.56+(j-(n[i]-1)/2)*Math.min(18,(h*0.68)/Math.max(n[i],1))];
+  const shown=Math.min(G,Math.floor(tt/0.85)+1);
+  g.lineWidth=1;
+  for(let i=1;i<shown;i++) for(let j=0;j<n[i];j++){ const p=Math.floor(j*n[i-1]/Math.max(n[i],1)); const a=pos(i-1,Math.min(p,n[i-1]-1)), b=pos(i,j); g.strokeStyle=COL.line; g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1]); g.stroke(); }
+  for(let i=0;i<shown;i++) for(let j=0;j<n[i];j++){ const p=pos(i,j); g.fillStyle=COL[C[ci][2]]; g.beginPath(); g.arc(p[0],p[1],4.2,0,7); g.fill(); }
+  g.fillStyle=COL.fg; g.font='600 15px '+F; g.textAlign='center'; g.fillText(C[ci][1],w/2,26);
+  g.fillStyle=COL.mute; g.font='500 11px '+F; for(let i=0;i<shown;i++) g.fillText(String(n[i]),gx(i),h-12);
+  g.textAlign='left'; g.fillText('neutrons par génération →',w*0.04,h-28);
+ },
+ moder(g,w,h,t){
+  const F=getComputedStyle(document.body).getPropertyValue('--f-disp');
+  for(let i=0;i<46;i++){ const x=rnd(i)*w, y=40+rnd(i+99)*(h-80); g.fillStyle=COL.cold; g.globalAlpha=.55; g.beginPath(); g.arc(x,y,7,0,7); g.fill(); g.fillStyle=COL.fg; g.globalAlpha=.7; g.beginPath(); g.arc(x+7,y-4,3.2,0,7); g.fill(); g.beginPath(); g.arc(x-7,y-4,3.2,0,7); g.fill(); }
+  g.globalAlpha=1;
+  const P=[[0.03,0.5]]; let x=0.03,y=0.5,L=0.2; for(let i=0;i<18;i++){ const a=(rnd(i+7)-0.5)*2.4; x+=L*Math.abs(Math.cos(a))*0.9; y+=L*Math.sin(a)*0.5; x=Math.min(0.97,Math.max(0.03,x)); y=Math.min(0.85,Math.max(0.2,y)); P.push([x,y]); L*=0.82; }
+  const T=t%9, seg=Math.min(P.length-1,T/0.4); g.lineWidth=2;
+  for(let i=0;i<Math.floor(seg);i++){ const c=i/(P.length-1); g.strokeStyle=c<0.5?COL.hot:COL.accent; g.globalAlpha=.8; g.beginPath(); g.moveTo(P[i][0]*w,P[i][1]*h); g.lineTo(P[i+1][0]*w,P[i+1][1]*h); g.stroke(); }
+  const i0=Math.floor(seg), fr=seg-i0, a=P[i0], b=P[Math.min(i0+1,P.length-1)], nx=(a[0]+(b[0]-a[0])*fr)*w, ny=(a[1]+(b[1]-a[1])*fr)*h;
+  g.globalAlpha=1; g.fillStyle=seg/(P.length-1)<0.5?COL.hot:COL.accent; g.beginPath(); g.arc(nx,ny,6,0,7); g.fill();
+  const sp=20000*Math.pow(0.0001,seg/(P.length-1));
+  g.fillStyle=COL.fg; g.font='600 15px '+F; g.textAlign='left'; g.fillText('Neutron : '+(sp>=10?Math.round(sp).toLocaleString('fr-FR'):sp.toFixed(1).replace('.',','))+' km/s',14,26);
+  g.fillStyle=COL.mute; g.font='500 12px '+F; g.fillText('chocs : '+Math.min(Math.floor(seg),P.length-1)+' · molécules d\'eau en fond',14,44);
+ },
+};
+/* --- moteur de la visite --- */
+const TV={i:0,auto:false,tm:null,t0:0,dur:0};
+function openTour(i){
+  if(A.s){ TV.wasPaused=A.paused; A.paused=true; syncAll(); }
+  $('#menu').hidden=true; $('#tour').hidden=false;
+  if(!$('#tplant').firstChild) $('#tplant').innerHTML=PLANT;
+  tourGo(i||0);
+}
+function closeTour(){ cancelAnimationFrame(tourRAF); clearTimeout(TV.tm); TV.auto=false; $('#tour').hidden=true; if(A.s&&!A.done){ A.paused=TV.wasPaused; syncAll(); } else openMenu(); }
+function tourGo(i){
+  i=clamp(i,0,TOUR.length-1); TV.i=i; const c=TOUR[i];
+  cancelAnimationFrame(tourRAF); $('#tinset').innerHTML=''; SFX.page();
+  T('tk',(i+1)+' / '+TOUR.length+' · '+c.k); T('tt',c.t);
+  $('#ttx').innerHTML=c.h+(c.last?'<div class="row" style="margin-top:14px"><button class="btn pri" id="tvTuto">Lancer le tutoriel</button><button class="btn" id="tvMenu">Retour au menu</button></div>':''); glossDom($('#ttx')); $('#ttx').scrollTop=0;
+  const pl=$('#plant');
+  if(c.inset){ $('#tplant').hidden=true; $('#tinset').hidden=false; if(ANIM[c.inset]) tourCanvas(c.inset); else $('#tinset').innerHTML=INSET[c.inset](); }
+  else { $('#tinset').hidden=true; $('#tplant').hidden=false; pl.classList.toggle('dim',!!c.hl); pl.classList.toggle('rodsmove',!!c.rods); $$('#plant > g').forEach(gp=>gp.classList.toggle('hl',!!c.hl&&c.hl.includes(gp.id))); }
+  $('#tdots').innerHTML=TOUR.map((_,j)=>'<button class="tdot'+(j===i?' on':j<i?' seen':'')+'" data-tv="'+j+'" aria-label="Chapitre '+(j+1)+'"></button>').join('');
+  $('#tvPrev').disabled=i===0; $('#tvNext').textContent=i===TOUR.length-1?'Terminer':'Suivant';
+  const tt=$('#tvTuto'); if(tt) tt.onclick=()=>{ $('#tour').hidden=true; cancelAnimationFrame(tourRAF); launch('tuto'); };
+  const tm=$('#tvMenu'); if(tm) tm.onclick=()=>{ $('#tour').hidden=true; cancelAnimationFrame(tourRAF); openMenu(); };
+  tourTimer();
+}
+function tourTimer(){
+  clearTimeout(TV.tm); $('#tvAuto').classList.toggle('on',TV.auto); $('#tvAuto').textContent=TV.auto?'Pause lecture':'Lecture auto';
+  const bar=$('#tprog i'); bar.style.transition='none'; bar.style.width='0';
+  if(!TV.auto||TV.i>=TOUR.length-1) return;
+  const words=$('#ttx').textContent.split(/\s+/).length, d=Math.max(10,words/3.3)*1000;
+  requestAnimationFrame(()=>{ bar.style.transition='width '+d+'ms linear'; bar.style.width='100%'; });
+  TV.tm=setTimeout(()=>tourGo(TV.i+1),d);
+}
+
 /* ================= Carte « En cours » ================= */
 function runItems(s){
   const L=[]; const it=(k,t,b)=>L.push({k,t,b});
@@ -2286,6 +2682,7 @@ function drawDI(){
 
 /* ================= Boucle ================= */
 let last=performance.now(), uiAcc=0, chAcc=0;
+let ptAcc=0;
 function frame(now){
   const rd=Math.min(0.1,(now-last)/1000); last=now;
   if(A.s&&!A.paused){
@@ -2296,9 +2693,22 @@ function frame(now){
   uiAcc+=rd; chAcc+=rd;
   if(A.s&&uiAcc>0.1){ uiAcc=0; updateUI(); }
   if(A.s&&chAcc>0.5){ chAcc=0; drawCharts(); drawDI(); updateRun(); }
+  ptAcc+=rd; if(ptAcc>0.15){ ptAcc=0; updPtr(); }
+  const live=A.s&&!A.paused&&$('#menu').hidden&&$('#tour').hidden&&$('#brief').hidden;
+  if(SND.ctx){ sndAmbient(A.s||{Wst:0,pumps:[]},!!live);
+    if(live&&!A.s.srInhib&&A.s.n<1e-4) sndClicks(rd,A.s.n*1e10);
+    if(live&&ALM.some(([id,,sev])=>sev==='r'&&A.s.alarms[id]&&A.s.alarms[id].on&&!A.s.alarms[id].ack)&&now-SND.lastRed>3200){ SND.lastRed=now; SFX.red(); } }
   requestAnimationFrame(frame);
 }
 addEventListener('resize',()=>{ drawCharts(); drawDI(); });
+$('#tvPrev').onclick=()=>{ TV.auto=false; tourGo(TV.i-1); };
+$('#tvNext').onclick=()=>{ if(TV.i>=TOUR.length-1){ const d=store('done')||{}; d.tour=1; store('done',d); closeTour(); } else tourGo(TV.i+1); };
+$('#tvAuto').onclick=()=>{ TV.auto=!TV.auto; tourTimer(); };
+$('#tvClose').onclick=closeTour;
+document.addEventListener('keydown',e=>{ if($('#tour').hidden) return; if(e.key==='ArrowRight'){ TV.auto=false; tourGo(TV.i+1); } else if(e.key==='ArrowLeft'){ TV.auto=false; tourGo(TV.i-1); } else if(e.key==='Escape') closeTour(); });
+$('#sndBtn').onclick=()=>{ sndInit(); SND.pref.on=!SND.pref.on; sndApply(); if(SND.pref.on) setTimeout(SFX.ack,80); };
+[['sndOn','on'],['sndAmb','amb'],['sndCnt','cnt']].forEach(([id,k])=>{ const e=document.getElementById(id); if(e) e.addEventListener('change',()=>{ sndInit(); SND.pref[k]=e.checked; sndApply(); }); });
+sndApply();
 buildBand(); readCols(); buildCharts(); buildMini(); initFold();
 { if(store('bandfull')) document.body.classList.add('bandfull'); }
 $('#bandBtn').onclick=()=>{ const on=document.body.classList.toggle('bandfull'); store('bandfull',on); $('#bandBtn').textContent=on?'▴':'▾'; $('#bandBtn').setAttribute('aria-expanded',String(on)); };
