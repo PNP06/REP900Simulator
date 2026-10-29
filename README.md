@@ -2,7 +2,7 @@
 
 Simulateur pédagogique de conduite d'un réacteur à eau pressurisée de 900 MWe générique (trois boucles, pilotage en mode G), jouable dans le navigateur sur ordinateur et téléphone.
 
-**Jouer :** https://pnp06.github.io/REP900Simulator/
+**Jouer :** https://rep900-simulateur.netlify.app/
 
 ## Avertissement
 
@@ -27,9 +27,20 @@ Le simulateur repose sur des sources publiques, listées dans la rubrique « Sou
 
 ## Retours et suggestions
 
-Le simulateur comporte un formulaire « Retours et suggestions » (menu, et en fin d'exercice). Chaque retour est classé par niveau d'importance (critique, incohérence, manquant, amélioration, détail) et publié comme *issue* GitHub à partir du modèle `.github/ISSUE_TEMPLATE/retour.yml`. Une action GitHub ajoute automatiquement l'étiquette correspondant au niveau.
+Le simulateur comporte un formulaire « Retours et suggestions » (menu, et en fin d'exercice). Chaque retour est classé par niveau d'importance (critique, incohérence, manquant, amélioration, détail) et envoyé par Netlify Forms (formulaire `retour`), sans compte ni inscription pour l'utilisateur. L'auteur reçoit un courriel à chaque envoi (notification réglée dans Netlify, l'adresse n'apparaît pas dans le code). Un champ piège filtre les robots. Hors du site en ligne (fichier ouvert en local), l'envoi échoue proprement et propose de copier le texte.
 
-Pour répondre : ouvrir l'issue sur GitHub et commenter, puis la fermer une fois traitée. Les retours, leur statut et les réponses s'affichent dans l'onglet « Retours publiés » du simulateur. La lecture est libre ; publier demande un compte GitHub.
+L'onglet « Retours publiés » lit le fichier `retours.json` publié avec le site. Pour publier un retour, l'ajouter au tableau `retours`, anonymisé :
+
+```json
+{ "n": 1, "date": "2026-10-20", "niveau": "incohérence", "partie": "Modèle physique",
+  "titre": "…", "description": "…", "statut": "ouvert", "reponse": "…", "date_reponse": "2026-10-22" }
+```
+
+`niveau` reprend les clés du formulaire (`critique`, `incohérence`, `manquant`, `amélioration`, `détail`), `statut` vaut `ouvert` ou `résolu`, `reponse` et `date_reponse` sont facultatifs.
+
+## Mise en ligne
+
+Le site est publié par Netlify (`netlify.toml` : racine du dépôt publiée telle quelle, sans construction ; page et `retours.json` toujours revalidés).
 
 ## Modèle
 
@@ -46,4 +57,4 @@ Thème clair et sombre (automatique selon le système, ou au choix). Un seul fic
 `npm test` lance les deux suites ; elles tournent aussi à chaque modification du dépôt (action GitHub « Tests »).
 
 - `node tests/physique.test.mjs` vérifie les grandeurs de référence du modèle (états stables à 100 % et 50 %, AAR, puissance résiduelle, xénon, criticité à l'arrêt à chaud, perte de pompe primaire). Aucune dépendance n'est nécessaire.
-- `node tests/interface.test.mjs` ouvre la page dans Chromium à 320, 390 et 1 440 px, en thème clair et sombre, parcourt scénarios, visite et retours, et déroule six leçons de bout en bout (nécessite Playwright : `npm install` puis `npx playwright install chromium`).
+- `node tests/interface.test.mjs` ouvre la page dans Chromium à 320, 390 et 1 440 px, en thème clair et sombre, parcourt scénarios, visite et retours (envoi au formulaire Netlify et lecture de `retours.json` via un petit serveur local), et déroule six leçons de bout en bout (nécessite Playwright : `npm install` puis `npx playwright install chromium`).

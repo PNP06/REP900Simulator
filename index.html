@@ -609,6 +609,9 @@ body.bandfocus .band .rd:not(.mb){display:block}
 .fbc.own{border-left-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,transparent)}
 .fbch{font-size:12px;color:var(--mute);margin-bottom:2px}
 .ready a.btn{text-decoration:none;display:inline-block}
+.ready.ko{border-color:color-mix(in srgb,var(--warn) 50%,var(--line));background:color-mix(in srgb,var(--warn) 8%,var(--bg))}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.fbr{white-space:pre-wrap}
 
 .about{max-width:900px;margin-inline:auto}
 .abg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:4px 26px}
@@ -1150,7 +1153,7 @@ body.demo #ptr{display:none!important}
 <div class="ov fb" id="fb" hidden><div class="box wrap"><div class="brief">
   <div class="row" style="justify-content:space-between"><h2 style="margin:0">Retours et suggestions</h2><button class="ib" id="fbClose" aria-label="Fermer">✕</button></div>
   <div class="t">Aidez à améliorer le simulateur</div>
-  <p>Erreur de physique, consigne de conduite discutable, notion manquante, idée d'ergonomie : chaque retour est publié sur la page GitHub du projet, où l'auteur répond. La lecture est libre ; publier demande un compte GitHub gratuit.</p>
+  <p>Erreur de physique, consigne de conduite discutable, notion manquante, idée d'ergonomie : votre retour est envoyé directement à l'auteur, sans compte ni inscription. Les retours retenus sont publiés sans nom dans l'onglet « Retours publiés », avec la réponse.</p>
   <div class="row"><div class="seg"><button data-fbt="new">Nouveau retour</button><button data-fbt="list">Retours publiés</button></div></div>
   <form id="fbNew" novalidate>
    <h3>Niveau d'importance</h3>
@@ -1163,14 +1166,16 @@ body.demo #ptr{display:none!important}
    <label class="fl"><span>Ce qui serait attendu, avec une source si possible</span><textarea id="fbExp" rows="3" placeholder="Valeur ou comportement attendu, document de référence, retour d'expérience…"></textarea></label>
    <label class="chk"><input type="checkbox" id="fbCtxOn" checked> Joindre l'état de la simulation</label>
    <textarea id="fbCtx" rows="5" readonly class="ctx" aria-label="État de la simulation joint"></textarea>
-   <div class="row" style="margin-top:12px"><button class="btn pri" type="submit">Préparer le retour sur GitHub</button><span class="err" id="fbErr"></span></div>
-   <div class="ready" id="fbReady" hidden><p id="fbReadyT">Votre retour est prêt : ouvrez-le sur GitHub, vérifiez-le et cliquez sur « Create » pour le publier.</p><a class="btn pri" id="fbGo" href="#" target="_blank" rel="noopener" hidden>Ouvrir sur GitHub</a></div>
+   <label class="hp" aria-hidden="true">Ne pas remplir <input id="fbBot" name="bot-field" tabindex="-1" autocomplete="off"></label>
+   <div class="row" style="margin-top:12px"><button class="btn pri" type="submit" id="fbSend">Envoyer le retour</button><span class="err" id="fbErr"></span></div>
+   <div class="ready" id="fbReady" hidden role="status"><p id="fbReadyT">Merci, votre retour a bien été envoyé.</p><button class="btn" type="button" id="fbCopy" hidden>Copier le texte du retour</button></div>
   </form>
   <div id="fbList" hidden>
    <div class="row" style="justify-content:space-between;margin-top:12px"><div class="chips" id="fbFilt"></div><button class="btn sm" id="fbRef">Actualiser</button></div>
    <div id="fbItems"></div>
   </div>
  </div></div></div>
+<form name="retour" data-netlify="true" netlify-honeypot="bot-field" hidden><input type="hidden" name="form-name" value="retour"><input name="subject"><input name="niveau"><input name="partie"><input name="titre"><textarea name="description"></textarea><textarea name="attendu"></textarea><textarea name="contexte"></textarea><input name="bot-field"></form>
 <div class="gpop" id="gpop" hidden role="dialog" aria-label="Définition"></div>
 
 <script>
@@ -3593,7 +3598,8 @@ function drawPT(){
 }
 
 /* ================= Retours ================= */
-const FB={repo:'PNP06/REP900Simulator',list:null,loading:false,filter:'all',
+/* Envoi par Netlify Forms (formulaire « retour », notification par courriel réglée dans Netlify) ; retours publiés lus dans retours.json. */
+const FB={endpoint:'/',data:'retours.json',list:null,loading:false,filter:'all',
   lv:[['critique','Critique','Résultat faux, ou qui enseignerait une mauvaise pratique','crit'],['incohérence','Incohérence','Comportement physique ou de conduite douteux','warn'],['manquant','Manquant','Notion, système ou situation absente','bore'],['amélioration','Amélioration','Ergonomie, pédagogie, clarté','ok'],['détail','Détail','Coquille, affichage','mute']],
   parts:['Visite de la centrale','Tutoriel','Leçons guidées','Exercices','Aléas','Modèle physique','Interface','Aide, lexique','Autre']};
 function fbContext(){
@@ -3616,18 +3622,28 @@ function fbTab(t){
   if(t==='new'){ $('#fbCtx').value=fbContext(); if(A.scn&&!$('#fbPart').dataset.touched){ const k=A.scn.kind; $('#fbPart').value={tuto:'Tutoriel',lecon:'Leçons guidées',exo:'Exercices',alea:'Aléas'}[k]||'Interface'; } }
   else fbLoad();
 }
-function fbSubmit(e){
+async function fbSubmit(e){
   e.preventDefault();
   const lv=($('input[name="fblv"]:checked')||{}).value, ti=$('#fbTitle').value.trim(), de=$('#fbDesc').value.trim();
   const err=[]; if(!lv) err.push('le niveau d\'importance'); if(!ti) err.push('un titre'); if(!de) err.push('la description');
   if(err.length){ $('#fbErr').textContent='Il manque '+err.join(', ')+'.'; return; }
   $('#fbErr').textContent='';
   const L=FB.lv.find(x=>x[0]===lv);
-  const q=new URLSearchParams({template:'retour.yml',title:'['+L[1]+'] '+ti,labels:'retour,'+lv,niveau:L[1]+' — '+L[2].charAt(0).toLowerCase()+L[2].slice(1),partie:$('#fbPart').value,description:de,attendu:$('#fbExp').value.trim(),contexte:$('#fbCtxOn').checked?$('#fbCtx').value:''});
-  const url='https://github.com/'+FB.repo+'/issues/new?'+q.toString();
-  const a=$('#fbGo'); a.href=url; a.hidden=false; $('#fbReady').hidden=false;
-  try{ const w=window.open(url,'_blank','noopener'); if(w) $('#fbReadyT').textContent='La page GitHub s\'est ouverte avec votre retour prérempli : vérifiez-le et cliquez sur « Create » pour le publier.'; }catch(x){}
+  const d={'form-name':'retour',subject:'Retour REP 900 — ['+L[1]+'] '+ti,niveau:L[1]+' — '+L[2].charAt(0).toLowerCase()+L[2].slice(1),partie:$('#fbPart').value,titre:ti,description:de,attendu:$('#fbExp').value.trim(),contexte:$('#fbCtxOn').checked?$('#fbCtx').value:'','bot-field':$('#fbBot').value};
+  FB.last=d; const bt=$('#fbSend'); bt.disabled=true; bt.textContent='Envoi…';
+  const box=$('#fbReady'), msg=$('#fbReadyT');
+  try{
+    const r=await fetch(FB.endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(d).toString()});
+    if(!r.ok) throw new Error('Erreur '+r.status);
+    box.classList.remove('ko'); msg.textContent='Merci, votre retour a bien été envoyé à l\'auteur. S\'il est retenu, il sera publié sans nom dans l\'onglet « Retours publiés », avec la réponse.'; $('#fbCopy').hidden=true;
+    $('#fbTitle').value=''; $('#fbDesc').value=''; $('#fbExp').value=''; $$('input[name="fblv"]').forEach(x=>x.checked=false);
+  }catch(x){
+    box.classList.add('ko'); msg.textContent='L\'envoi n\'a pas abouti (connexion coupée, ou page ouverte hors du site en ligne). Votre texte est conservé : réessayez dans un moment, ou copiez-le pour le garder.'; $('#fbCopy').hidden=false;
+  }
+  box.hidden=false; bt.disabled=false; bt.textContent='Envoyer le retour';
 }
+function fbText(d){ d=d||FB.last||{}; return ['['+(d.niveau||'')+'] '+(d.titre||''),'Partie : '+(d.partie||''),'',d.description||'',d.attendu?'\nAttendu : '+d.attendu:'',d.contexte?'\n'+d.contexte:''].join('\n'); }
+async function fbCopy(){ try{ await navigator.clipboard.writeText(fbText()); $('#fbCopy').textContent='Texte copié'; }catch(x){ $('#fbCopy').textContent='Copie impossible'; } setTimeout(()=>{ const b=$('#fbCopy'); if(b) b.textContent='Copier le texte du retour'; },2500); }
 function fbParse(body){ const g=k=>{ const m=(body||'').match(new RegExp('### '+k+'\\s+([\\s\\S]*?)(?=\\n### |$)')); return m?m[1].trim():''; };
   const nv=g("Niveau d'importance"); const lv=FB.lv.find(x=>nv.startsWith(x[1]));
   return {lv:lv?lv[0]:null,part:g('Partie concernée'),desc:g('Description').replace(/^_No response_$/,'')}; }
@@ -3637,12 +3653,12 @@ async function fbLoad(force){
   if(FB.list&&!force){ fbRender(); return; }
   if(FB.loading) return; FB.loading=true; box.innerHTML='<p class="note">Chargement des retours…</p>';
   try{
-    const r=await fetch('https://api.github.com/repos/'+FB.repo+'/issues?state=all&per_page=100',{headers:{Accept:'application/vnd.github+json'}});
-    if(!r.ok) throw new Error(r.status===403?'Limite de consultation GitHub atteinte, réessayez dans une heure.':'Erreur '+r.status);
-    const js=await r.json(); FB.list=js.filter(i=>!i.pull_request).map(i=>Object.assign(fbParse(i.body),{n:i.number,title:i.title.replace(/^\[[^\]]+\]\s*/,''),state:i.state,cm:i.comments,url:i.html_url,user:i.user&&i.user.login,date:i.created_at,labels:(i.labels||[]).map(l=>l.name)}));
-    FB.list.forEach(x=>{ if(!x.lv){ const l=FB.lv.find(v=>x.labels.includes(v[0])); if(l) x.lv=l[0]; } });
+    const r=await fetch(FB.data,{cache:'no-cache'});
+    if(!r.ok) throw new Error('Erreur '+r.status);
+    const js=await r.json();
+    FB.list=(js.retours||[]).map((i,k)=>({n:i.n||k+1,title:i.titre||'',lv:FB.lv.some(v=>v[0]===i.niveau)?i.niveau:null,part:i.partie||'',desc:i.description||'',state:i.statut==='résolu'?'closed':'open',rep:i.reponse||'',repDate:i.date_reponse||'',date:i.date||''}));
     fbRender();
-  }catch(e){ box.innerHTML='<p class="note">Impossible de charger les retours ('+esc(e.message||'réseau')+'). Vous pouvez les consulter directement sur <a href="https://github.com/'+FB.repo+'/issues" target="_blank" rel="noopener">GitHub</a>.</p>'; }
+  }catch(e){ box.innerHTML='<p class="note">Impossible de charger les retours publiés ('+esc(e.message||'réseau')+'). Ils se consultent sur le simulateur en ligne.</p>'; }
   FB.loading=false;
 }
 function fbRender(){
@@ -3655,13 +3671,12 @@ function fbRender(){
   S.sort((a,b)=>(a.state===b.state?0:a.state==='open'?-1:1)||(rk[a.lv]??5)-(rk[b.lv]??5)||b.n-a.n);
   box.innerHTML=S.map(x=>{ const v=FB.lv.find(l=>l[0]===x.lv);
     return '<div class="fbi'+(x.state==='closed'?' closed':'')+'"><div class="fbh">'+(v?'<span class="lvb '+v[3]+'">'+v[1]+'</span>':'<span class="lvb mute">Sans niveau</span>')+'<span class="fbst">'+(x.state==='open'?'Ouvert':'Résolu')+'</span><span class="fbn">#'+x.n+'</span></div><div class="fbt">'+esc(x.title)+'</div>'+(x.part?'<div class="fbp">'+esc(x.part)+'</div>':'')+(x.desc?'<div class="fbd">'+esc(x.desc.slice(0,280))+(x.desc.length>280?'…':'')+'</div>':'')+
-      '<div class="fbf"><span>'+esc(x.user||'')+' · '+new Date(x.date).toLocaleDateString('fr-FR')+'</span>'+(x.cm?'<button class="btn sm" data-fbc="'+x.n+'">'+x.cm+' réponse'+(x.cm>1?'s':'')+'</button>':'<span class="note" style="margin:0">Pas encore de réponse</span>')+'<a class="btn sm" href="'+x.url+'" target="_blank" rel="noopener">Ouvrir sur GitHub</a></div><div class="fbcm" id="fbcm-'+x.n+'" hidden></div></div>'; }).join('');
+      '<div class="fbf"><span>'+(x.date?'Reçu le '+new Date(x.date).toLocaleDateString('fr-FR'):'')+'</span>'+(x.rep?'<button class="btn sm" data-fbc="'+x.n+'">Réponse de l\'auteur</button>':'<span class="note" style="margin:0">Pas encore de réponse</span>')+'</div><div class="fbcm" id="fbcm-'+x.n+'" hidden></div></div>'; }).join('');
 }
-async function fbComments(n){
-  const el=$('#fbcm-'+n); if(!el) return; if(!el.hidden){ el.hidden=true; return; } el.hidden=false; el.innerHTML='<p class="note">Chargement…</p>';
-  try{ const r=await fetch('https://api.github.com/repos/'+FB.repo+'/issues/'+n+'/comments?per_page=50'); if(!r.ok) throw new Error(r.status); const js=await r.json();
-    el.innerHTML=js.map(c=>'<div class="fbc'+(c.user&&c.user.login===FB.repo.split('/')[0]?' own':'')+'"><div class="fbch"><b>'+esc(c.user?c.user.login:'')+'</b>'+(c.user&&c.user.login===FB.repo.split('/')[0]?' · réponse de l\'auteur':'')+' · '+new Date(c.created_at).toLocaleDateString('fr-FR')+'</div><div>'+esc(c.body).replace(/\n/g,'<br>')+'</div></div>').join('')||'<p class="note">Aucune réponse.</p>';
-  }catch(e){ el.innerHTML='<p class="note">Impossible de charger les réponses.</p>'; }
+function fbComments(n){
+  const el=$('#fbcm-'+n); if(!el) return; if(!el.hidden){ el.hidden=true; return; } el.hidden=false;
+  const x=(FB.list||[]).find(v=>v.n===n);
+  el.innerHTML=x&&x.rep?'<div class="fbc own"><div class="fbch"><b>Réponse de l\'auteur</b>'+(x.repDate?' · '+new Date(x.repDate).toLocaleDateString('fr-FR'):'')+'</div><div class="fbr">'+esc(x.rep)+'</div></div>':'<p class="note">Aucune réponse.</p>';
 }
 
 /* ================= Thème ================= */
@@ -3827,7 +3842,7 @@ function sndTest(){ sndInit(); if(!SND.ctx) return; hornInit(); const t=SND.ctx.
 sndApply();
 $('#fbLv').innerHTML=FB.lv.map(v=>'<label class="lvo '+v[3]+'"><input type="radio" name="fblv" value="'+v[0]+'"><span class="lvt">'+v[1]+'</span><span class="lvd">'+v[2]+'</span></label>').join('');
 $('#fbPart').innerHTML=FB.parts.map(x=>'<option>'+x+'</option>').join(''); $('#fbPart').addEventListener('change',()=>$('#fbPart').dataset.touched=1);
-$('#fbNew').addEventListener('submit',fbSubmit); $('#fbClose').onclick=closeFB; $('#fbRef').onclick=()=>fbLoad(true);
+$('#fbNew').addEventListener('submit',fbSubmit); $('#fbCopy').onclick=fbCopy; $('#fbClose').onclick=closeFB; $('#fbRef').onclick=()=>fbLoad(true);
 $('#fbCtxOn').addEventListener('change',e=>$('#fbCtx').hidden=!e.target.checked);
 $('#themeBtn').onclick=()=>{ const m=store('theme')||'auto'; const dark=m==='dark'||(m==='auto'&&!matchMedia('(prefers-color-scheme: light)').matches); themeApply(dark?'light':'dark'); };
 if(window.matchMedia) matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{ if((store('theme')||'auto')==='auto') themeApply('auto'); });
