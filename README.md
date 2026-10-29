@@ -20,6 +20,7 @@ Le simulateur repose sur des sources publiques, listées dans la rubrique « Sou
 - **4 exercices notés** : divergence, couplage et montée en charge, suivi de charge et xénon, mise à l'arrêt à chaud.
 - **9 aléas** avec débriefing : perte de TPA, îlotage, chute de grappe, aspersion bloquée ouverte, fuite sur la décharge RCV, défaillance de la régulation ARE, dilution intempestive, retrait incontrôlé à puissance nulle, déclenchement d'une pompe primaire. Plus un aléa mystère et le pilotage libre.
 - **13 corrections commentées** : le pilote automatique joue chaque aléa et chaque exercice noté en temps réel, déplace un pointeur, clique au bon endroit et explique chaque action ; accessibles depuis le menu et depuis le débriefing (« Voir la correction »).
+- Fenêtre **« Pourquoi l'AAR ? »** à chaque arrêt automatique ou manuel, sans mettre la simulation en pause : protection déclenchée avec la valeur mesurée et son seuil, rôle de la protection, origine probable d'après l'état de la tranche et les dernières actions, suite de l'arrêt et vérifications avant réarmement cochées en direct. Rouvrable depuis la carte « En cours » et le débriefing.
 - Diagramme pression-température du primaire (« chaussette ») en direct.
 - Aide « ? » sur chaque carte, lexique de 98 termes, bandeau catégorisé avec jauges.
 - Deux niveaux d'explication : « Débutant » ajoute à chaque consigne une explication simple (« En clair ») et un plan pas à pas pour les exercices ; « Confirmé » garde le seul texte technique.
@@ -57,4 +58,4 @@ Thème clair et sombre (automatique selon le système, ou au choix). Un seul fic
 `npm test` lance les deux suites ; elles tournent aussi à chaque modification du dépôt (action GitHub « Tests »).
 
 - `node tests/physique.test.mjs` vérifie les grandeurs de référence du modèle (états stables à 100 % et 50 %, AAR, puissance résiduelle, xénon, criticité à l'arrêt à chaud, perte de pompe primaire). Aucune dépendance n'est nécessaire.
-- `node tests/interface.test.mjs` ouvre la page dans Chromium à 320, 390 et 1 440 px, en thème clair et sombre, parcourt scénarios, visite et retours (envoi au formulaire Netlify et lecture de `retours.json` via un petit serveur local), et déroule six leçons de bout en bout (nécessite Playwright : `npm install` puis `npx playwright install chromium`).
+- `node tests/interface.test.mjs` ouvre la page dans Chromium à 320, 390 et 1 440 px, en thème clair et sombre, parcourt scénarios, visite et retours (envoi au formulaire Netlify et lecture de `retours.json` via un petit serveur local), déroule les huit leçons de bout en bout (dont cinétique et xénon) et vérifie la fenêtre « Pourquoi l'AAR ? » (nécessite Playwright : `npm install` puis `npx playwright install chromium`).

@@ -25,7 +25,11 @@ lesson('l-cin',{1:{pre:s=>{act('rodSel','R');act('rod','5');}},2:{t:2000},3:{pre
 lesson('l-fb',{1:{pre:s=>{act('modeR','man');act('modeG','man');}},2:{pre:s=>{act('ramp','5');s.LtSet=.6;}},3:{pre:s=>act('modeG','auto')},4:{pre:s=>act('modeR','auto')}});
 lesson('l-di',{1:{pre:s=>{act('modeR','man');act('rodSel','R');for(let i=0;i<4;i++)act('rod','-10');}},2:{pre:s=>{act('reaMode','dil');act('reaQ','30');act('reaV','inf');act('reaStart');},each:s=>{ if(s.rea.run&&s.volDil>1&&Math.abs(s.Tavg-s.Tref)<0.4) act('reaStop'); }},3:{pre:s=>{act('modeR','auto');act('reaMode','bor');act('reaQ','10');act('reaV','inf');act('reaStart');},each:s=>{ if(s.rea.run&&s.rods.R.p>=186) act('reaStop'); }}});
 lesson('l-pzr',{1:{pre:s=>{act('ramp','10');s.LtSet=.8;}},2:{pre:s=>act('heatMode','on')},3:{pre:s=>act('heatMode','auto')},4:{pre:s=>{act('chgMode','man');s.chgMan=5;}},5:{pre:s=>act('chgMode','auto')}});
-lesson('l-gv',{1:{pre:s=>{act('ramp','30');s.LtSet=.7;}},2:{pre:s=>{act('areMode','man');s.areMan=.55;}},3:{pre:s=>act('areMode','auto')}});
+lesson('l-gv',{1:{pre:s=>{act('ramp','30');s.LtSet=.7;}},3:{pre:s=>{s.LtSet=.9;}},4:{pre:s=>{act('areMode','man');s.areMan=Math.round(s.Wst*100-15)/100;}},6:{pre:s=>act('areMode','auto')}});
+lesson('l-xe',{1:{pre:s=>{act('ramp','10');s.LtSet=.5;}},
+  2:{t:15000,each:s=>{ if(!s.rea.run&&s.Tavg-s.Tref<-1.5){ act('reaMode','dil');act('reaQ','10');act('reaV','0.3');act('reaStart'); } }},
+  3:{pre:s=>{act('ramp','5');s.LtSet=1;},t:3600,each:s=>{ if(!s.rea.run&&s.Tavg-s.Tref>1){ act('reaMode','bor');act('reaQ','5');act('reaV','0.1');act('reaStart'); } }},
+  4:{pre:s=>act('aar'),t:37000}});
 lesson('l-prot',{1:{pre:s=>{act('sprayMode','man');s.sprayMan=.4;}},2:{pre:s=>act('sprayMode','auto')}});
 lesson('l-div',{1:{pre:s=>{act('rodSel','R');act('rod','100');}},2:{pre:s=>act('rod','40')},3:{pre:s=>act('rod','20')},
   4:{each:(()=>{ let l=0; return s=>{ if(s.t-l>40&&s.Td>300){ act('rod','2'); l=s.t; } }; })()},
@@ -64,6 +68,13 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
     lvlSet('deb'); launch('l-cin'); document.querySelector('#brief').hidden = true; const d = !!document.querySelector('#mis-body .eclair');
     lvlSet('exp'); const e = !document.querySelector('#mis-body .eclair'); lvlSet('deb');
     launch('div'); const pl = !!document.querySelector('#mis-body details.plan'); return { miss, d, e, pl }; });
+  const gv = await pg.evaluate(() => { const sc = byId('l-gv'), st = sc.steps; launch('l-gv'); document.querySelector('#brief').hidden = true; A.paused = true;
+    let err = ''; st.forEach((x, i) => { try { enterStep(i); curInfo(sc, A.ctx, A.s); } catch (e) { err = x.t + ' : ' + e.message; } });
+    return { n: st.length, are: st.filter(x => !x.last).every(x => x.show === '[data-c="are"]' && x.tab === 'cmd'), obs: st.filter(x => !x.last).every(x => /À observer/.test(x.h)), err }; });
+  check('Leçon GV : 8 étapes courtes', gv.n === 8, gv.n + ' étapes');
+  check('Leçon GV : carte Eau alimentaire montrée à chaque étape', gv.are);
+  check('Leçon GV : une chose à observer à chaque étape', gv.obs);
+  check('Leçon GV : lignes de mesures sans erreur', !gv.err, gv.err);
   check('Explication « En clair » pour chaque étape de leçon', ec.miss.length === 0, ec.miss.join(', '));
   check('Niveau Débutant / Confirmé appliqué à la consigne', ec.d && ec.e && ec.pl);
   const sp = await pg.evaluate(() => { document.querySelector('#sndBtn').click(); const open = !document.querySelector('#sndPop').hidden;
@@ -74,6 +85,22 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
     while (!A.done && n < 8 * 3600 / DT) { step(s); evalAlarms(s); tick(s, c); demoTick(); n++; }
     const ko = scn.evaluate.call(scn, s, c).filter(x => !x.ok).map(x => x.t); demoStop(); A.done = false; return [id, A.s && ko.length === 0 && n < 8 * 3600 / DT, ko.join(', ')]; }));
   for (const [id, ok, ko] of dm) check('Correction commentée ' + id + ' : tous les critères atteints', ok, ko);
+  const aw = await pg.evaluate(() => { const r = {}, w = document.querySelector('#aarw');
+    launch('libre'); document.querySelector('#brief').hidden = true; A.paused = false; aarWatch();
+    act('aar'); aarWatch(); r.man = !w.hidden && /AAR manuel/.test(w.textContent) && /Avant de réarmer/.test(w.textContent); r.run = A.paused === false;
+    aarClose(); updateRun(); const b = document.querySelector('#runList [data-act="aarWhy"]'); r.enc = !!b; if (b) b.click(); r.reopen = !w.hidden;
+    launch('l-gv'); document.querySelector('#brief').hidden = true; A.paused = true; aarWatch(); r.closed = w.hidden;
+    const s = A.s; act('areMode', 'man'); s.areMan = 0; let n = 0; while (!s.tripped && n < 3600 / DT) { step(s); evalAlarms(s); tick(s, A.ctx); n++; }
+    aarWatch(); const tx = w.textContent; r.gv = /Niveau GV très bas/.test(tx) && /seuil 15 %/.test(tx) && /ARE était en manuel/.test(tx);
+    finish(); const d = document.querySelector('#dAar'); r.deb = !!d; aarClose(); if (d) d.click();
+    r.top = !w.hidden && +getComputedStyle(w).zIndex > +getComputedStyle(document.querySelector('#debrief')).zIndex;
+    return r; });
+  check('Fenêtre « Pourquoi l\'AAR ? » ouverte à l\'AAR, avec les vérifications avant réarmement', aw.man);
+  check('Fenêtre AAR : la simulation continue (pas de pause)', aw.run);
+  check('Fenêtre AAR : rouvrable depuis « En cours »', aw.enc && aw.reopen);
+  check('Fenêtre AAR : fermée au changement de séance', aw.closed);
+  check('Fenêtre AAR : protection, valeur/seuil et origine probable (niveau GV très bas)', aw.gv);
+  check('Fenêtre AAR : rouvrable depuis le débriefing, au-dessus de celui-ci', aw.deb && aw.top);
   check('Leçons : aucune erreur JavaScript', errs.length === 0, errs.slice(0, 2).join(' | ')); }
 // Retours : envoi Netlify Forms et onglet « Retours publiés », servis par un petit serveur local comme sur Netlify.
 { const root = new URL('..', import.meta.url), posts = [];

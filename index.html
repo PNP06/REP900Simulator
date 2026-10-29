@@ -187,6 +187,17 @@ table.kv tr.tot td{border-bottom:0;font-weight:600;color:var(--fg);padding-top:7
 /* overlays */
 .ov{position:fixed;inset:0;z-index:60;background:var(--ovbg);overflow:auto;padding-block:calc(20px + env(safe-area-inset-top,0px)) calc(24px + env(safe-area-inset-bottom,0px))}
 .ov .box{max-width:980px;margin:0 auto}
+.aarw{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:66;width:min(440px,calc(100vw - 24px));max-height:min(72vh,680px);overflow:auto;background:var(--panel-2);border:1px solid var(--crit);border-radius:10px;box-shadow:0 12px 32px #000a;padding:10px 14px 12px;font-size:13.5px;line-height:1.45}
+.aarw .aw-h{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:15px;color:var(--crit)}
+.aarw .aw-sub{color:var(--mute);font-size:12.5px;margin-bottom:4px}
+.aarw h4{margin:10px 0 3px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+.aarw p{margin:0}.aarw ul{margin:0;padding-left:18px}
+.aarw .aw-v{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;padding:6px 8px;border-radius:6px;background:var(--bg);border:1px solid var(--line)}
+.aarw .aw-ck{list-style:none;padding:0}.aarw .aw-ck li{display:flex;gap:6px}.aarw .aw-ck .i{width:14px;flex:none}.aarw .aw-ck li.ok .i{color:var(--ok)}.aarw .aw-ck li.ko{color:var(--mute)}
+.aarw .aw-n{color:var(--mute);font-size:12.5px;margin-top:6px}.aarw .aw-f{margin-top:10px;justify-content:flex-end}
+.aarw details{margin-top:8px}.aarw .log{max-height:120px}
+@media (min-width:1080px){ .aarw{bottom:16px} }
+@media (max-width:760px){ .aarw{max-height:62vh} }
 .hero{padding:10px 0 18px;border-bottom:1px solid var(--line);margin-bottom:18px}
 .hero h1{font:700 clamp(34px,7vw,58px)/.95 var(--f-disp);letter-spacing:.02em;text-transform:uppercase;margin:0;text-wrap:balance}
 .hero h1 span{color:var(--hot)}
@@ -1116,6 +1127,7 @@ body.demo #ptr{display:none!important}
 
 <div class="ov" id="brief" hidden><div class="box wrap"><div class="brief" id="briefBox"></div></div></div>
 <div class="ov" id="help" hidden><div class="box wrap"><div class="brief" id="helpBox"></div></div></div>
+<div class="aarw" id="aarw" role="dialog" aria-label="Pourquoi l'AAR ?" hidden></div>
 <div class="ov" id="debrief" hidden><div class="box wrap"><div class="brief" id="debriefBox"></div></div></div>
 <div class="toast" id="toast" hidden></div>
 <div class="dptr" id="dptr" hidden aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.6L10 19z"/></svg></div>
@@ -1257,12 +1269,17 @@ function ctxAct(code){ const c=A.ctx; if(c && c.acts[code]==null) c.acts[code]=A
 function startASG(s){ if(!s.asg){ s.asg=true; logEv(s,'auto','Démarrage ASG'); } }
 function trip(s,cause,src){
   if(s.tripped) return;
+  /* photo de l'instant de l'AAR, pour la fenêtre « Pourquoi l'AAR ? » */
+  const sn={}; for(const k of ['n','Ppzr','Lpzr','Lsg','Tavg','Tref','DTp','OTsp','OPsp','srInhib','lowBlk','p10','is','Wf','Wst','areMode','areMan','areIsol','areFail','rodWd','dropped','sprayStuck','sprayMode','heatMode','chgMode','leakQ','dilFault','Td','Psg']) sn[k]=s[k];
+  sn.pumps=s.pumps.slice(); sn.tpa=s.tpa.slice(); sn.coupled=s.coupled; sn.Lt=s.Lt;
+  const tl=s.log.slice(-8).reverse().find(l=>/^Déclenchement turbine — /.test(l.txt)); sn.turbWhy=tl?tl.txt.slice(24):'';
   s.tripped=true; s.tripCause=cause; s.tripT=s.t; if(typeof SFX!=='undefined') SFX.aar(); s.modeR='man'; s.modeG='man'; s.rodWd=false;
   for(const b of Object.values(s.rods)) b.tg=0;
   logEv(s,src==='op'?'op':'auto','AAR '+(src==='op'?'manuel':'automatique')+' — '+cause);
   if(s.coupled){ s.coupled=false; s.ilot=false; s.Lt=0; s.LtSet=0; s.turbTripped=true; logEv(s,'auto','Turbine déclenchée sur AAR'); }
   s.ilot=false; startASG(s);
   if(A.ctx && !A.ctx.st.aar) A.ctx.st.aar={t:s.t,cause,src};
+  (s.aars||(s.aars=[])).push({t:s.t,cause,src,sn,ops:s.log.filter(l=>l.type==='op'&&l.t>=s.t-600&&!/^AAR/.test(l.txt)).slice(-6)});
 }
 function turbineTrip(s,why){
   if(!s.coupled) return;
@@ -1604,17 +1621,34 @@ const SCN=[
  {t:'Charge RCV en auto',tab:'cmd',h:"<p>Repassez la <b>Charge</b> en <kbd>Auto</kbd> : le débit monte et le niveau rejoint sa référence.</p>",ok:s=>s.chgMode==='auto'&&Math.abs(s.Lpzr-s.Lref)<2},
  {t:'Leçon terminée',h:"<p>Toute variation de Tmoy se lit d'abord au pressuriseur : environ 2 % de niveau et 0,7 bar par °C. Un niveau qui baisse sans variation de température signe une perte d'inventaire : fuite ou décharge excessive.</p>",last:true}
  ]},
-{id:'l-gv',kind:'lecon',title:'Générateurs de vapeur et eau alimentaire',desc:'Pression vapeur, gonflement et contraction, régulation ARE.',diff:1,speed:2,
+{id:'l-gv',kind:'lecon',title:'Générateurs de vapeur et eau alimentaire',desc:'Pression vapeur, contraction et gonflement, régulation trois éléments, perte d\'eau.',diff:1,speed:2,
  init:P100,
- brief:"<p>Pleine puissance. Vous allez provoquer une baisse rapide de charge puis reprendre la main sur l'eau alimentaire.</p>",
+ brief:"<p>Pleine puissance. En huit étapes courtes, vous allez voir le niveau des générateurs de vapeur se <b>contracter</b> puis <b>gonfler</b> quand la charge change, la régulation ARE <b>trois éléments</b> le recaler, et ce qui se passe quand l'eau alimentaire <b>manque</b>.</p><p>Gardez sous les yeux la carte <b>Eau alimentaire — ARE / ASG</b> (onglet Agir) : à chaque étape, la ligne de mesures sous la consigne dit quoi regarder.</p>",
  info:s=>'Niveau GV '+fmt(s.Lsg,1)+' % · vapeur '+fmt(s.Wst*100,0)+' % · ARE '+fmt(s.Wf*100,0)+' % · P GV '+fmt(s.Psg,1)+' bar',
  steps:[
- {t:'Le GV, frontière entre deux circuits',tab:'synop',h:"<p>L'eau primaire circule dans ~3 300 tubes en U par GV et fait bouillir l'eau secondaire. La pression vapeur est celle de saturation de l'eau du GV : <b>70 bar à 0 %</b> (286 °C) et <b>57,5 bar à 100 %</b>, car il faut un écart de température pour transmettre la chaleur.</p><p>Le <b>niveau gamme étroite</b> se mesure dans une émulsion eau-vapeur. Si le débit vapeur augmente, la pression baisse, l'eau se vaporise davantage et l'émulsion gonfle : le niveau monte un instant (<b>gonflement</b>). À l'inverse, une baisse de charge provoque une <b>contraction</b>.</p><p>La régulation ARE « trois éléments » combine niveau, débit vapeur et débit d'eau pour ne pas réagir à contresens.</p>"},
- {t:'Baisse rapide de charge',tab:'cmd',h:"<p>Vitesse <kbd>30</kbd> %/min, consigne <b>70 %</b>. Le niveau GV <b>baisse</b> d'abord (contraction) alors que le débit d'eau devient supérieur au débit vapeur, puis revient. La pression vapeur monte vers 62 bar.</p>",
-  ok:(s,c,k)=>{ if(s.Lt<=0.705){ if(k.tm==null)k.tm=s.t; return s.t-k.tm>20; } return false; }},
- {t:"Prenez l'ARE en manuel",tab:'cmd',h:"<p>Passez la <b>Régul. ARE</b> en <kbd>Manuel</kbd> et réglez le débit vers 55 %, en dessous du débit vapeur (≈ 70 %). Le niveau baisse d'environ 0,1 %/s. Attendez qu'il passe sous 45 %.</p><p>À 15 %, c'est l'AAR : vous voyez pourquoi une perte d'eau alimentaire à pleine puissance laisse moins d'une minute.</p>",ok:s=>s.areMode==='man'&&s.Lsg<45},
- {t:"Rendez la main à l'ARE",tab:'cmd',h:"<p>Repassez en <kbd>Auto</kbd> : le débit remonte au-dessus du débit vapeur jusqu'à ramener le niveau vers 50 %.</p>",ok:s=>s.areMode==='auto'&&s.Lsg>47},
- {t:'Leçon terminée',h:"<p>Les secours de l'eau alimentaire : <b>APD</b> (motopompe de démarrage), puis <b>ASG</b> (alimentation de secours, démarrée sur AAR ou niveau bas). Côté vapeur : <b>GCT-c</b> vers le condenseur, <b>GCT-a</b> à l'atmosphère, puis soupapes de sûreté vers 85 bar. L'aléa <b>Perte d'une turbopompe alimentaire</b> met ces notions sous pression.</p>",last:true}
+ {t:'Le GV, frontière entre deux circuits',tab:'cmd',h:"<p>L'eau primaire circule dans ~3 300 tubes en U par GV et fait bouillir l'eau secondaire. La pression vapeur est celle de saturation de l'eau du GV : <b>70 bar à 0 %</b> (286 °C) et <b>57,5 bar à 100 %</b>, car il faut un écart de température pour transmettre la chaleur.</p><p><b>À observer</b> dans la carte Eau alimentaire : débit ARE ≈ débit vapeur, niveau stable à 50 %. Tout ce qui sort en vapeur rentre en eau.</p>",
+  info:s=>'Bilan eau − vapeur '+sgn((s.Wf-s.Wst)*100,1)+' % · niveau GV '+fmt(s.Lsg,1)+' % · P GV '+fmt(s.Psg,1)+' bar'},
+ {t:'Contraction : baisse rapide de charge',tab:'cmd',h:"<p>Le <b>niveau gamme étroite</b> se mesure dans une émulsion eau-vapeur. Si le débit vapeur baisse, la pression monte, les bulles s'écrasent : l'émulsion se tasse et le niveau <b>baisse</b> un instant. C'est la <b>contraction</b>.</p><p>Vitesse <kbd>30</kbd> %/min, consigne <b>70 %</b>. <b>À observer</b> : le niveau descend alors que le débit ARE est <i>supérieur</i> au débit vapeur. La pression vapeur monte vers 61 bar.</p>",
+  ok:(s,c,k)=>{ if(s.Lt<=0.705){ if(k.tm==null)k.tm=s.t; return s.t-k.tm>20; } return false; },
+  info:(s,c,k)=>'Niveau '+fmt(s.Lsg,1)+' % (le plus bas '+fmt(k.minLg,1)+' %) · ARE − vapeur '+sgn((s.Wf-s.Wst)*100,1)+' % · P GV '+fmt(s.Psg,1)+' bar'},
+ {t:'La régulation trois éléments recale le niveau',tab:'cmd',h:"<p>Une régulation qui ne regarderait que le niveau ferait l'inverse de ce qu'il faut : pendant la contraction, elle ajouterait de l'eau, et le niveau déborderait ensuite. La régulation ARE combine donc <b>trois éléments</b> : le <b>débit vapeur</b> (elle envoie d'abord autant d'eau qu'il sort de vapeur), le <b>niveau</b> (petite correction lente vers 50 %) et le <b>débit d'eau</b> mesuré (elle vérifie que la vanne donne bien ce qu'elle demande).</p><p><b>À observer</b> : le débit ARE rejoint le débit vapeur et le niveau revient à 50 %, sans dépassement marqué. Attendez.</p>",
+  ok:(s,c,k)=>s.t-k.ts>30&&Math.abs(s.Lsg-50)<0.5&&Math.abs(s.Wf-s.Wst)<0.02,
+  info:s=>'Niveau '+fmt(s.Lsg,1)+' % → 50 % · ARE '+fmt(s.Wf*100,1)+' % pour '+fmt(s.Wst*100,1)+' % de vapeur'},
+ {t:'Gonflement : remontée rapide de charge',tab:'cmd',h:"<p>Effet inverse : si la turbine demande plus de vapeur, la pression baisse, l'eau se vaporise davantage et l'émulsion <b>gonfle</b>.</p><p>Toujours à <kbd>30</kbd> %/min, consigne <b>90 %</b>. <b>À observer</b> : le niveau <i>monte</i> alors que le GV perd plus de vapeur qu'il ne reçoit d'eau. La pression vapeur redescend.</p>",
+  ok:(s,c,k)=>{ if(s.Lt>=0.895){ if(k.tm==null)k.tm=s.t; return s.t-k.tm>20; } return false; },
+  info:(s,c,k)=>'Niveau '+fmt(s.Lsg,1)+' % (le plus haut '+fmt(k.maxLg,1)+' %) · ARE − vapeur '+sgn((s.Wf-s.Wst)*100,1)+' % · P GV '+fmt(s.Psg,1)+' bar'},
+ {t:"Prenez l'ARE en manuel",tab:'cmd',h:"<p>Passez la <b>Régul. ARE</b> en <kbd>Manuel</kbd> et réglez le débit vers <b>75 %</b>, environ 15 points sous le débit vapeur (≈ 90 %).</p><p><b>À observer</b> : plus rien ne compense la vapeur qui part. Le niveau commence à baisser. Attendez qu'il passe sous 47 %.</p>",
+  ok:s=>s.areMode==='man'&&s.Wf<s.Wst-0.08&&s.Lsg<47,
+  info:s=>'Niveau '+fmt(s.Lsg,1)+' % · ARE '+fmt(s.Wf*100,0)+' % contre '+fmt(s.Wst*100,0)+' % de vapeur'},
+ {t:'Le GV se vide : combien de temps ?',tab:'cmd',h:"<p>Le seuil d'<b>AAR niveau GV très bas</b> est à <b>15 %</b> : en dessous, le GV ne garantit plus le refroidissement du primaire.</p><p><b>À observer</b> : la ligne de mesures calcule le temps qu'il reste avant ce seuil au rythme actuel. Avec un déficit de 15 points, il reste quelques minutes ; avec une perte <b>totale</b> d'eau alimentaire à pleine puissance, moins d'une minute. Attendez que le niveau passe sous 40 %.</p>",
+  ok:s=>s.Lsg<40,
+  info:(s,c,k)=>{ const now=s.t; if(k.rt==null||now-k.rt>=5){ if(k.rt!=null) k.rate=(s.Lsg-k.rl)/(now-k.rt); k.rt=now; k.rl=s.Lsg; }
+   const r=k.rate||0; if(s.Lsg<=15) return 'Niveau '+fmt(s.Lsg,1)+' % · seuil AAR de 15 % atteint';
+   return 'Niveau '+fmt(s.Lsg,1)+' % · '+(r<-0.005?'baisse de '+fmt(-r,2)+' %/s · seuil AAR 15 % dans ≈ '+dur((s.Lsg-15)/-r):'pente en cours de mesure')+(s.Wst>0.05?' · sans aucune eau : ≈ '+dur((s.Lsg-15)/(0.8*s.Wst)):''); } },
+ {t:"Rendez la main à l'ARE",tab:'cmd',h:"<p>Repassez en <kbd>Auto</kbd>. <b>À observer</b> : la régulation envoie nettement plus d'eau qu'il ne sort de vapeur tant que le niveau est bas, puis réduit l'écart à mesure qu'il remonte vers 50 %.</p>",
+  ok:s=>s.areMode==='auto'&&s.Lsg>47,
+  info:s=>'Niveau '+fmt(s.Lsg,1)+' % · ARE − vapeur '+sgn((s.Wf-s.Wst)*100,1)+' %'},
+ {t:'Leçon terminée',h:"<p>À retenir : un niveau GV se lit avec le débit vapeur. Une baisse de charge le fait d'abord baisser (contraction), une hausse le fait d'abord monter (gonflement) ; c'est pour cela que la régulation ARE suit le débit vapeur avant le niveau.</p><p>Les secours de l'eau alimentaire : <b>APD</b> (motopompe de démarrage), puis <b>ASG</b> (alimentation de secours, démarrée sur AAR ou niveau bas). Côté vapeur : <b>GCT-c</b> vers le condenseur, <b>GCT-a</b> à l'atmosphère, puis soupapes de sûreté vers 85 bar. L'aléa <b>Perte d'une turbopompe alimentaire</b> met ces notions sous pression.</p>",last:true}
  ]},
 {id:'l-prot',kind:'lecon',title:'Protections et permissifs',desc:'Seuils d\'AAR, marge ΔT surtempérature, P6, P7, P10.',diff:2,speed:2,
  init:P100,
@@ -1852,12 +1886,18 @@ const STEPX={
   {}
  ],
  'l-gv':[
-  {f:['[data-c="are"]','[data-c="synop"]']},
-  {f:['[data-c="turb"]','#rd-lg'],hint:"Turbine : vitesse « 30 », consigne 70 %.",sub:[['Vitesse 30 %/min',s=>s.ramp===30],['Consigne 70 %',s=>Math.round(s.LtSet*100)<=70],['Charge atteinte',s=>s.Lt<=0.705]],
+  {f:['[data-c="are"]','[data-c="synop"]'],show:'[data-c="are"]'},
+  {f:['[data-c="are"]','[data-c="turb"]','#rd-lg'],show:'[data-c="are"]',hint:"Turbine : vitesse « 30 », consigne 70 %.",sub:[['Vitesse 30 %/min',s=>s.ramp===30],['Consigne 70 %',s=>Math.round(s.LtSet*100)<=70],['Charge atteinte',s=>s.Lt<=0.705]],
    after:(s,c,k)=>`Niveau GV le plus bas : ${f1(k.minLg)} % pendant la baisse, alors que l'ARE envoyait plus d'eau que la vapeur n'en emportait. C'est la contraction. Pression GV : ${f1(k.Psg0)} → ${f1(s.Psg)} bar.`},
-  {f:['.seg[data-key="areMode"]','#areMan','#rd-lg'],hint:"Eau alimentaire : Régul. ARE › « Manuel », puis faites glisser « Débit man. » vers 55 %.",sub:[['ARE en manuel',s=>s.areMode==='man'],['Débit ≤ 60 %',s=>s.areMan<=0.6],['Niveau < 45 %',s=>s.Lsg<45]],
+  {f:['[data-c="are"]','#rd-lg'],show:'[data-c="are"]',hint:"Rien à faire : observez le débit ARE et le niveau dans la carte Eau alimentaire. Passez en ×5 pour accélérer.",
+   after:(s,c,k)=>`Niveau revenu à ${f1(s.Lsg)} % (il était monté jusqu'à ${f1(k.maxLg)} %). ARE ${f1(s.Wf*100)} % pour ${f1(s.Wst*100)} % de vapeur : l'eau suit la vapeur, le niveau ne fait qu'ajuster.`},
+  {f:['[data-c="are"]','[data-c="turb"]','#rd-lg'],show:'[data-c="are"]',hint:"Turbine : consigne 90 % (vitesse toujours « 30 »).",sub:[['Vitesse 30 %/min',s=>s.ramp===30],['Consigne 90 %',s=>Math.round(s.LtSet*100)>=90],['Charge atteinte',s=>s.Lt>=0.895]],
+   after:(s,c,k)=>`Niveau GV le plus haut : ${f1(k.maxLg)} % pendant la hausse, alors que la vapeur dépassait l'eau. C'est le gonflement. Pression GV : ${f1(k.Psg0)} → ${f1(s.Psg)} bar.`},
+  {f:['.seg[data-key="areMode"]','#areMan','#rd-lg'],show:'[data-c="are"]',hint:"Eau alimentaire : Régul. ARE › « Manuel », puis faites glisser « Débit man. » vers 75 %.",sub:[['ARE en manuel',s=>s.areMode==='man'],['Débit 8 points ou plus sous la vapeur',s=>s.Wf<s.Wst-0.08],['Niveau < 47 %',s=>s.Lsg<47]],
    after:s=>`Débit ARE ${f0(s.Wf*100)} % contre ${f0(s.Wst*100)} % de vapeur : le GV perd de l'eau.`},
-  {f:['.seg[data-key="areMode"]','#rd-lg'],hint:"Régul. ARE › « Auto ».",after:(s,c,k)=>`Niveau minimal ${f1(k.minLg)} %, revenu à ${f1(s.Lsg)} %.`},
+  {f:['[data-c="are"]','#rd-lg'],show:'[data-c="are"]',hint:"Rien à faire : laissez le niveau baisser jusqu'à 40 % et lisez l'estimation dans la ligne de mesures.",
+   after:(s,c,k)=>`Le niveau a perdu ${f1(k.Lg0-s.Lsg)} % en ${dur(s.t-k.ts)}. Il restait encore ${f0(s.Lsg-15)} % avant l'AAR : ne laissez jamais un GV sans eau alimentaire.`},
+  {f:['.seg[data-key="areMode"]','#rd-lg'],show:'[data-c="are"]',hint:"Régul. ARE › « Auto ».",after:(s,c,k)=>`Niveau minimal ${f1(k.minLg)} %, revenu à ${f1(s.Lsg)} %.`},
   {}
  ],
  'l-prot':[
@@ -1946,9 +1986,12 @@ const ECLAIR={
   "À retenir : le pressuriseur est à la fois le baromètre et la jauge du circuit. Si son niveau bouge alors que la température est stable, c'est que de l'eau entre ou sort."
  ],
  'l-gv':[
-  "Le <b>générateur de vapeur</b> (GV) est un échangeur de chaleur. L'eau du réacteur circule dans des milliers de petits tubes et fait bouillir l'eau du second circuit, sans jamais s'y mélanger. La vapeur produite part à la turbine.<br>Il faut garder assez d'eau dans le GV, un niveau vers 50 % : c'est le rôle de l'eau alimentaire (<b>ARE</b>).<br>Piège : le niveau mesuré est celui d'un mélange d'eau et de bulles, qui gonfle ou se tasse quand la pression change.",
-  "Vous réduisez brutalement la demande de vapeur. La pression dans le GV monte et les bulles s'écrasent : le mélange se tasse et le niveau baisse, alors même qu'on envoie plus d'eau qu'il n'en sort ! C'est la <b>contraction</b>, un effet contre-intuitif. Le niveau revient ensuite.",
-  "Vous prenez la main sur l'eau alimentaire et envoyez moins d'eau qu'il ne sort de vapeur : le GV se vide doucement. Estimez le temps qu'il faudrait pour atteindre le seuil d'arrêt d'urgence (15 %) : il est très court.",
+  "Le <b>générateur de vapeur</b> (GV) est un échangeur de chaleur. L'eau du réacteur circule dans des milliers de petits tubes et fait bouillir l'eau du second circuit, sans jamais s'y mélanger. La vapeur produite part à la turbine.<br>Il faut garder assez d'eau dans le GV, un niveau vers 50 % : c'est le rôle de l'eau alimentaire (<b>ARE</b>). Tant que l'eau qui entre égale la vapeur qui sort, le niveau ne bouge pas.",
+  "Piège : le niveau mesuré est celui d'un mélange d'eau et de bulles, qui gonfle ou se tasse quand la pression change.<br>Vous réduisez brutalement la demande de vapeur. La pression dans le GV monte et les bulles s'écrasent : le mélange se tasse et le niveau baisse, alors même qu'on envoie plus d'eau qu'il n'en sort ! C'est la <b>contraction</b>, un effet contre-intuitif. Le niveau revient ensuite.",
+  "Si la régulation ne regardait que le niveau, elle serait trompée par les bulles. Elle commence donc par envoyer autant d'eau qu'il sort de vapeur, puis corrige doucement le niveau. Regardez les deux débits se rejoindre.",
+  "Cette fois la turbine demande plus de vapeur. La pression baisse, l'eau bout davantage, les bulles grossissent : le mélange gonfle et le niveau monte un moment, alors que le GV se vide en réalité. C'est le <b>gonflement</b>.",
+  "Vous prenez la main sur l'eau alimentaire et envoyez moins d'eau qu'il ne sort de vapeur : le GV se vide doucement.",
+  "Estimez le temps qu'il faudrait pour atteindre le seuil d'arrêt d'urgence (15 %) : la ligne de mesures le calcule. Il est très court, et encore plus si toute l'eau alimentaire disparaît.",
   "En automatique, la régulation envoie plus d'eau qu'il ne sort de vapeur, jusqu'à retrouver 50 %.",
   "À retenir : un GV qui manque d'eau ne refroidit plus le réacteur. C'est pour cela qu'il existe plusieurs secours d'eau alimentaire."
  ],
@@ -2092,7 +2135,7 @@ function showBrief(){
 
 /* tutoriel */
 function snapK(s,k){ Object.assign(k,{n0:s.n,T0:s.Tavg,Tr0:s.Tref,P0:s.Ppzr,Lp0:s.Lpzr,Lg0:s.Lsg,Cb0:s.Cb,R0:s.rods.R.p,G0:s.rods.G.p,DI0:s.DI,Td0:s.Td,rh0:Object.assign({},s.rho),vD0:s.volDil,vB0:s.volBor,ts:s.t,Psg0:s.Psg,OT0:s.OTsp,minLg:s.Lsg,maxLg:s.Lsg,minP:s.Ppzr,maxP:s.Ppzr,minLp:s.Lpzr}); }
-function enterStep(i){ const c=A.ctx; c.step=i; c.sk={}; c.stepOk=false; c.after=''; c.showHint=false; c.subM=''; const st=A.scn.steps[i]; snapK(A.s,c.sk); if(st.enter) st.enter(A.s,c,c.sk); renderMission(true); }
+function enterStep(i){ const c=A.ctx; c.step=i; c.sk={}; c.stepOk=false; c.after=''; c.showHint=false; c.subM=''; const st=A.scn.steps[i]; snapK(A.s,c.sk); if(st.enter) st.enter(A.s,c,c.sk); renderMission(true); if(st.show) requestAnimationFrame(()=>{ const e=$(st.show); if(e&&e.offsetParent) e.scrollIntoView({block:'nearest',behavior:'smooth'}); }); }
 
 /* tick de scénario (chaque pas) */
 function tick(s,c){
@@ -2188,6 +2231,7 @@ function act(a,v){
   case 'sprayIsol': s.sprayIsol=!s.sprayIsol; op(s.sprayIsol?'Isolement de l\'aspersion':'Aspersion rétablie'); if(s.sprayIsol) ctxAct('sprayIsol'); break;
   case 'chgMode': s.chgMode=v; if(v==='man') s.chgMan=Math.round(s.Qc*2)/2; else s.Ic=0; op('Charge RCV en '+(v==='auto'?'automatique':'manuel')); break;
   case 'ldIsol': s.ldIsolMan=!s.ldIsolMan; op(s.ldIsolMan?'Isolement de la décharge RCV':'Décharge RCV rétablie'); if(s.ldIsolMan) ctxAct('ldIsol'); break;
+  case 'aarWhy': aarOpen(); return;
   case 'aar': if(s.tripped) return toast('Réacteur déjà arrêté.'); trip(s,'AAR manuel','op'); break;
   case 'rearm': {
     if(!s.tripped) return toast('Pas d\'AAR à réarmer.');
@@ -2645,6 +2689,7 @@ function finish(){
       if(!wasDemo){ const best=store('best')||{}; const key=scn.mystery?'myst':scn.id; if(best[key]==null||stars>best[key]){ best[key]=stars; store('best',best); } }
     }
   }
+  if(s.aars&&s.aars.length) h+='<div class="row" style="margin-top:10px"><button class="btn" id="dAar">Pourquoi l\'AAR ?</button>'+(s.aars.length>1?'<small style="color:var(--mute)">'+s.aars.length+' AAR pendant la séance</small>':'')+'</div>';
   const ops=s.log.filter(l=>l.type==='op').slice(-14);
   if(ops.length) h+='<h3>'+(wasDemo?'Actions du pilote automatique':'Vos dernières actions')+'</h3><div class="log" style="max-height:200px">'+ops.map(l=>'<div><span class="tm">'+hms(l.t)+'</span><span class="op">'+l.txt+'</span></div>').join('')+'</div>';
   const demoId=scn.realId||scn.id;
@@ -2653,6 +2698,7 @@ function finish(){
   $('#dRe').onclick=()=>launch(wasDemo?demoId:(scn.mystery?'myst':scn.id));
   const dd=$('#dDemo'); if(dd) dd.onclick=()=>demoStart(demoId);
   $('#dMenu').onclick=()=>openMenu();
+  const da=$('#dAar'); if(da) da.onclick=()=>aarOpen(0);
   $('#dCont').onclick=()=>{ A.scn=Object.assign({},byId('libre')); A.ctx=newCtx(A.scn,s); A.ctx.rnd=false; A.ctx.fires=[]; A.done=false; $('#debrief').hidden=true; A.paused=false; renderMission(true); syncAll(); };
 }
 function statsHTML(s,c){
@@ -3690,11 +3736,146 @@ function themeApply(m){
   readCols(); drawCharts(); drawDI(); drawPT();
 }
 
+/* ================= Fenêtre « Pourquoi l'AAR ? » ================= */
+/* Pour chaque protection : ce qu'elle mesure, son seuil, son rôle, les origines probables (d'après l'état à l'instant de l'AAR et les dernières actions) et la suite. */
+const AARX=[
+ {m:/seuil haut 109/,nom:'Haut flux neutronique, seuil haut',val:x=>fmt(x.n*100,1)+' % PN',thr:'109 % PN',
+  role:"Limite la puissance du cœur. Au-delà, le combustible chaufferait plus vite que les autres protections ne peuvent suivre : c'est la parade la plus rapide contre une excursion de réactivité.",
+  orig:(x,O)=>[x.rodWd&&"Retrait incontrôlé du groupe R : un défaut de commande extrayait les grappes en continu.",
+   /(Groupe R|GCP|Groupes d'arrêt) → /.test(O)&&"Des grappes venaient d'être extraites : chaque pas retiré ajoute de la réactivité.",
+   /Dilution/.test(O)&&"Une dilution venait d'être faite : moins de bore, donc plus de réactivité.",
+   /Consigne de charge/.test(O)&&"La charge venait d'être augmentée : le refroidissement plus fort a fait monter la puissance."],
+  def:"Une insertion de réactivité (grappes, dilution ou refroidissement brutal) a porté la puissance au-delà de 109 %.",
+  fix:"Avant de redémarrer, trouvez ce qui a ajouté la réactivité et corrigez-le : position des grappes, concentration en bore."},
+ {m:/seuil bas 25/,nom:'Haut flux neutronique, seuil bas',val:x=>fmt(x.n*100,1)+' % PN',thr:'25 % PN (seuil non bloqué)',
+  role:"Protège pendant le démarrage : tant que l'opérateur ne l'a pas bloqué, ce qui n'est permis qu'au-dessus de P10, une montée de puissance à faible puissance est arrêtée dès 25 %.",
+  orig:(x,O)=>[x.rodWd&&"Retrait incontrôlé du groupe R à faible puissance : sans contre-réaction Doppler, la puissance monte très vite.",
+   x.p10&&!x.lowBlk&&"La puissance a dépassé 25 % sans que le seuil bas soit bloqué. Le blocage était permis dès P10 (10 %) : Protection › « Bloquer seuil bas (P10) ».",
+   /(Groupe R|GCP|Groupes d'arrêt) → /.test(O)&&"Des grappes venaient d'être extraites."],
+  def:"La puissance a dépassé 25 % alors que le seuil bas de haut flux était encore actif.",
+  fix:"En montée en puissance, bloquez le seuil bas dès que P10 apparaît, et montez lentement."},
+ {m:/gamme source/,nom:'Haut flux gamme source',val:x=>fmt(x.n*1e10,0)+' c/s',thr:'10⁵ c/s',
+  role:"Les compteurs de la gamme source saturent vers 10⁶ c/s. Si le comptage dépasse 10⁵ c/s sans que l'opérateur ait confirmé le relais par la gamme intermédiaire (inhibition à P6), le réacteur s'arrête par précaution.",
+  orig:(x,O)=>[!x.srInhib&&"La gamme source n'a pas été inhibée après l'apparition de P6.",x.rodWd&&"Retrait incontrôlé du groupe R pendant la divergence.",
+   /(Groupe R|GCP|Groupes d'arrêt) → /.test(O)&&"Des grappes venaient d'être extraites : la divergence était peut-être trop rapide."],
+  def:"Le comptage a dépassé 10⁵ c/s pendant la divergence.",
+  fix:"À la prochaine divergence, inhibez la gamme source dès l'alarme P6 (Protection › « Inhiber GS »)."},
+ {m:/surtempérature/,nom:'ΔT surtempérature',val:x=>'ΔT '+fmt(x.DTp,1)+' %',thr:'seuil calculé {OT} %',
+  role:"Protège contre la crise d'ébullition, quand une pellicule de vapeur isole la gaine du combustible. Le seuil se calcule en continu : il baisse quand la pression baisse ou quand Tmoy monte.",
+  orig:(x,O)=>[x.sprayStuck&&"Une vanne d'aspersion est restée bloquée ouverte : la pression baissait, et le seuil avec elle.",
+   !x.sprayStuck&&x.sprayMode==='man'&&"L'aspersion était en manuel : en ouvrant, elle a fait baisser la pression, donc le seuil.",
+   x.Ppzr<150&&"La pression était basse ("+fmt(x.Ppzr,1)+" bar) : sous ~149 bar le seuil baisse d'environ 1 % par bar.",
+   x.leakQ>0&&"Une fuite du primaire faisait baisser la pression.",
+   x.Tavg>x.Tref+2&&"Tmoy était "+fmt(x.Tavg-x.Tref,1)+" °C au-dessus de Tref : l'eau plus chaude rapproche le seuil."],
+  def:"Le ΔT du primaire, image de la puissance, a rejoint le seuil de surtempérature.",
+  fix:"Rétablissez la pression (aspersion en auto ou isolée, chaufferettes) et Tmoy sur Tref avant de redémarrer."},
+ {m:/surpuissance/,nom:'ΔT surpuissance',val:x=>'ΔT '+fmt(x.DTp,1)+' %',thr:'seuil calculé {OP} %',
+  role:"Protège le combustible contre une puissance locale excessive, qui pourrait faire fondre le centre des pastilles. Le seuil baisse quand Tmoy monte vite.",
+  orig:(x,O)=>[x.n>1.02&&"La puissance dépassait 100 % ("+fmt(x.n*100,1)+" %).",/Dilution/.test(O)&&"Une dilution venait d'être faite.",
+   /(Groupe R|GCP) → /.test(O)&&"Des grappes venaient d'être extraites.",/Consigne de charge/.test(O)&&"Une hausse de charge rapide venait d'être demandée."],
+  def:"La puissance mesurée par le ΔT a dépassé le seuil de surpuissance.",
+  fix:"Ramenez la puissance sous 100 % et Tmoy sur Tref avant de redémarrer."},
+ {m:/Pression pressuriseur haute/,nom:'Pression pressuriseur haute',val:x=>fmt(x.Ppzr,1)+' bar',thr:'165 bar',
+  role:"Protège le circuit primaire, deuxième barrière, avant que les soupapes SEBIM ne s'ouvrent à 166,6 bar.",
+  orig:(x,O)=>[x.heatMode==='on'&&"Les chaufferettes étaient en marche forcée.",x.sprayMode==='man'&&"L'aspersion était en manuel : elle ne limitait plus la pression.",
+   x.chgMode==='man'&&"La charge RCV était en manuel : le primaire se remplissait et comprimait la vapeur.",
+   /Déclenchement manuel de la turbine/.test(O)&&"La turbine venait d'être déclenchée : le primaire chauffe et l'eau se dilate."],
+  def:"Le primaire s'est échauffé ou rempli plus vite que l'aspersion ne pouvait compenser.",
+  fix:"Repassez chaufferettes, aspersion et charge RCV en automatique."},
+ {m:/Pression pressuriseur basse/,nom:'Pression pressuriseur basse',val:x=>fmt(x.Ppzr,1)+' bar',thr:'131 bar',
+  role:"Une pression basse rapproche l'eau de l'ébullition dans le cœur, et signale souvent une fuite. On arrête avant que la marge à la saturation ne fonde.",
+  orig:(x,O)=>[x.sprayStuck&&"Une vanne d'aspersion est restée bloquée ouverte.",!x.sprayStuck&&x.sprayMode==='man'&&"L'aspersion était en manuel.",
+   x.leakQ>0&&"Le primaire perdait de l'eau par une fuite.",x.heatMode==='off'&&"Les chaufferettes étaient arrêtées."],
+  def:"La pression du primaire a baissé jusqu'au seuil.",
+  fix:"Trouvez la cause de la baisse (aspersion, fuite) et isolez-la ; les chaufferettes remonteront la pression."},
+ {m:/Niveau pressuriseur haut/,nom:'Niveau pressuriseur haut',val:x=>fmt(x.Lpzr,1)+' %',thr:'92 %',
+  role:"Un pressuriseur plein n'a plus de bulle de vapeur : la pression ne serait plus maîtrisée et de l'eau pourrait passer par les soupapes.",
+  orig:(x,O)=>[x.chgMode==='man'&&"La charge RCV était en manuel : on envoyait plus d'eau qu'on n'en retirait.",x.is&&"L'injection de sécurité remplissait le primaire.",
+   x.Tavg>x.Tref+2&&"Tmoy était haute : l'eau dilatée remplit le pressuriseur."],
+  def:"Le volume d'eau du primaire a trop augmenté.",
+  fix:"Repassez la charge RCV en automatique ; vérifiez la décharge."},
+ {m:/Niveau GV très bas/,nom:'Niveau GV très bas',val:x=>fmt(x.Lsg,1)+' %',thr:'15 %',
+  role:"Un générateur de vapeur sans eau ne refroidit plus le primaire. On arrête le réacteur tant qu'il reste assez d'eau pour évacuer la puissance résiduelle avec l'ASG.",
+  orig:(x,O)=>[(!x.tpa[0]||!x.tpa[1])&&"Une turbopompe alimentaire était perdue : la pompe restante ne couvrait pas le débit vapeur.",
+   x.areMode==='man'&&"L'ARE était en manuel à "+fmt(x.areMan*100,0)+" % pour "+fmt(x.Wst*100,0)+" % de vapeur.",
+   x.areIsol&&"L'ARE était isolée.",x.Wf<x.Wst-0.05&&"Le débit d'eau ("+fmt(x.Wf*100,0)+" %) était inférieur au débit vapeur ("+fmt(x.Wst*100,0)+" %)."],
+  def:"L'eau alimentaire n'a pas suivi le débit vapeur.",
+  fix:"Vérifiez que l'ASG remplit les GV, puis rétablissez l'ARE (Auto ; APD si une turbopompe manque)."},
+ {m:/Bas débit primaire/,nom:'Bas débit primaire',val:x=>x.pumps.filter(Boolean).length+' pompe(s) sur 3',thr:'3 pompes au-dessus de P7',
+  role:"Sans débit primaire suffisant, la chaleur du cœur n'est plus évacuée : risque de crise d'ébullition. Active au-dessus de P7 (simplification : sur une tranche réelle, le seuil dépend du nombre de boucles touchées).",
+  orig:x=>x.pumps.map((p,i)=>!p&&"La pompe primaire GMPP "+(i+1)+" s'est arrêtée."),
+  def:"Une pompe primaire s'est arrêtée au-dessus de P7.",
+  fix:"Pas de redémarrage tant que la pompe n'est pas disponible. Stabilisez à chaud : Tmoy, niveaux GV et pressu."},
+ {m:/Déclenchement turbine/,nom:'Déclenchement turbine au-dessus de P7',val:x=>fmt(x.n*100,1)+' % PN',thr:'P7 (10 % PN)',
+  role:"Au-dessus de P7, le contournement GCT-c ne peut pas absorber seul toute la vapeur : le réacteur est arrêté avec la turbine.",
+  orig:(x,O)=>[/manuel/.test(x.turbWhy)&&"Vous avez déclenché la turbine à la main.",/niveau GV très haut/.test(x.turbWhy)&&"Le niveau GV a dépassé 80 % : la turbine a été protégée contre l'arrivée d'eau, l'ARE isolée.",
+   x.turbWhy&&!/manuel|niveau GV/.test(x.turbWhy)&&"La turbine a déclenché : "+x.turbWhy+"."],
+  def:"La turbine s'est arrêtée alors que le réacteur était au-dessus de P7.",
+  fix:"Ramenez le niveau GV dans sa plage et vérifiez la turbine avant de la recoupler."},
+ {m:/Injection de sécurité/,nom:'Injection de sécurité',val:x=>fmt(x.Ppzr,1)+' bar',thr:'119 bar, ou action manuelle',
+  role:"L'injection de sécurité répond à une perte d'eau du primaire : elle arrête le réacteur et injecte de l'eau borée pour garder le cœur noyé.",
+  orig:(x,O,src)=>[src==='op'&&"Vous avez déclenché l'IS à la main.",x.Ppzr<125&&"La pression est descendue jusqu'au seuil d'IS : brèche ou fuite importante, ou aspersion ouverte.",x.leakQ>0&&"Le primaire perdait de l'eau par une fuite."],
+  def:"Un signal d'injection de sécurité est apparu.",
+  fix:"L'IS ne s'arrête qu'au-dessus de 140 bar, avec un niveau pressu supérieur à 20 % et une marge à la saturation supérieure à 20 °C."},
+ {m:/AAR manuel/,nom:'AAR manuel',val:()=>'décision de l\'opérateur',thr:'—',
+  role:"L'AAR manuel est toujours une réponse acceptable en cas de doute sur la sûreté : on arrête d'abord, on comprend ensuite.",
+  orig:x=>[x.rodWd&&"Le groupe R s'extrayait seul : l'AAR manuel immédiat était la bonne parade.",x.Td<60&&"Le temps de doublement était court ("+TdTxt(x)+")."],
+  def:"Vous avez décidé d'arrêter le réacteur.",
+  fix:"Notez dans le journal pourquoi vous l'avez fait ; c'est la première question au débriefing."}
+];
+const aarSpec=a=>AARX.find(x=>x.m.test(a.cause))||{nom:a.cause,val:()=>'—',thr:'—',role:'',orig:()=>[],def:'',fix:''};
+const AW={i:0,n:0,s:null};
+function aarChecks(s,a){
+  const sig=protCause(s), L=[
+   ['Grappes toutes en bas',Object.values(s.rods).every(b=>b.p<=1)],
+   ['Puissance neutronique en décroissance, sous 1 %',s.n<0.01&&!(s.rate>1e-4),fmt(s.n*100,2)+' %'],
+   ['GV alimentés (ASG ou ARE), niveau au-dessus de 15 %',s.Lsg>15&&(s.asg||s.Wf>0.01),fmt(s.Lsg,1)+' %'],
+   ['Tmoy stabilisée vers 286 °C (±3 °C)',Math.abs(s.Tavg-286)<3,fmt(s.Tavg,1)+' °C'],
+   ['Pression pressu tenue entre 140 et 165 bar',s.Ppzr>140&&s.Ppzr<165,fmt(s.Ppzr,1)+' bar']];
+  if(a.sn.is||s.is) L.push(['Injection de sécurité arrêtée',!s.is]);
+  L.push(['Plus aucun signal d\'AAR présent',!sig,sig||'']);
+  return L;
+}
+function aarHTML(s,i){
+  const a=s.aars[i], x=a.sn, sp=aarSpec(a), O=a.ops.map(l=>l.txt).join('\n');
+  const th=String(sp.thr).replace('{OT}',fmt(x.OTsp,1)).replace('{OP}',fmt(x.OPsp,1));
+  const or=(sp.orig(x,O,a.src)||[]).filter(Boolean); if(!or.length&&sp.def) or.push(sp.def);
+  let h='<div class="aw-h"><b>Pourquoi l\'AAR ?</b><button class="btn sm" id="awX" aria-label="Fermer">✕</button></div>';
+  h+='<div class="aw-sub">AAR '+(a.src==='op'?'manuel':'automatique')+' à '+hms(a.t)+(s.aars.length>1?' · '+(i+1)+' / '+s.aars.length:'')+'</div>';
+  h+='<h4>Ce qui l\'a déclenché</h4><div class="aw-v"><span>'+sp.nom+'</span><span class="num"><b>'+sp.val(x)+'</b> · seuil '+th+'</span></div>';
+  if(sp.role) h+='<h4>À quoi sert cette protection</h4><p>'+sp.role+'</p>';
+  h+='<h4>Origine probable</h4><ul>'+or.map(t=>'<li>'+t+'</li>').join('')+'</ul>';
+  if(a.ops.length) h+='<details><summary>Vos dernières actions avant l\'AAR</summary><div class="log">'+a.ops.map(l=>'<div><span class="tm">'+hms(l.t)+'</span><span class="op">'+l.txt+'</span></div>').join('')+'</div></details>';
+  h+='<h4>Et maintenant</h4><p>Les grappes sont tombées en moins de 2 s : la puissance chute d\'un coup puis décroît avec une période d\'environ −80 s ; il reste la puissance résiduelle à évacuer. La turbine est déclenchée, l\'ASG démarre et le GCT-c tient environ 70 bar dans les GV : Tmoy redescend vers 286 °C. '+sp.fix+'</p>';
+  if(i===s.aars.length-1&&s.tripped){
+    h+='<h4>Avant de réarmer</h4><ul class="aw-ck">'+aarChecks(s,a).map(([t,ok,d])=>'<li class="'+(ok?'ok':'ko')+'"><span class="i">'+(ok?'✓':'○')+'</span><span>'+t+(d?' <small>'+d+'</small>':'')+'</span></li>').join('')+'</ul><p class="aw-n">Réarmer ne redémarre pas le réacteur : cela autorise seulement à extraire de nouveau les grappes, une fois la cause comprise et traitée.</p>';
+  } else h+='<p class="aw-n">'+(s.tripped?'Un AAR plus récent a eu lieu.':'AAR réarmé depuis.')+'</p>';
+  h+='<div class="row aw-f">'+(s.aars.length>1?'<button class="btn sm" id="awP"'+(i?'':' disabled')+'>‹ Précédent</button><button class="btn sm" id="awN"'+(i<s.aars.length-1?'':' disabled')+'>Suivant ›</button>':'')+(i===s.aars.length-1&&s.tripped?'<button class="btn sm" data-act="rearm">Réarmer l\'AAR</button>':'')+'<button class="btn sm" id="awC">Fermer</button></div>';
+  return h;
+}
+function aarRender(){
+  const s=A.s, w=$('#aarw'); if(!s||!s.aars||!s.aars[AW.i]) { w.hidden=true; return; }
+  const h=aarHTML(s,AW.i); if(w.dataset.h===h) return;
+  const dt=w.querySelector('details'), op=dt&&dt.open;
+  w.innerHTML=h; w.dataset.h=h; glossDom(w); if(op) w.querySelector('details').open=true;
+  const on=(id,f)=>{ const e=document.getElementById(id); if(e) e.onclick=f; };
+  on('awX',aarClose); on('awC',aarClose);
+  on('awP',()=>{ AW.i=Math.max(0,AW.i-1); aarRender(); }); on('awN',()=>{ AW.i=Math.min(s.aars.length-1,AW.i+1); aarRender(); });
+}
+function aarOpen(i){ const s=A.s; if(!s||!s.aars||!s.aars.length) return toast('Aucun AAR pendant cette séance.'); AW.i=i==null?s.aars.length-1:i; const w=$('#aarw'); w.dataset.h=''; w.hidden=false; aarRender(); }
+function aarClose(){ $('#aarw').hidden=true; }
+function aarWatch(){
+  const s=A.s, n=(s&&s.aars||[]).length;
+  if(AW.s!==s){ AW.s=s; AW.n=n; aarClose(); return; }
+  if(n>AW.n){ AW.n=n; if(!A.demo) aarOpen(n-1); }
+  if(!$('#aarw').hidden) aarRender();
+}
+
 /* ================= Carte « En cours » ================= */
 function runItems(s){
-  const L=[]; const it=(k,t,b)=>L.push({k,t,b});
+  const L=[]; const it=(k,t,b,b2)=>L.push({k,t,b,b2});
   if(s.is) it('r','Injection de sécurité : '+fmt(s.Qis,0)+' m³/h d\'eau borée',['isStop','','Arrêter l\'IS']);
-  if(s.tripped) it('r','AAR — '+s.tripCause,['rearm','','Réarmer']);
+  if(s.tripped) it('r','AAR — '+s.tripCause,['rearm','','Réarmer'],['aarWhy','','Pourquoi ?']);
   if(s.sebim) it('r','Soupapes SEBIM ouvertes');
   if(s.ilot) it('a','Îlotage : turbine sur les auxiliaires'+(s.grid?' · réseau revenu':''),s.grid?['recouple','','Recoupler']:null);
   if(s.coupled&&!s.ilot&&Math.abs(s.LtSet-s.Lt)>0.002) it('op','Charge '+fmt(s.Lt*100,1)+' → '+fmt(s.LtSet*100,0)+' % à '+s.ramp+' %/min · '+dur(Math.abs(s.LtSet-s.Lt)*100/s.ramp*60),['hold','','Maintenir']);
@@ -3723,7 +3904,7 @@ function runItems(s){
 function updateRun(){
   const s=A.s; if(!s) return;
   const L=runItems(s);
-  const lh=L.length?L.map(x=>'<div class="ri '+x.k+'"><span class="rdot"></span><span class="rt">'+x.t+'</span>'+(x.b?'<button class="btn sm" data-act="'+x.b[0]+'" data-v="'+x.b[1]+'">'+x.b[2]+'</button>':'')+'</div>').join(''):'<div class="ri none">Aucune action en cours. Régulations en automatique.</div>';
+  const lh=L.length?L.map(x=>'<div class="ri '+x.k+'"><span class="rdot"></span><span class="rt">'+x.t+'</span>'+[x.b2,x.b].map(b=>b?'<button class="btn sm" data-act="'+b[0]+'" data-v="'+b[1]+'">'+b[2]+'</button>':'').join('')+'</div>').join(''):'<div class="ri none">Aucune action en cours. Régulations en automatique.</div>';
   const el=$('#runList'); if(el&&el.dataset.h!==lh){ el.innerHTML=lh; el.dataset.h=lh; }
   const rk={r:0,a:1,i:2};
   const al=ALM.filter(([id])=>s.alarms[id]&&s.alarms[id].on).map(([id,lab,sev])=>({lab,sev,t:s.alarms[id].since,ack:s.alarms[id].ack})).sort((a,b)=>rk[a.sev]-rk[b.sev]||b.t-a.t);
@@ -3812,7 +3993,7 @@ function frame(now){
     if(k>=4000) A.acc=0;
   }
   uiAcc+=rd; chAcc+=rd;
-  if(A.s&&uiAcc>0.1){ uiAcc=0; updateUI(); }
+  if(A.s&&uiAcc>0.1){ uiAcc=0; updateUI(); aarWatch(); }
   if(A.s&&chAcc>0.5){ chAcc=0; drawCharts(); drawDI(); drawPT(); updateRun(); }
   ptAcc+=rd; if(ptAcc>0.15){ ptAcc=0; updPtr(); }
   const live=A.s&&!A.paused&&$('#menu').hidden&&$('#tour').hidden&&$('#brief').hidden;
@@ -3826,7 +4007,7 @@ $('#tvPrev').onclick=()=>{ TV.auto=false; tourGo(TV.i-1); };
 $('#tvNext').onclick=()=>{ if(TV.i>=TOUR.length-1){ const d=store('done')||{}; d.tour=1; store('done',d); closeTour(); } else tourGo(TV.i+1); };
 $('#tvAuto').onclick=()=>{ TV.auto=!TV.auto; tourTimer(); };
 $('#tvClose').onclick=closeTour;
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#fb').hidden){ closeFB(); return; } if($('#tour').hidden) return; if(e.key==='ArrowRight'){ TV.auto=false; tourGo(TV.i+1); } else if(e.key==='ArrowLeft'){ TV.auto=false; tourGo(TV.i-1); } else if(e.key==='Escape') closeTour(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#fb').hidden){ closeFB(); return; } if(e.key==='Escape'&&!$('#aarw').hidden){ aarClose(); return; } if($('#tour').hidden) return; if(e.key==='ArrowRight'){ TV.auto=false; tourGo(TV.i+1); } else if(e.key==='ArrowLeft'){ TV.auto=false; tourGo(TV.i-1); } else if(e.key==='Escape') closeTour(); });
 function sndPop(open){ const p=$('#sndPop'), b=$('#sndBtn'); if(open==null) open=p.hidden; p.hidden=!open; b.setAttribute('aria-expanded',open?'true':'false'); b.classList.toggle('act',open);
   if(open){ const r=b.getBoundingClientRect(); const w=p.offsetWidth; p.style.top=(r.bottom+6)+'px'; p.style.left=Math.max(8,Math.min(innerWidth-w-8,r.right-w))+'px'; } }
 $('#sndBtn').onclick=e=>{ e.stopPropagation(); sndInit(); sndPop(); };
