@@ -1,6 +1,8 @@
 // Tests d'interface : node tests/interface.test.mjs (nécessite Playwright et Chromium).
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { createServer } from 'node:http';
+import { readFileSync } from 'node:fs';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const url = 'file://' + fileURLToPath(new URL('../index.html', import.meta.url));
@@ -73,6 +75,42 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
     const ko = scn.evaluate.call(scn, s, c).filter(x => !x.ok).map(x => x.t); demoStop(); A.done = false; return [id, A.s && ko.length === 0 && n < 8 * 3600 / DT, ko.join(', ')]; }));
   for (const [id, ok, ko] of dm) check('Correction commentée ' + id + ' : tous les critères atteints', ok, ko);
   check('Leçons : aucune erreur JavaScript', errs.length === 0, errs.slice(0, 2).join(' | ')); }
+// Retours : envoi Netlify Forms et onglet « Retours publiés », servis par un petit serveur local comme sur Netlify.
+{ const root = new URL('..', import.meta.url), posts = [];
+  const sample = { maj: '2026-10-29', retours: [{ n: 1, date: '2026-10-20', niveau: 'incohérence', partie: 'Modèle physique', titre: 'Îlotage : Tmoy trop basse', description: 'Tmoy reste 5 °C sous Tref.', statut: 'ouvert', reponse: 'Bien vu, correction prévue.', date_reponse: '2026-10-22' }] };
+  const srv = createServer((req, res) => {
+    if (req.method === 'POST') { let b = ''; req.on('data', c => b += c); req.on('end', () => { posts.push({ path: req.url, type: req.headers['content-type'], body: new URLSearchParams(b) }); res.end('ok'); }); return; }
+    if (req.url.startsWith('/retours.json')) { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(sample)); return; }
+    try { res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.end(readFileSync(new URL('index.html', root))); } catch (e) { res.statusCode = 404; res.end(); }
+  });
+  await new Promise(r => srv.listen(0, '127.0.0.1', r));
+  const base = 'http://127.0.0.1:' + srv.address().port + '/';
+  const pg = await browser.newPage(); const errs = []; pg.on('pageerror', e => errs.push(e.message));
+  await pg.goto(base); await pg.evaluate(() => { store('about', 1); document.querySelector('#about').hidden = true; closeTour(); openFB('new'); });
+  const html = readFileSync(new URL('index.html', root), 'utf8');
+  check('Retours : formulaire statique détectable par Netlify', /<form name="retour" data-netlify="true" netlify-honeypot="bot-field"/.test(html));
+  check('Retours : aucune mention du compte GitHub dans la page', !/github|pnp06/i.test(html));
+  await pg.click('#fbSend');
+  check('Retours : champs obligatoires signalés', /Il manque/.test(await pg.textContent('#fbErr')) && posts.length === 0);
+  await pg.evaluate(() => { document.querySelector('input[name="fblv"]').checked = true; });
+  await pg.fill('#fbTitle', 'Essai'); await pg.fill('#fbDesc', 'Description d\'essai');
+  await pg.click('#fbSend'); await pg.waitForSelector('#fbReady:not([hidden])');
+  const p = posts[0];
+  check('Retours : envoi au formulaire Netlify « retour »', !!p && p.path === '/' && /x-www-form-urlencoded/.test(p.type) && p.body.get('form-name') === 'retour' && p.body.get('titre') === 'Essai' && p.body.get('niveau').startsWith('Critique') && /P nucléaire|Aucune simulation/.test(p.body.get('contexte')), p && p.body.toString().slice(0, 120));
+  check('Retours : confirmation affichée et formulaire vidé', /bien été envoyé/.test(await pg.textContent('#fbReadyT')) && await pg.inputValue('#fbTitle') === '');
+  await pg.evaluate(() => { FB.endpoint = '/introuvable-' + Date.now(); document.querySelector('input[name="fblv"]').checked = true; });
+  await pg.route('**/introuvable-*', r => r.fulfill({ status: 404, body: '' }));
+  await pg.fill('#fbTitle', 'Essai 2'); await pg.fill('#fbDesc', 'Texte conservé'); await pg.click('#fbSend');
+  await pg.waitForFunction(() => document.querySelector('#fbReady').classList.contains('ko'));
+  check('Retours : échec d\'envoi signalé, texte conservé et copiable', await pg.inputValue('#fbDesc') === 'Texte conservé' && await pg.isVisible('#fbCopy'));
+  await pg.evaluate(() => fbTab('list')); await pg.waitForSelector('#fbItems .fbi');
+  const li = await pg.evaluate(() => ({ t: document.querySelector('#fbItems .fbt').textContent, lv: document.querySelector('#fbItems .lvb').textContent }));
+  await pg.click('#fbItems [data-fbc]');
+  check('Retours publiés : lus dans retours.json, avec la réponse', li.t === 'Îlotage : Tmoy trop basse' && li.lv === 'Incohérence' && /correction prévue/.test(await pg.textContent('#fbcm-1')));
+  const real = JSON.parse(readFileSync(new URL('retours.json', root), 'utf8'));
+  check('retours.json du dépôt bien formé', Array.isArray(real.retours) && real.retours.every(x => x.titre && x.niveau && x.statut));
+  check('Retours : aucune erreur JavaScript', errs.length === 0, errs.slice(0, 2).join(' | '));
+  await pg.close(); srv.close(); }
 await browser.close();
 console.log(fails ? `\n${fails} test(s) en échec` : '\nTous les tests passent');
 process.exit(fails ? 1 : 0);
