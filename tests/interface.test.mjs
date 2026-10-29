@@ -108,7 +108,9 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
   const srv = createServer((req, res) => {
     if (req.method === 'POST') { let b = ''; req.on('data', c => b += c); req.on('end', () => { posts.push({ path: req.url, type: req.headers['content-type'], body: new URLSearchParams(b) }); res.end('ok'); }); return; }
     if (req.url.startsWith('/retours.json')) { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(sample)); return; }
-    try { res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.end(readFileSync(new URL('index.html', root))); } catch (e) { res.statusCode = 404; res.end(); }
+    const path = decodeURIComponent(req.url.split('?')[0]).replace(/^\/+/, '') || 'index.html', ext = path.split('.').pop();
+    if (path.includes('..')) { res.statusCode = 404; res.end(); return; }
+    try { const body = readFileSync(new URL(path, root)); res.setHeader('Content-Type', ({ css: 'text/css', js: 'text/javascript' }[ext] || 'text/html') + '; charset=utf-8'); res.end(body); } catch (e) { res.statusCode = 404; res.end(); }
   });
   await new Promise(r => srv.listen(0, '127.0.0.1', r));
   const base = 'http://127.0.0.1:' + srv.address().port + '/';
@@ -116,7 +118,8 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
   await pg.goto(base); await pg.evaluate(() => { store('about', 1); document.querySelector('#about').hidden = true; closeTour(); openFB('new'); });
   const html = readFileSync(new URL('index.html', root), 'utf8');
   check('Retours : formulaire statique détectable par Netlify', /<form name="retour" data-netlify="true" netlify-honeypot="bot-field"/.test(html));
-  check('Retours : aucune mention du compte GitHub dans la page', !/github|pnp06/i.test(html));
+  const site = [html, readFileSync(new URL('css/simulateur.css', root), 'utf8'), ...[...html.matchAll(/<script src="([^"]+)"/g)].map(m => readFileSync(new URL(m[1], root), 'utf8'))].join('\n');
+  check('Retours : aucune mention du compte GitHub dans la page', !/github|pnp06/i.test(site));
   await pg.click('#fbSend');
   check('Retours : champs obligatoires signalés', /Il manque/.test(await pg.textContent('#fbErr')) && posts.length === 0);
   await pg.evaluate(() => { document.querySelector('input[name="fblv"]').checked = true; });

@@ -7,13 +7,21 @@
   # Playwright ne sert qu'aux tests : pas de téléchargement de navigateur au déploiement.
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
 
-# La page et les retours publiés sont toujours revalidés, pour voir tout de suite une mise à jour.
+# La page, ses styles et scripts, et les retours publiés sont toujours revalidés, pour voir tout de suite une mise à jour.
 [[headers]]
   for = "/"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 [[headers]]
   for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+[[headers]]
+  for = "/js/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 [[headers]]
