@@ -1,15 +1,13 @@
 // Tests de non-régression du modèle physique. Usage : node tests/physique.test.mjs
-// Le bloc physique est extrait de index.html (entre « Constantes » et « Alarmes ») et exécuté sans navigateur.
+// Le modèle physique (js/physique.js) est exécuté seul, sans navigateur.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 
-const html = readFileSync(fileURLToPath(new URL('../index.html', import.meta.url)), 'utf8');
-const js = html.split('<script>')[1].split('</script>')[0];
-const a = js.indexOf('/* ================= Constantes'), b = js.indexOf('/* ================= Alarmes');
+const js = readFileSync(fileURLToPath(new URL('../js/physique.js', import.meta.url)), 'utf8');
 const ctx = { console, Math, Infinity, NaN, Number, Set, Object, Array };
 vm.createContext(ctx);
-vm.runInContext("const clamp=(x,a,b)=>x<a?a:x>b?b:x;const fmt=(x,d=1)=>x.toFixed(d);const A={ctx:null};\n" + js.slice(a, b) +
+vm.runInContext("const clamp=(x,a,b)=>x<a?a:x>b?b:x;const fmt=(x,d=1)=>x.toFixed(d);const A={ctx:null};\n" + js +
   "\nthis.M={makeState,step,trip,rhoParts,psat,tsat,DT,BETA};", ctx);
 const { makeState, step, trip, psat, tsat, DT, BETA } = ctx.M;
 

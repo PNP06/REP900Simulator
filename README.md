@@ -51,7 +51,20 @@ Les valeurs sont représentatives mais simplifiées : ce n'est pas un outil de f
 
 ## Technique
 
-Thème clair et sombre (automatique selon le système, ou au choix). Un seul fichier `index.html` autonome (HTML, CSS, JavaScript sans dépendance ni build). Il suffit de l'ouvrir dans un navigateur. Les scores et préférences sont conservés localement dans le navigateur.
+Thème clair et sombre (automatique selon le système, ou au choix). Site statique sans dépendance ni build : il suffit d'ouvrir `index.html` dans un navigateur. Le code est réparti en quelques fichiers, chargés dans cet ordre par la page :
+
+- `index.html` : structure de la page (cartes, fenêtres, formulaire de retours) ;
+- `css/simulateur.css` : styles, thèmes clair et sombre ;
+- `js/outils.js` : utilitaires communs (formats, stockage local) ;
+- `js/physique.js` : modèle physique (cinétique, thermohydraulique, régulations, protections), testé seul ;
+- `js/scenarios.js` : alarmes, scénarios, accompagnement des leçons, explications « En clair » ;
+- `js/interface.js` : application, actions opérateur, affichage, mission, corrections, débriefing, menu, aide, bandeau ;
+- `js/sons.js` : bruitages et avertisseurs ;
+- `js/visite.js` : repères d'attention, visite guidée, domaine P-T ;
+- `js/panneaux.js` : retours, thème, fenêtre « Pourquoi l'AAR ? », carte « En cours », tendances ;
+- `js/demarrage.js` : boucle de simulation et démarrage (en dernier).
+
+Ce sont des scripts classiques partagés : un fichier ne peut appeler, au chargement, que ce qui est défini dans les fichiers précédents. Les scores et préférences sont conservés localement dans le navigateur.
 
 ## Tests
 
