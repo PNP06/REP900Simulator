@@ -192,6 +192,9 @@ body:not(.tmi) .tmi-only{display:none!important}
 .bigstars{font-size:34px;color:var(--warn);letter-spacing:6px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--panel-2);border:1px solid var(--warn);color:var(--fg);padding:9px 14px;border-radius:8px;max-width:min(92vw,520px);font-size:13.5px;box-shadow:0 8px 24px #0008}
 @media (min-width:1080px){.toast{bottom:24px}}
+/* batteries épuisées : instruments et commandes grisés, sauf la vue Électrique et le journal */
+.ccbar{position:fixed;left:50%;transform:translateX(-50%);top:calc(6px + env(safe-area-inset-top,0px));z-index:71;background:var(--panel-2);border:2px solid var(--crit);color:var(--fg);padding:8px 14px;border-radius:8px;max-width:min(94vw,640px);font-size:13.5px;line-height:1.4;box-shadow:0 8px 24px #0008}
+body.ccperdu #band,body.ccperdu #synw,body.ccperdu .card[data-c]:not([data-c="elec"]):not([data-c="log"]):not([data-c="alarm"]){filter:grayscale(1);opacity:.4}
 @media (prefers-reduced-motion:reduce){.an.on.nack,.btn.red.armed{animation:none}}
 
 /* ===== Proposition IHM : bandeau fixe, cartes codées, densité ===== */

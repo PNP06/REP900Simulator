@@ -76,6 +76,8 @@ function toast(m){ const t=$('#toast'); t.textContent=m; t.hidden=false; clearTi
 function op(txt){ logEv(A.s,'op',txt); }
 function act(a,v){
   const s=A.s; if(!s) return;
+  /* batteries épuisées : la salle de commande ne répond plus ; seules les actions locales sur les sources restent possibles */
+  if(s.el&&s.el.batVide&&!['aarWhy','dg','dus'].includes(a)) return toast('Batteries épuisées : contrôle-commande perdu, cette commande ne répond pas. Réalimentez un tableau secouru (diesel ou DUS).');
   const R=s.rods;
   switch(a){
   case 'modeR':
@@ -368,6 +370,7 @@ const syncSig=s=>[s.modeR,s.modeG,s.rea.mode,s.rea.q,s.rea.vt,s.isThr,s.era79,s.
 function updateUI(){
   const s=A.s; if(!s) return;
   const sg=syncSig(s); if(sg!==A.syncSig){ A.syncSig=sg; syncAll(); }
+  const cc=!!(s.el&&s.el.batVide); if(document.body.classList.contains('ccperdu')!==cc){ document.body.classList.toggle('ccperdu',cc); $('#ccBar').hidden=!cc; }
   trackVar(s);
   T('clock',hms(s.t));
   const st=s.is?'IS':s.tripped?'AAR':s.ilot?'Îlotage':s.coupled?'Puissance':(s.n>1e-7?'Critique':'Sous-crit.');

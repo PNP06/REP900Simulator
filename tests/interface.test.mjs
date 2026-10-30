@@ -339,6 +339,15 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
   inside = inside && await pg.evaluate(() => document.querySelector('#fb').contains(document.activeElement));
   await pg.evaluate(() => closeFB()); await pg.waitForTimeout(150);
   check('Fenêtre de retours : focus à l\'intérieur, Tab y reste, retour au bouton d\'origine', inside && await pg.evaluate(() => document.activeElement && document.activeElement.id === 'pauseBtn'));
+  // batteries épuisées : instruments grisés, commandes refusées, actions locales possibles
+  const cc = await pg.evaluate(() => { launch('libre'); document.querySelector('#goBtn').click(); A.paused = true; const s = A.s;
+    s.el.dg.A.fail = s.el.dg.B.fail = true; s.grid = false; s.el.r225 = false; s.ilot = true; s.el.ilotRate = true;
+    for (let i = 0; i < 60 / DT; i++) step(s); s.el.bat = 1e-6; for (let i = 0; i < 2 / DT; i++) step(s); updateUI();
+    const apd0 = s.apd; act('apd'); const refus = s.apd === apd0; act('dus');
+    return { gris: document.body.classList.contains('ccperdu'), bar: !document.querySelector('#ccBar').hidden, refus, dus: s.el.dus.st === 'demarrage' }; });
+  check('Batteries épuisées : instruments grisés, bandeau d\'alerte, commandes refusées, DUS encore possible', cc.gris && cc.bar && cc.refus && cc.dus, JSON.stringify(cc));
+  await pg.evaluate(() => { launch('libre'); document.querySelector('#goBtn').click(); A.paused = true; updateUI(); });
+  check('Nouvelle séance après batteries vides : plus rien de grisé', await pg.evaluate(() => !document.body.classList.contains('ccperdu') && document.querySelector('#ccBar').hidden));
   check('Cohérence de l\'interface : aucune erreur JavaScript', errs.length === 0, errs.slice(0, 2).join(' | '));
   await pg.close();
 }
