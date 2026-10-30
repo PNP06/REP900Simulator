@@ -40,6 +40,9 @@ function makeState(o){
     chgMode:'auto',chgMan:13.6,Qc:13.6,Ic:0,ldIsolMan:false,ldIsolAuto:false,leakQ:0,leakType:'',Qleak:0,Qis:0,Qld:13.6,
     rea:{mode:'dil',q:10,vt:0.3,v:0,run:false},Qdil:0,Qbor:0,dilFault:false,reaIsol:false,volDil:0,volBor:0,
     srInhib:false,p10:false,lowBlk:false,dropped:false,rodWd:false,
+    porvStuck:false,porvOpen:false,porvIsol:false,Qsoup:0,isThr:1,asgV:true,
+    Vv:0,alpha:0,sat:false,vib:0,hCuve:0,unc:0,Tg:0,TgMax:0,zr:1,H2:0,fondu:0,coreDmg:0,Ttc:0,
+    mRdp:0,Prdp:1.2,Lrdp:60,Tdech:45,rdpBurst:false,mEnc:0,Penc:1.0,
     lnPrev:0,rate:0,Td:Infinity,ax:0,limits:new Set(),limitNow:false,
     log:[],hist:[],histNext:0,alarms:{}};
   const G=o.G==='cal'?calG(coupled?P:0):o.G;
@@ -58,9 +61,43 @@ function makeState(o){
   s.Cb=Cb; s.rods.R.p=s.rods.R.tg=rSave;
   if(o.critR!=null && P<1e-6){ const r=rhoParts(s).tot*1e-5; s.n=r<-1e-6?K.SRC/(-r):1e-9; s.D=BI.map(()=>s.n); }
   s.lnPrev=Math.log(s.n); s.srInhib=s.n>1e-7; s.p10=s.n>0.10; s.lowBlk=s.p10;
-  s.Tthot=s.Tavg; s.Thot=s.Tavg+18.5*P; s.Tcold=s.Tavg-18.5*P;
+  s.Tthot=s.Tavg; s.Thot=s.Tavg+18.5*P; s.Tcold=s.Tavg-18.5*P; s.Tg=s.Thot+30*P; s.TgMax=s.Tg; s.Ttc=s.Thot;
   s.rho=rhoParts(s); s.DI=0; s.AO=0; s.Qcore=P;
   return s;
+}
+
+/* ================= Primaire diphasique, cœur, décharge pressuriseur ================= */
+/* Modèle pédagogique (tendances et ordres de grandeur, pas un code d'accident) : boucles et cuve = PV0 m³ d'eau hors pressuriseur ;
+   il en faut 150 pour noyer le haut du cœur (3,66 m de haut), pompes arrêtées. Au-delà de 1 900 °C (fusion du zirconium),
+   le combustible commence à se liquéfier : c'est la « fusion partielle » de TMI-2. */
+const PV0=235;
+function primDiph(s,Q,np,vOpen,dt){
+  s.alpha=s.Vv/PV0;
+  const Wl=PV0-s.Vv;
+  s.hCuve=Wl>=150?Math.min(4,(Wl-150)/15):Math.max(-4.5,(Wl-150)/8);
+  /* pompes en marche, le mélange eau-vapeur refroidit le cœur tant que le taux de vide reste sous 85 % */
+  s.unc=np>0?clamp((s.alpha-0.85)/0.15,0,1):clamp(-s.hCuve/3.66,0,1);
+  const Tsat=Math.min(s.Thot,s.Tavg+5);
+  if(s.unc<=0) s.Tg+=((s.Thot+30*Math.min(Q,1))-s.Tg)/10*dt;
+  else{
+    /* partie dénoyée : chauffage par la puissance résiduelle, réaction zirconium-vapeur au-delà de 900 °C */
+    const zmin=1-0.9*s.unc, rox=s.Tg>900&&s.zr>zmin?Math.min(s.zr-zmin,5e-4*Math.exp((s.Tg-1200)/200)*dt):0;
+    s.zr-=rox; s.H2=900*(1-s.zr);
+    s.Tg+=(80*Q-0.0005*(s.Tg-Tsat))*dt+2500*rox;
+    if(s.Tg>1900) s.fondu=Math.min(1,s.fondu+0.0004*s.unc*dt);
+    s.Tg=Math.min(s.Tg,2800);
+  }
+  s.TgMax=Math.max(s.TgMax,s.Tg);
+  s.coreDmg=s.fondu>0?3:s.TgMax>1800?2:s.TgMax>1204?1:0;
+  /* thermocouples de sortie cœur : vapeur surchauffée quand le cœur est dénoyé */
+  s.Ttc=s.unc>0?Math.max(s.Thot,Tsat+(s.Tg-Tsat)*0.5):s.Thot;
+  /* réservoir de décharge du pressuriseur puis enceinte */
+  const qs=s.porvOpen?s.Qsoup:(vOpen?12.6:0), md=qs*0.6/3600;
+  if(!s.rdpBurst){ s.mRdp+=md*dt; s.Prdp=1.2+1.4*s.mRdp; s.Lrdp=Math.min(100,60+6*s.mRdp);
+    if(s.Prdp>=8){ s.rdpBurst=true; logEv(s,'auto','Disque de rupture du réservoir de décharge pressuriseur rompu'); } }
+  else { s.mEnc+=md*dt; s.Prdp+=(s.Penc+0.3*(md>0)-s.Prdp)/30*dt; }
+  s.Penc=1.0+0.003*s.mEnc;
+  s.Tdech+=((vOpen?tsat(s.Prdp)+5:45)-s.Tdech)/20*dt;
 }
 
 /* ================= Pas de calcul ================= */
@@ -156,13 +193,19 @@ function step(s){
   const Q=(1-DHS)*n+dh; s.Qcore=Q; s.Qdh=dh;
   /* primaire */
   const np=s.pumps.filter(Boolean).length;
-  const ft=[0.04,0.38,0.72,1][np];
+  let ft=[0.04,0.38,0.72,1][np];
+  /* primaire diphasique : les GMPP cavitent dans le mélange eau-vapeur, la vapeur bloque la circulation naturelle */
+  s.vib=np>0&&s.sat?clamp(s.alpha*4,0,1):0;
+  if(np>0) ft*=1-0.5*s.vib; else ft*=1-clamp(s.alpha/0.15,0,1);
   s.flow+=(ft-s.flow)/(ft<s.flow?20:8)*dt;
   const dTc=Math.min(90,37*Q/s.flow);
   s.Thot=s.Tavg+dTc/2; s.Tcold=s.Tavg-dTc/2;
   const Qsg=K.UA*Math.pow(s.flow,0.8)*(s.Tavg-s.Ts); s.Qsg=Qsg;
-  const QisH=s.is?clamp((172-s.Ppzr)*1.5,0,120):0;
-  const dTavg=1.74*(Q+0.002*np-Qsg-0.001-1.2e-4*QisH)*dt;
+  const QisH=s.is?clamp((172-s.Ppzr)*1.5,0,120)*s.isThr:0;
+  /* soupape de tête du pressuriseur : ouverture réelle (une soupape bloquée reste ouverte quel que soit l'ordre) */
+  const vOpen=s.sebim||(s.porvOpen&&!s.porvIsol);
+  /* primaire saturé, soupape ouverte : le fluide qui s'échappe emporte de la chaleur */
+  const dTavg=1.74*(Q+0.002*np-Qsg-0.001-1.2e-4*QisH-(s.sat?1e-4*s.Qsoup:0))*dt;
   s.Tavg+=dTavg;
   s.Tf+=((s.Tavg+K.DTF*Q)-s.Tf)/5*dt;
   /* secondaire */
@@ -183,7 +226,7 @@ function step(s){
   } else dem=s.areMan;
   dem=clamp(dem,0,capE);
   s.Wf+=(dem-s.Wf)/3*dt; if(s.Wf<0) s.Wf=0;
-  const ad=s.asg?clamp(0.03+0.02*(45-s.Lsg),0,0.10):0;
+  const ad=s.asg&&s.asgV?clamp(0.03+0.02*(45-s.Lsg),0,0.10):0;
   s.Wasg+=(ad-s.Wasg)/5*dt;
   s.Ts+=2.32*(Qsg-Wst*0.81-s.Wf*0.19-s.Wasg*0.66)*dt;
   s.Linv=clamp(s.Linv+0.8*(s.Wf+s.Wasg-Wst)*dt,-20,115);
@@ -201,7 +244,20 @@ function step(s){
   s.Qc+=(cd-s.Qc)/8*dt;
   let Ql=0; if(s.leakQ>0 && !(s.leakType==='letdown'&&ldIso)) Ql=s.leakQ*Math.sqrt(Math.max(s.Ppzr,1)/155);
   s.Qleak=Ql; s.Qis=QisH;
-  const dL=2.2*dTavg+0.000794*(s.Qc-Qld-Ql+QisH)*dt-(s.sebim?0.01*dt:0);
+  /* débit perdu par une soupape bloquée ouverte (m³/h d'eau) : vapeur tant qu'il reste un ciel de vapeur, mélange quand le pressuriseur est plein */
+  s.Qsoup=s.porvOpen&&!s.porvIsol?(s.Lpzr>=97?60:12.6)*Math.sqrt(Math.max(s.Ppzr,1)/155):0;
+  let dV=(s.Qc-Qld-Ql+QisH-s.Qsoup)/3600*dt;
+  if(s.sat||s.Vv>0){
+    /* deux phases : l'eau injectée comble d'abord les vides, l'eau perdue est remplacée par de la vapeur dans les boucles */
+    if(dV>0){ const f=Math.min(dV,s.Vv); s.Vv-=f; dV-=f; }
+    else if(s.sat){ s.Vv-=dV; dV=0; }
+    /* la vapeur formée dans la cuve chasse l'eau vers le pressuriseur : son niveau monte pendant que le circuit se vide */
+    if(s.sat&&s.Lpzr<99){ const tr=Math.min(10*Q*dt,Math.max(0,PV0-s.Vv)); s.Vv+=tr; dV+=tr; }
+    /* resous-refroidi, les bulles se recondensent et le pressuriseur se vide dans les boucles */
+    if(!s.sat&&s.Vv>0){ const c=Math.min(s.Vv,0.02*Math.max(0,s.satMargin)*dt); s.Vv-=c; dV-=c; }
+    s.Vv=clamp(s.Vv,0,PV0);
+  }
+  const dL=2.2*dTavg+0.000794*3600*dV-(s.sebim&&!(s.porvOpen&&!s.porvIsol)?0.01*dt:0);
   s.Lpzr=clamp(s.Lpzr+dL,0,100);
   const e=s.Ppzr-155;
   const prop=clamp(0.5-e/1.4,0,1);
@@ -216,8 +272,12 @@ function step(s){
   if(s.Ppzr>=166.6) s.sebim=true; else if(s.Ppzr<=161.5) s.sebim=false;
   if(s.sebim && A.ctx) A.ctx.st.sebim=true;
   const kins=(dL>0?0.35:0.30)*(s.Lpzr>97?8:1);
-  s.Ppzr+=kins*dL+(s.hEff*0.03-s.spray*0.15-0.00225-(s.sebim?0.8:0))*dt;
-  s.Ppzr=clamp(Math.max(s.Ppzr,psat(s.Thot)*0.985),1,200);
+  if(s.sebim&&s.porvStuck&&!s.porvOpen){ s.porvOpen=true; if(A.ctx) A.ctx.st.porv=s.t; }
+  s.Ppzr+=kins*dL+(s.hEff*0.03-s.spray*0.15-0.00225-(s.sebim?0.8:s.porvOpen&&!s.porvIsol?0.3:0))*dt;
+  const pfl=psat(s.Vv>0?Math.min(s.Thot,s.Tavg+5):s.Thot)*0.985;
+  s.Ppzr=clamp(Math.max(s.Ppzr,pfl),1,200);
+  s.sat=s.Ppzr<=pfl*1.003&&(s.Vv>0||vOpen||s.Qleak>0);
+  primDiph(s,Q,np,vOpen,dt);
   /* bore */
   let Qd=0,Qb=0;
   if(s.rea.run&&!s.reaIsol){
@@ -263,6 +323,8 @@ function step(s){
   if(s.satMargin<0){ s.limits.add('Ébullition en cœur (marge à la saturation nulle)'); lim=true; }
   if(s.Lpzr>=99.5){ s.limits.add('Pressuriseur plein'); lim=true; }
   if(s.Lsg<1){ s.limits.add('Assèchement des GV'); lim=true; }
+  if(s.unc>0.01){ s.limits.add('Cœur découvert'); lim=true; }
+  if(s.TgMax>1204){ s.limits.add('Gaines au-delà de 1 204 °C'); lim=true; }
   s.limitNow=lim;
   s.t+=dt;
   if(s.t>=s.histNext){
