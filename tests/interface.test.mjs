@@ -266,7 +266,8 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
     updateUI();
     o.soupape = s.porvStuck && s.porvOpen && s.Ppzr < 150;
     renderMission(true); const mb = q('#mis-body').textContent;
-    o.chaine = /Chaîne des événements/.test(mb) && /turbopompes alimentaires/.test(mb) && /bloquée ouverte/.test(mb) && /indique « fermée »/.test(mb);
+    const ch = c.k.chain || [], pv = ch.find(x => x.id === 'porv');
+    o.chaine = /Chaîne des événements/.test(mb) && ch[0] && ch[0].id === 'tpa' && !!pv && /indique « fermée »/.test(pv.q) && ch.length >= 5;
     o.visite = ['tmichaine', 'tmivoir', 'tmiapres'].every(k => TOUR.some(ch => ch.inset === k && ch.th === 'surete'));
     o.masque = q('#b-sat').textContent === '—' && /1979/.test(q('#s-sat').textContent);
     act('porvIsol'); act('asgV');
