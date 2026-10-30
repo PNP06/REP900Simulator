@@ -326,12 +326,153 @@ Object.assign(ANIM,{
     if(last){ g.fillStyle=COL.mute; g.font='500 12px '+F; y=wrapTxt(g,e.w,tx+14,y,mw-14,15)+2; } });
  }
 });
+/* --- Thème « Électricité » et chapitres Fukushima --- */
+const OUSIM=t=>'<div class="insim"><b>Où le simulateur s\'arrête</b> '+t+'</div>';
+Object.assign(NEWCH,{
+ elsrc:{t:"D'où vient le courant de la centrale ?",inset:'elsrc',h:`<p>Une tranche de 900 MWe ne fait pas que produire de l'électricité : elle en consomme aussi, quelques dizaines de mégawatts. Les trois pompes primaires font chacune environ 6 MW ; s'y ajoutent les pompes qui envoient l'eau froide au condenseur et des centaines de moteurs plus petits.</p><p>Trois sources peuvent alimenter ces <b>auxiliaires</b> :</p><ul><li>l'<b>alternateur</b> lui-même, par le <b>transformateur de soutirage (TS)</b> : c'est la source normale tant que la turbine tourne ;</li><li>le <b>réseau 225 kV</b>, par le <b>transformateur auxiliaire (TA)</b> : une seconde arrivée, indépendante de la ligne 400 kV qui évacue la production ;</li><li>les <b>diesels de secours</b>, un par voie, pour les seuls systèmes de sûreté.</li></ul><p>L'animation suit le courant : presque tout part vers le réseau 400 kV, une petite partie revient vers la tranche par le TS. Le TA reste sous tension, en attente.</p>`+INSIM(`la vue <b>Électrique</b> (onglet sous la vue centrale) montre ce même schéma, avec l'état de chaque disjoncteur : carré plein fermé, carré vide ouvert.`)},
+ elsecu:{t:'Tableaux normaux, tableaux secourus',inset:'elsecu',h:`<p>Le courant des auxiliaires arrive en <b>6,6 kV</b> sur des <b>tableaux</b>, de grandes armoires de disjoncteurs, rangés en deux familles :</p><ul><li>les tableaux <b>normaux</b> (LGA à LGD) alimentent ce qui sert à produire : pompes primaires, pompes de circulation, condenseur. Ils n'ont pas de secours propre : sans TS ni TA, ils s'éteignent ;</li><li>les tableaux <b>secourus</b>, LHA pour la voie A et LHB pour la voie B, alimentent ce qui sert à la sûreté : injection de sécurité, charge RCV, motopompes ASG, chaufferettes secourues. Chacun a son diesel.</li></ul><p>Les deux voies sont <b>redondantes</b> et séparées physiquement, dans des locaux différents : une seule suffit à ramener le réacteur dans un état sûr.</p><p>Sous le 6,6 kV, la distribution continue. Des transformateurs abaissent la tension en <b>380 V</b> pour les moteurs plus petits et les vannes motorisées. Le contrôle-commande, les protections et l'instrumentation sont alimentés en <b>125 V</b> et <b>48 V continus</b> par des <b>batteries</b> toujours en charge, et en <b>220 V alternatif</b> par des <b>onduleurs</b>, qui fabriquent du courant alternatif à partir des batteries : ils ne coupent jamais, même pendant les dix secondes du démarrage d'un diesel.</p>`+OUSIM(`Il représente les sources, les trois familles de tableaux 6,6 kV (normaux, LHA, LHB), les diesels, le DUS, le LLS et une jauge de batteries. Les tableaux 380 V, les onduleurs et le détail du contrôle-commande ne sont pas simulés : on considère qu'ils suivent leur tableau 6,6 kV, et que le contrôle-commande tient tant que les batteries ne sont pas vides.`)},
+ elilot:{t:"Perte du réseau : l'îlotage, puis le TA",inset:'elilot',h:`<p>Si la ligne 400 kV est perdue, après un orage ou un défaut sur le réseau, le disjoncteur de ligne s'ouvre. La tranche tente alors un <b>îlotage</b> : la turbine perd presque toute sa charge et se cale sur la seule consommation de la tranche, environ 5 %. Le GCT-c envoie au condenseur la vapeur en trop, les grappes s'enfoncent. Les auxiliaires restent sur le TS : rien ne s'arrête. Quand le réseau revient, on recouple.</p><p>L'îlotage est une manœuvre brutale, et il peut échouer. La turbine déclenche, l'alternateur s'arrête, le TS ne reçoit plus rien. Les tableaux basculent alors automatiquement sur le <b>TA</b>, alimenté par le réseau 225 kV, après une coupure très brève. Le réacteur, lui, s'arrête : déclenchement de la turbine au-dessus de P7.</p><p>L'animation enchaîne les trois situations : marche normale, îlotage réussi, îlotage raté et bascule sur le TA.</p>`+INSIM(`l'aléa <b>Îlotage sur perte du réseau</b> et la leçon <b>D'où vient le courant de la centrale ?</b> montrent l'îlotage ; l'aléa <b>Perte des alimentations externes</b> montre l'îlotage raté, sans TA.`)},
+ eldg:{t:'Les diesels : dix secondes pour la sûreté',inset:'eldg',h:`<p>Si le TS et le TA sont perdus ensemble, c'est le <b>manque de tension externe</b>. Les tableaux normaux s'éteignent : les pompes primaires s'arrêtent, le réacteur est arrêté. Sur chaque voie, le tableau secouru détecte le manque de tension et lance son <b>diesel</b>, un moteur de plusieurs mégawatts.</p><p>En une dizaine de secondes, le diesel atteint sa vitesse, sa tension (6,6 kV) et sa fréquence (50 Hz), puis son disjoncteur se ferme sur le tableau. On ne rebranche pas tout d'un coup : un moteur qui démarre appelle plusieurs fois son courant normal, et le diesel calerait. Les charges reprennent donc <b>par paliers</b>, dans l'ordre des priorités : l'injection de sécurité d'abord, puis l'ASG, la charge RCV, les chaufferettes.</p><p>Les diesels sont essayés régulièrement, une voie à la fois, et leur réserve de fioul couvre plusieurs jours de marche.</p>`+INSIM(`les charges reprennent 5 s (IS), 15 s (ASG), 30 s (charge RCV) et 45 s (chaufferettes) après le couplage du diesel. L'exercice <b>Essai périodique des diesels</b> et l'aléa <b>Un diesel refuse de démarrer</b> les mettent en pratique.`)},
+ elcn:{t:'Sans pompes : la circulation naturelle',inset:'elcn',h:`<p>Les pompes primaires sont sur les tableaux normaux : en manque de tension externe, elles s'arrêtent. Le réacteur est arrêté, mais la puissance résiduelle, quelques % au début, doit encore être évacuée.</p><p>La physique s'en charge. L'eau chauffée dans le cœur devient plus légère et monte ; refroidie dans les générateurs de vapeur, placés plus haut que le cœur, elle redevient plus lourde et redescend. C'est la <b>circulation naturelle</b>, le même thermosiphon qu'un chauffage central sans circulateur.</p><p>Le débit ne fait plus que quelques % du débit nominal, et l'écart entre branches chaude et froide grandit, mais la chaleur passe. Deux conditions : des GV alimentés en eau, par l'ASG, et un primaire sans vapeur, car une bulle en point haut bloquerait la circulation.</p>`+INSIM(`sans pompe primaire, le débit varie comme la racine cubique de la puissance à évacuer, entre 1,5 et 8 % du nominal : environ 4 % pour 1 % de puissance résiduelle.`)},
+ elbat:{t:'Plus de courant : batteries et turbopompe ASG',inset:'elbat',h:`<p>Si les deux diesels échouent aussi, plus aucun tableau secouru n'est sous tension : c'est la situation <b>H3</b>, la perte totale des sources électriques. Deux matériels tiennent sans courant alternatif :</p><ul><li>la <b>turbopompe ASG</b> : une petite turbine, entraînée par la vapeur des GV, fait tourner une pompe qui renvoie de l'eau dans ces mêmes GV. Tant qu'il y a de la vapeur, le cœur se refroidit, la vapeur partant à l'atmosphère par le GCT-a ;</li><li>les <b>batteries</b> : elles gardent le contrôle-commande, l'instrumentation et quelques vannes pendant une durée limitée, de l'ordre de l'heure, le temps de rétablir une source.</li></ul><p>Le turboalternateur <b>LLS</b>, lui aussi entraîné par la vapeur, alimente l'injection aux joints des pompes primaires, qui évite une fuite par ces joints, et une partie de l'instrumentation. Enfin, depuis Fukushima, chaque réacteur dispose d'un <b>diesel d'ultime secours (DUS)</b>, capable de reprendre une voie secourue.</p>`+INSIM(`les batteries tiennent une heure. L'exercice <b>Perte totale des sources électriques</b> vous fait vivre une situation H3 jusqu'au démarrage du DUS.`)},
+ fuku:{t:"Fukushima, mars 2011 : ce qui s'est passé",inset:'fuku',h:`<p>Le 11 mars 2011, un séisme de magnitude 9 frappe le Japon. À la centrale de Fukushima Daiichi, les réacteurs 1, 2 et 3 sont en marche : ils s'arrêtent automatiquement. Les lignes électriques sont détruites ; les diesels démarrent et refroidissent les cœurs, comme prévu.</p><p>Moins d'une heure plus tard, un <b>tsunami</b> d'environ 14 m passe par-dessus la digue, prévue pour un peu moins de 6 m. L'eau noie les diesels, la plupart des tableaux électriques et une partie des batteries. Les réacteurs 1 à 4 sont en <b>perte totale des sources électriques</b>, et aussi de la <b>source froide</b> : les pompes d'eau de mer sont détruites.</p><p>Les systèmes de refroidissement entraînés par la vapeur tiennent un temps sur les réacteurs 2 et 3, puis s'arrêtent. Les cœurs des réacteurs 1, 2 et 3 fondent dans les jours qui suivent. L'hydrogène produit par l'oxydation des gaines s'accumule dans les bâtiments et explose (réacteurs 1, 3 et 4). Les rejets radioactifs imposent l'évacuation de plus de 100 000 personnes.</p><p><b>Ce qui se transpose à un REP.</b> Fukushima Daiichi est un <b>réacteur à eau bouillante</b> (REB) : un seul circuit, la vapeur du cœur va directement à la turbine, et l'enceinte est bien plus petite. Mais le scénario de fond, plus de courant et plus de source froide pendant des jours, sur plusieurs réacteurs à la fois, menace n'importe quel réacteur, car la puissance résiduelle ne s'arrête pas. Sur un REP, c'est la situation H3 de la page « Batteries et turbopompe ASG », qui durerait.</p>`},
+ fukufr:{t:'Après Fukushima : ce que la France a changé',inset:'fukufr',h:`<p>Dès 2011, l'ASN demande à EDF des <b>évaluations complémentaires de sûreté</b>, les « stress tests » européens : que se passe-t-il si une agression dépasse ce pour quoi la centrale a été conçue, séisme, inondation, perte totale du courant ou de l'eau de refroidissement, sur tous les réacteurs d'un site à la fois ?</p><p>Les principales réponses :</p><ul><li>un <b>noyau dur</b> : un ensemble réduit de matériels et d'organisations, protégé contre des agressions bien plus fortes que celles retenues à la conception, pour éviter la fusion du cœur ou, à défaut, limiter les rejets ;</li><li>un <b>diesel d'ultime secours (DUS)</b> par réacteur, dans un bâtiment conçu pour résister au séisme et à l'inondation extrêmes, capable de reprendre un tableau secouru ;</li><li>une <b>source d'eau ultime</b> pour alimenter les GV et les piscines quand tout le reste est perdu ;</li><li>la <b>FARN</b>, force d'action rapide nucléaire d'EDF : des équipes et du matériel mobile, pompes et groupes électrogènes, capables d'intervenir sur un site accidenté en moins de 24 heures ;</li><li>des <b>centres de crise locaux</b> renforcés, pour diriger une crise qui dure des jours.</li></ul><p>Ces mesures se sont déployées sur une dizaine d'années : moyens mobiles et FARN d'abord, DUS ensuite, puis le reste du noyau dur au fil des réexamens périodiques.</p>`+INSIM(`le DUS reprend le premier tableau secouru hors tension en deux minutes environ. La FARN, les moyens mobiles et la source d'eau ultime ne sont pas simulés.`)}
+});
+/* --- animations du thème Électricité : un unifilaire commun, en coordonnées 760 × 330 --- */
+const elFonts=()=>{ const cs=getComputedStyle(document.body); return {F:cs.getPropertyValue('--f-disp'),N:cs.getPropertyValue('--f-num')}; };
+function elWire(g,pts,on,t,col){
+  g.lineWidth=on?3:1.5; g.strokeStyle=on?col:COL.line; g.setLineDash(on?[]:[5,5]); g.beginPath(); pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])); g.stroke(); g.setLineDash([]);
+  if(!on) return; const seg=[]; let L=0; for(let i=1;i<pts.length;i++){ const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]); seg.push(d); L+=d; }
+  g.fillStyle=col; for(let s=(t*45)%24;s<L;s+=24){ let r=s,i=0; while(i<seg.length-1&&r>seg[i]){ r-=seg[i]; i++; } const f=seg[i]?r/seg[i]:0, a=pts[i], b=pts[i+1]; g.beginPath(); g.arc(a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,3,0,7); g.fill(); }
+}
+function elBox(g,x,y,w,h,txt,on,col,F,fs,sub){
+  g.fillStyle=on?col:COL.line; g.globalAlpha=on?0.18:0.08; g.fillRect(x,y,w,h); g.globalAlpha=1; g.strokeStyle=on?col:COL.line; g.lineWidth=on?2:1; g.strokeRect(x,y,w,h);
+  g.textAlign='center'; g.fillStyle=on?COL.fg:COL.mute; g.font='600 '+fs+'px '+F; g.fillText(txt,x+w/2,y+h/2+(sub?-fs*0.15:fs*0.36));
+  if(sub){ g.font='500 '+(fs*0.82)+'px '+F; g.fillStyle=COL.mute; g.fillText(sub,x+w/2,y+h/2+fs*1.05); } g.textAlign='left';
+}
+function elBrk(g,x,y,closed){ g.lineWidth=1.5; g.strokeStyle=COL.fg; g.fillStyle=closed?COL.fg:COL.bg; g.fillRect(x-7,y-7,14,14); g.strokeRect(x-7,y-7,14,14); }
+function elHalo(g,x,y,w,h,t){ g.strokeStyle=COL.warn; g.globalAlpha=0.45+0.4*Math.sin(t*5); g.lineWidth=3; g.strokeRect(x-6,y-6,w+12,h+12); g.globalAlpha=1; }
+/* état : r400, l400 (production exportée), alt, r225, src {LG,LHA,LHB} ∈ ts|ta|dg|null, dg {A,B} ∈ pret|dem|run, ld (charges allumées, facultatif), cd (décompte diesel), hl (cadres à faire clignoter) */
+function elNet(g,w,h,t,st,cap){
+  const {F}=elFonts(), nar=w<520, H=h-62, k=Math.min(w/760,H/330), fs=Math.max(15,(nar?11.5:13)/k), ox=(w-760*k)/2;
+  g.save(); g.translate(ox,4); g.scale(k,k);
+  const E=COL.accent, D=COL.warn, s=st.src, ts=st.alt&&st.ts!==false;
+  elWire(g,[[300,36],[190,36]],st.l400,t,E); elBrk(g,245,36,st.l400);
+  elWire(g,[[380,56],[380,100]],ts,t,E); elWire(g,[[655,56],[655,100]],st.r225,t,E);
+  const tsB=[[90,'LG'],[340,'LHA'],[600,'LHB']], taB=[[150,'LG'],[440,'LHA'],[700,'LHB']];
+  for(const [x,v] of tsB){ elWire(g,[[380,136],[380,156],[x,156],[x,196]],s[v]==='ts',t,E); elBrk(g,x,180,s[v]==='ts'); }
+  for(const [x,v] of taB){ elWire(g,[[655,136],[655,170],[x,170],[x,196]],s[v]==='ta',t,E); elBrk(g,x,186,s[v]==='ta'); }
+  for(const [k2,x,v] of [['A',435,'LHA'],['B',685,'LHB']]){ const on=s[v]==='dg'; elWire(g,[[x,290],[x,206]],on,t,D); elBrk(g,x,258,on); }
+  elBox(g,20,16,170,40,'Réseau 400 kV',st.r400,E,F,fs); elBox(g,300,16,160,40,'Alternateur',st.alt,E,F,fs); elBox(g,570,16,170,40,'Réseau 225 kV',st.r225,E,F,fs);
+  elBox(g,300,100,160,36,'TS',ts,E,F,fs); elBox(g,575,100,160,36,'TA',st.r225,E,F,fs);
+  const bars=[['LG',20,220,'Normaux'],['LHA',290,200,'Secouru LHA'],['LHB',540,200,'Secouru LHB']], LD={LG:['GMPP','TPA','Condenseur'],LHA:['IS','ASG','Charge RCV','Chauff.'],LHB:['IS','ASG','Charge RCV','Chauff.']};
+  for(const [v,x,bw,nm] of bars){ const on=!!s[v]; g.fillStyle=on?(s[v]==='dg'?D:E):COL.line; g.fillRect(x,196,bw,10);
+    g.fillStyle=on?COL.fg:COL.crit; g.font='600 '+fs+'px '+F; g.fillText(nm+(on||nar?'':' · hors tension'),x,206+fs*1.4);
+    if(v==='LG'&&!nar){ LD.LG.forEach((n,i)=>{ const lo=on&&(!st.ld||st.ld.LG[i]); g.fillStyle=lo?COL.fg:COL.mute; g.font='500 '+(fs*0.82)+'px '+F; g.fillText((lo?'● ':'○ ')+n,x,206+fs*2.5+i*fs*0.98); }); } }
+  for(const [k2,x] of [['A',290],['B',540]]){ const v='LH'+k2, d=st.dg[k2];
+    if(!nar) LD[v].forEach((n,i)=>{ const lo=!!s[v]&&(!st.ld||st.ld[v][i]); g.fillStyle=lo?COL.fg:COL.mute; g.font='500 '+(fs*0.82)+'px '+F; g.fillText((lo?'● ':'○ ')+n,x,206+fs*2.5+i*fs*0.98); });
+    elBox(g,x+90,290,110,38,'Diesel '+k2,d==='run',D,F,fs*0.85,nar?(d==='dem'&&st.cd!=null?Math.ceil(st.cd)+' s':''):d==='dem'?'démarrage '+(st.cd!=null?Math.ceil(st.cd)+' s':''):d==='run'?'6,6 kV · 50 Hz':'prêt'); }
+  if(st.hl) for(const r of st.hl) elHalo(g,r[0],r[1],r[2],r[3],t);
+  g.restore();
+  if(cap){ g.fillStyle=COL.fg; g.font='600 '+(nar?13:15)+'px '+F; g.textAlign='left'; wrapTxt(g,cap,Math.max(10,ox),Math.min(h-38,4+334*k+26),Math.min(w-20,760*k),18); }
+}
+const EL_ALL=(x,LG,LHA,LHB)=>({LG:x!=null?x:LG,LHA:x!=null?x:LHA,LHB:x!=null?x:LHB});
+Object.assign(ANIM,{
+ elsrc(g,w,h,t){
+  const u=t%13, ph=u<4.3?0:u<8.6?1:2;
+  const hl=[[[20,16,170,40],[300,16,160,40]],[[300,100,160,36],[20,196,720,10]],[[575,100,160,36],[380,290,360,38]]][ph];
+  elNet(g,w,h,t,{r400:true,l400:true,alt:true,r225:true,src:EL_ALL('ts'),dg:{A:'pret',B:'pret'},hl},
+   ["L'alternateur envoie sa production, environ 900 MW, vers le réseau 400 kV.","Une petite partie revient vers la tranche par le transformateur de soutirage (TS) : les tableaux 6,6 kV alimentent les auxiliaires.","Le réseau 225 kV reste sous tension derrière le TA, prêt à reprendre les tableaux. Les diesels attendent un manque de tension."][ph]);
+ },
+ elilot(g,w,h,t){
+  const u=t%19; let st, cap;
+  if(u<4.5){ st={r400:true,l400:true,alt:true,r225:true,src:EL_ALL('ts')}; cap="Marche normale : la production part sur le 400 kV, les auxiliaires sont sur le TS."; }
+  else if(u<10){ st={r400:false,l400:false,alt:true,r225:true,src:EL_ALL('ts'),hl:[[20,16,170,40]]}; cap="Le réseau 400 kV disparaît : le disjoncteur de ligne s'ouvre, la turbine se cale sur les auxiliaires. C'est l'îlotage : les tableaux restent sur le TS."; }
+  else if(u<11.2){ st={r400:false,l400:false,alt:false,r225:true,src:EL_ALL(null),hl:[[300,16,160,40]]}; cap="L'îlotage échoue : la turbine déclenche, l'alternateur s'arrête, le TS ne reçoit plus rien…"; }
+  else { st={r400:false,l400:false,alt:false,r225:true,src:EL_ALL('ta'),hl:[[575,100,160,36]]}; cap="… et les tableaux basculent sur le TA, alimenté par le réseau 225 kV. Le réacteur, lui, s'est arrêté."; }
+  st.dg={A:'pret',B:'pret'}; elNet(g,w,h,t,st,cap);
+ },
+ eldg(g,w,h,t){
+  const u=t%22, base={r400:false,l400:false,alt:false,r225:false};
+  if(u<2.5) return elNet(g,w,h,t,Object.assign(base,{src:EL_ALL(null),dg:{A:'pret',B:'pret'}}),"Plus de 400 kV, plus de 225 kV : c'est le manque de tension externe. Les tableaux s'éteignent, les pompes primaires s'arrêtent.");
+  if(u<12.5) return elNet(g,w,h,t,Object.assign(base,{src:EL_ALL(null),dg:{A:'dem',B:'dem'},cd:12.5-u,hl:[[380,290,110,38],[630,290,110,38]]}),"Chaque tableau secouru lance son diesel : une dizaine de secondes pour atteindre 6,6 kV et 50 Hz.");
+  const v=u-12.5, sq=[v>0.8,v>2.4,v>4,v>5.6];
+  elNet(g,w,h,t,Object.assign(base,{src:{LG:null,LHA:'dg',LHB:'dg'},dg:{A:'run',B:'run'},ld:{LG:[0,0,0],LHA:sq,LHB:sq}}),"Disjoncteurs fermés : les charges reprennent par paliers, IS, ASG, charge RCV, puis chaufferettes, pour ne pas faire caler le diesel. Les tableaux normaux restent éteints.");
+ },
+ elcn(g,w,h,t){
+  const {F,N}=elFonts(), u=t%17, nar=w<520;
+  const I=u<6?u:u<8?6+(u-6)-0.94*(u-6)*(u-6)/4:7.06+0.06*(u-8), sp=u<6?1:u<8?1-0.47*(u-6):0.06, pump=u<6;
+  const X=f=>w*f, Y=f=>h*f*0.86, P=[[X(.2),Y(.86)],[X(.2),Y(.36)],[X(.64),Y(.36)],[X(.64),Y(.1)],[X(.72),Y(.1)],[X(.72),Y(.5)],[X(.72),Y(.86)],[X(.2),Y(.86)]];
+  g.fillStyle=COL.hot; g.globalAlpha=.12; g.fillRect(X(.13),Y(.5),X(.14),Y(.32)); g.globalAlpha=1; g.strokeStyle=COL.line; g.lineWidth=1.5; g.strokeRect(X(.13),Y(.5),X(.14),Y(.32));
+  g.strokeRect(X(.6),Y(.05),X(.16),Y(.5)); g.fillStyle=COL.mute; g.font='600 '+(nar?11:13)+'px '+F; g.textAlign='center'; g.fillText('cœur',X(.2),Y(.82)+18); g.fillText('générateur de vapeur',X(.68),Y(.05)-6);
+  g.lineWidth=10; g.strokeStyle=COL.line; g.globalAlpha=.35; g.beginPath(); P.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])); g.stroke(); g.globalAlpha=1;
+  const seg=[]; let L=0; for(let i=1;i<P.length;i++){ const d=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]); seg.push(d); L+=d; }
+  const NP=44; for(let j=0;j<NP;j++){ let s=((j/NP+I*0.09)%1)*L, i=0; while(i<seg.length-1&&s>seg[i]){ s-=seg[i]; i++; } const f=s/seg[i], a=P[i], b=P[i+1];
+    const hot=i===0?f:i<=2?1:i===3||i===4?1-((i-3)+f)/2*0.6:0; g.fillStyle=hot>0.5?COL.hot:COL.cold; g.globalAlpha=0.55+0.45*Math.abs(hot-0.5)*2; g.beginPath(); g.arc(a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,3.4,0,7); g.fill(); }
+  g.globalAlpha=1; const px=X(.72), py=Y(.72); g.fillStyle=COL.bg; g.strokeStyle=pump?COL.ok:COL.crit; g.lineWidth=2; g.beginPath(); g.arc(px,py,13,0,7); g.fill(); g.stroke();
+  if(!pump){ g.beginPath(); g.moveTo(px-9,py-9); g.lineTo(px+9,py+9); g.moveTo(px+9,py-9); g.lineTo(px-9,py+9); g.stroke(); }
+  g.fillStyle=COL.fg; g.textAlign='left'; g.font='600 '+(nar?11:13)+'px '+F; g.fillText('GMPP',px+18,py+4);
+  g.strokeStyle=COL.mute; g.lineWidth=1; g.setLineDash([3,3]); g.beginPath(); g.moveTo(X(.8),Y(.66)); g.lineTo(X(.8),Y(.3)); g.stroke(); g.setLineDash([]);
+  g.fillStyle=COL.mute; g.font='500 '+(nar?10:12)+'px '+F; g.fillText('GV plus haut',X(.81),Y(.46)); g.fillText('que le cœur',X(.81),Y(.46)+14);
+  g.font='700 '+(nar?14:17)+'px '+N; g.fillStyle=pump?COL.fg:COL.warn; g.fillText('débit '+Math.round(sp*100)+' %',X(.3),Y(.3)-4);
+  g.font='600 '+(nar?13:14.5)+'px '+F; g.fillStyle=COL.fg; wrapTxt(g,pump?"Pompes primaires en marche : l'eau fait le tour du circuit en une dizaine de secondes.":u<8?"Les pompes s'arrêtent : le débit s'effondre…":"… mais l'eau chaude monte, l'eau refroidie dans les GV redescend : la circulation naturelle évacue la puissance résiduelle avec quelques % du débit.",w*0.04,h-34,w*0.92,17);
+ },
+ elbat(g,w,h,t){
+  const {F,N}=elFonts(), u=t%16, nar=w<520, dus=u>12.5, bat=dus?Math.min(1,0.25+(u-12.5)*0.2):1-0.75*u/12.5, X=f=>w*f, Y=f=>h*f*0.84;
+  g.strokeStyle=COL.line; g.lineWidth=1.5; g.strokeRect(X(.04),Y(.12),X(.14),Y(.62)); g.fillStyle=COL.feed; g.globalAlpha=.15; g.fillRect(X(.04),Y(.42),X(.14),Y(.32)); g.globalAlpha=1; g.fillStyle=COL.mute; g.font='600 '+(nar?11:13)+'px '+F; g.textAlign='center'; g.fillText('GV',X(.11),Y(.12)-6);
+  const tx=X(.34), ty=Y(.22), pmx=X(.34), pmy=Y(.66);
+  elWire(g,[[X(.18),Y(.2)],[tx-16,ty]],true,t,COL.steam); elWire(g,[[tx+16,ty],[X(.46),ty],[X(.46),Y(.04)]],true,t,COL.steam);
+  elWire(g,[[pmx-16,pmy],[X(.18),pmy]],true,t,COL.feed);
+  g.strokeStyle=COL.fg; g.lineWidth=3; g.beginPath(); g.moveTo(tx,ty+16); g.lineTo(pmx,pmy-16); g.stroke();
+  for(const [x,y,c,l] of [[tx,ty,COL.steam,'turbine'],[pmx,pmy,COL.feed,'pompe']]){ g.fillStyle=COL.bg; g.strokeStyle=c; g.lineWidth=2.5; g.beginPath(); g.arc(x,y,16,0,7); g.fill(); g.stroke();
+   const a=t*6; g.beginPath(); g.moveTo(x+Math.cos(a)*11,y+Math.sin(a)*11); g.lineTo(x-Math.cos(a)*11,y-Math.sin(a)*11); g.stroke(); g.fillStyle=COL.mute; g.font='500 '+(nar?10:12)+'px '+F; g.textAlign='left'; g.fillText(l,x+22,y+(l==='turbine'?-14:4)); }
+  g.fillStyle=COL.mute; g.font='500 '+(nar?10:12)+'px '+F; g.fillText('vapeur → atmosphère',X(.47),Y(.08)); g.textAlign='center'; g.fillText('turbopompe ASG : aucun courant',X(.3),Y(.92));
+  const bx=X(.62), by=Y(.2), bw=X(.3), bh=Y(.2); g.textAlign='left'; g.fillStyle=COL.fg; g.font='600 '+(nar?11:13)+'px '+F; g.fillText('Batteries 125 V · contrôle-commande',bx,by-10);
+  g.strokeStyle=COL.line; g.lineWidth=1.5; g.strokeRect(bx,by,bw,bh); g.fillStyle=bat<0.35?COL.warn:COL.ok; g.fillRect(bx+3,by+3,(bw-6)*bat,bh-6);
+  g.font='700 '+(nar?14:17)+'px '+N; g.fillStyle=COL.fg; g.fillText(Math.round(bat*100)+' %',bx,by+bh+24);
+  g.font='500 '+(nar?11:13)+'px '+F; g.fillStyle=COL.mute; g.fillText(dus?'DUS en service : recharge':'décharge · t = '+Math.round(u/12.5*45)+' min',bx,by+bh+44);
+  elBox(g,bx,Y(.72),bw,Y(.16),'DUS',dus,COL.warn,F,nar?11:13,dus?'reprend LHA':u>9?'démarrage…':'à l\'arrêt');
+  g.font='600 '+(nar?13:14.5)+'px '+F; g.fillStyle=COL.fg; g.textAlign='left'; wrapTxt(g,dus?"Le DUS reprend un tableau secouru : l'IS et la charge RCV redeviennent disponibles, les batteries se rechargent.":"Plus aucun tableau secouru : la vapeur des GV fait tourner la turbopompe qui les alimente, les batteries tiennent le contrôle-commande.",w*0.04,h-34,w*0.92,17);
+ },
+ elsecu(g,w,h,t){
+  const {F}=elFonts(), u=t%14, ph=u<4.6?0:u<9.3?1:2, nar=w<520, H=h-62, k=Math.min(w/760,H/330), fs=Math.max(13,10.5/k), ox=(w-760*k)/2, E=COL.accent;
+  g.save(); g.translate(ox,4); g.scale(k,k);
+  const col=[[20,'Normaux LGA–LGD'],[280,'Secouru LHA'],[540,'Secouru LHB']];
+  col.forEach(([x,n],i)=>{ elBox(g,x,14,200,44,n,true,i?COL.ok:E,F,fs,'6,6 kV'); elWire(g,[[x+100,58],[x+100,140]],ph>=1,t,i?COL.ok:E); elBox(g,x,140,200,40,'380 V',ph>=1,i?COL.ok:E,F,fs,i?'pompes, vannes de sûreté':'moteurs, vannes');
+   if(i){ elWire(g,[[x+100,180],[x+100,236]],ph>=2,t,COL.warn); elBox(g,x,236,95,58,'125 V · 48 V',ph>=2,COL.warn,F,fs*0.85,'batteries'); elBox(g,x+105,236,95,58,'220 V',ph>=2,COL.warn,F,fs*0.85,'onduleurs'); } });
+  g.fillStyle=COL.mute; g.font='500 '+(fs*0.9)+'px '+F; g.fillText('contrôle-commande, protections, mesures',20,262); g.fillText('(chaque voie a les siens)',20,262+fs*1.2);
+  g.strokeStyle=COL.crit; g.lineWidth=2; g.setLineDash([8,6]); g.beginPath(); g.moveTo(10,104); g.lineTo(750,104); g.stroke(); g.setLineDash([]);
+  g.fillStyle=COL.crit; g.font='700 '+(fs*0.9)+'px '+F; g.fillText('le simulateur s\'arrête ici',134,96);
+  if(ph===0) for(const [x] of col) elHalo(g,x,14,200,44,t);
+  g.restore();
+  g.fillStyle=COL.fg; g.font='600 '+(nar?13:14.5)+'px '+F; wrapTxt(g,["Trois familles de tableaux 6,6 kV : les normaux pour produire, deux voies secourues, A et B, pour la sûreté. C'est là que s'arrête le simulateur.","En dessous, des transformateurs abaissent la tension en 380 V pour les moteurs plus petits et les vannes motorisées.","Le contrôle-commande vit sur batteries, en continu, et sur onduleurs, en alternatif : il ne voit jamais de coupure."][ph],Math.max(10,ox),Math.min(h-38,4+334*k+26),Math.min(w-20,760*k),18);
+ },
+ fuku(g,w,h,t){
+  const {F,N}=elFonts(), nar=w<520, T=22, u=t%T, x0=w*0.05, x1=w*0.95, X=f=>x0+(x1-x0)*f, cur=Math.min(1,u/(T-3));
+  const EV=[[0,'11 mars, 14 h 46','Séisme : arrêt automatique, lignes détruites, les diesels démarrent'],[0.16,'≈ 15 h 35','Tsunami : diesels, tableaux et batteries noyés'],[0.46,'12 mars','Explosion d\'hydrogène, réacteur 1'],[0.72,'14 mars','Explosion, réacteur 3'],[0.86,'15 mars','Explosion, réacteur 4 ; rejets importants']];
+  const R=[['Réseau électrique',0.005],['Diesels de secours',0.16],['Batteries (réacteurs 1 et 2)',0.165],['Refroidissement par la vapeur (réacteurs 2 et 3)',0.62]];
+  const y0=h*0.07, dy=Math.min(46,h*0.11), fz=nar?11.5:14;
+  R.forEach(([n,end],i)=>{ const y=y0+i*dy, xe=X(Math.min(cur,end)); g.strokeStyle=COL.ok; g.lineWidth=6; g.beginPath(); g.moveTo(x0,y+12); g.lineTo(xe,y+12); g.stroke();
+   if(cur>end){ g.strokeStyle=COL.crit; g.lineWidth=2; g.setLineDash([4,4]); g.beginPath(); g.moveTo(X(end),y+12); g.lineTo(X(cur),y+12); g.stroke(); g.setLineDash([]); }
+   g.fillStyle=cur>end?COL.crit:COL.fg; g.font='600 '+fz+'px '+F; g.textAlign='left'; g.fillText(n+(cur>end?' : perdu':''),x0,y+2); });
+  const yl=y0+R.length*dy+18; g.strokeStyle=COL.line; g.lineWidth=2; g.beginPath(); g.moveTo(x0,yl); g.lineTo(x1,yl); g.stroke();
+  g.fillStyle=COL.accent; g.beginPath(); g.arc(X(cur),yl,6,0,7); g.fill();
+  let ly=yl+26; const lw=nar?100:150; EV.forEach(([f,d,txt],i)=>{ if(cur<f) return; g.fillStyle=i===0?COL.warn:COL.crit; g.beginPath(); g.arc(X(f),yl,4,0,7); g.fill();
+   g.font='700 '+fz+'px '+N; g.fillStyle=COL.fg; g.textAlign='left'; g.fillText(d,x0,ly); g.font='500 '+fz+'px '+F; g.fillStyle=COL.mute; ly=wrapTxt(g,txt,nar?x0:x0+lw,nar?ly+fz+3:ly,nar?x1-x0:x1-x0-lw,fz+4)+(nar?6:4); });
+  if(u<1.2){ g.fillStyle=COL.mute; g.font='500 12px '+F; g.textAlign='right'; g.fillText('échelle de temps non linéaire',x1,h-10); g.textAlign='left'; }
+ }
+});
+INSET.fukufr=()=>ptab([['prot','Électricité',[['Plus aucun diesel','DUS','un par réacteur, protégé du séisme et de l\'inondation extrêmes'],['Plus de courant pendant des jours','FARN','groupes électrogènes mobiles, sur site en moins de 24 h']]],
+ ['turb','Eau',[['Plus de source froide','Source d\'eau ultime','pour alimenter les GV et les piscines'],['Pompes détruites','FARN','pompes mobiles, raccordements préparés à l\'avance']]],
+ ['pzr','Organisation',[['Plusieurs réacteurs à la fois','Évaluations complémentaires','scénarios étudiés pour tout un site'],['Une crise qui dure des jours','Centre de crise local','bâtiment résistant, équipes relayées']]],
+ ['react','Démarche',[['Agression au-delà de la conception','Noyau dur','matériels et organisations protégés contre l\'extrême']]]]);
 const THEMES=[
  ['centrale','La centrale',["Une centrale, c'est d'abord une bouilloire"]],
  ['physique','Physique du cœur',['La fission','La réaction en chaîne','pcm','Les neutrons retardés','Le combustible',"Le modérateur : l'eau",'Le réacteur se stabilise tout seul','xeanim','Le xénon']],
  ['circuits','Circuits',['Le circuit primaire','Le pressuriseur','La chaussette : le domaine pression-température','Les générateurs de vapeur','Turbine et alternateur','Le condenseur et la source froide']],
  ['pilotage','Pilotage',['Agir sur la réaction : grappes et bore','groupes','Le pilotage en mode G','rband','dianim','params']],
- ['surete','Sûreté',['Trois barrières et des protections',"Après l'arrêt : la puissance résiduelle"]],
+ ['electricite','Électricité',['elsrc','elsecu','elilot','eldg','elcn','elbat']],
+ ['surete','Sûreté',['Trois barrières et des protections',"Après l'arrêt : la puissance résiduelle",'fuku','fukufr']],
  ['manoeuvres','Manœuvres',['etats','comptage','diverg','couplage','montee','leviers','freq','suivi','repli','imprevu','regles']],
  ['conduite','Conduite',['method','La salle de commande']],
 ];
