@@ -43,7 +43,7 @@ function showBrief(){
 
 /* tutoriel */
 function snapK(s,k){ Object.assign(k,{n0:s.n,T0:s.Tavg,Tr0:s.Tref,P0:s.Ppzr,Lp0:s.Lpzr,Lg0:s.Lsg,Cb0:s.Cb,R0:s.rods.R.p,G0:s.rods.G.p,DI0:s.DI,Td0:s.Td,rh0:Object.assign({},s.rho),vD0:s.volDil,vB0:s.volBor,ts:s.t,Psg0:s.Psg,OT0:s.OTsp,minLg:s.Lsg,maxLg:s.Lsg,minP:s.Ppzr,maxP:s.Ppzr,minLp:s.Lpzr}); }
-function enterStep(i){ const c=A.ctx; c.step=i; c.sk={}; c.stepOk=false; c.after=''; c.showHint=false; c.subM=''; const st=A.scn.steps[i]; snapK(A.s,c.sk); if(st.enter) st.enter(A.s,c,c.sk); renderMission(true); if(st.show) requestAnimationFrame(()=>{ const e=$(st.show); if(e&&e.offsetParent) e.scrollIntoView({block:'nearest',behavior:'smooth'}); }); }
+function enterStep(i){ const c=A.ctx; c.step=i; c.sk={}; c.stepOk=false; c.after=''; c.showHint=false; c.subM=''; const st=A.scn.steps[i]; snapK(A.s,c.sk); if(st.enter) st.enter(A.s,c,c.sk); renderMission(true); if(desk()){ reveal($$('.focus').filter(e=>!e.closest('header.top'))); requestAnimationFrame(()=>{ const f=$$('#famb .focus,#views .focus').find(e=>!inView(e)); if(f&&!st.show) f.scrollIntoView({block:'nearest',behavior:'smooth'}); }); } if(st.show) requestAnimationFrame(()=>{ const e=$(st.show); if(!e||!e.offsetParent) return; const f=desk()&&[...e.querySelectorAll('.focus')].find(x=>!inView(x)); (f||e).scrollIntoView({block:f?'center':'nearest',behavior:'smooth'}); }); }
 
 /* tick de scénario (chaque pas) */
 function tick(s,c){
@@ -177,7 +177,7 @@ twoStep($('#isBtn'),'IS manuelle','Confirmer l\'IS',()=>act('is'));
 
 document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('g')){ e.preventDefault(); showGloss(+e.target.dataset.g); } if(e.key==='Escape'){ if(!$('#gpop').hidden) $('#gpop').hidden=true; else if(!$('#help').hidden) closeHelp(); else if(!$('#srcov').hidden) $('#srcov').hidden=true; else if(!$('#about').hidden) $('#about').hidden=true; } });
 document.addEventListener('click',e=>{
-  if(e.target.closest('button,.seg button,.bank')&&!e.target.closest('#ackBtn,#alb-ack,#tour')) SFX.tick();
+  if(e.target.closest('button,.seg button,.bank')&&!e.target.closest('#ackBtn,#alb-ack,#runAck,#tour')) SFX.tick();
   if(e.target.closest('[data-about]')){ $('#about').hidden=false; return; }
   if(e.target.closest('[data-src]')){ $('#srcov').hidden=false; return; }
   if(e.target.closest('#srcClose')||e.target.id==='srcov'){ $('#srcov').hidden=true; return; }
@@ -188,14 +188,17 @@ document.addEventListener('click',e=>{
   if(e.target.id==='fb'){ closeFB(); return; }
   const tg=e.target.closest('[data-tourgo]'); if(tg){ openTour(+tg.dataset.tourgo); return; }
   const tv=e.target.closest('[data-tv]'); if(tv){ TV.auto=false; tourGo(+tv.dataset.tv); return; }
-  const pt=e.target.closest('#ptr'); if(pt){ if(pt._tab) setTab(pt._tab); if(pt._el) pt._el.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  const pt=e.target.closest('#ptr'); if(pt){ const el=pt._el; if(el){ reveal(el); requestAnimationFrame(()=>el.scrollIntoView({behavior:'smooth',block:'center'})); } return; }
   const gq=e.target.closest('.g'); if(gq){ showGloss(+gq.dataset.g); return; }
   if(!e.target.closest('#gpop')) $('#gpop').hidden=true;
   if(e.target.closest('#lexBtn')){ openLex(); return; }
-  if(e.target.closest('#alb-see')){ if(innerWidth<1080) setTab('alarm'); else document.querySelector('[data-c="alarm"]').scrollIntoView({behavior:'smooth',block:'center'}); return; }
-  if(e.target.closest('#alb-ack')){ SFX.ack(); if(A.s){ for(const a of Object.values(A.s.alarms)) if(a.on) a.ack=true; updateAlarms(); } return; }
+  if(e.target.closest('#alb-see,#runTab')){ openCard('alarm'); return; }
+  if(e.target.closest('#alb-ack,#runAck')){ ackAll(); return; }
+  const vt=e.target.closest('#vtabs button'); if(vt){ setVue(vt.dataset.vue); return; }
+  const ftb=e.target.closest('#ftabs button'); if(ftb){ setFam(ftb.dataset.fam); return; }
+  const rd=e.target.closest('#band .rd'); if(rd){ const k=BAND_CARD[rd.id.slice(3)]; if(k) openCard(k); return; }
   const fb=e.target.closest('.fold'); if(fb){ toggleFold(fb.closest('.card')); return; }
-  const h2c=e.target.closest('.card[data-c] > h2'); if(h2c&&!e.target.closest('button,.seg,input,select')){ toggleFold(h2c.parentElement); return; }
+  const h2c=e.target.closest('.card[data-c] > h2'); if(h2c&&!desk()&&!e.target.closest('button,.seg,input,select')){ toggleFold(h2c.parentElement); return; }
   const hq=e.target.closest('[data-help]'); if(hq){ openHelp(hq.dataset.help); return; }
   if(e.target.id==='help'){ closeHelp(); return; }
   const b=e.target.closest('[data-act]'); if(b&&!b.closest('.seg')){ act(b.dataset.act,b.dataset.v); return; }
@@ -219,13 +222,87 @@ $('#gcta').addEventListener('change',()=>{ if(A.s) op('GCT-a manuel '+fmt(A.s.gc
 bindRange('#areMan',v=>{ A.s.areMan=v/100; if(A.s.areMode!=='man') toast('Passez l\'ARE en manuel pour que ce réglage agisse.'); });
 bindRange('#sprayMan',v=>{ A.s.sprayMan=v/100; if(A.s.sprayMode!=='man') toast('Passez l\'aspersion en manuel pour que ce réglage agisse.'); });
 bindRange('#chgMan',v=>{ A.s.chgMan=v; if(A.s.chgMode!=='man') toast('Passez la charge RCV en manuel pour que ce réglage agisse.'); });
-$('#ackBtn').onclick=()=>{ if(!A.s) return; SFX.ack(); for(const a of Object.values(A.s.alarms)) if(a.on) a.ack=true; updateAlarms(); };
+function ackAll(){ if(!A.s) return; SFX.ack(); for(const a of Object.values(A.s.alarms)) if(a.on) a.ack=true; updateAlarms(); updateRun(); }
+$('#ackBtn').onclick=ackAll;
 $('#pauseBtn').onclick=()=>{ if(!A.s) return; A.paused=!A.paused; syncAll(); };
 $('#menuBtn').onclick=()=>openMenu();
 $('#spdSel').addEventListener('change',e=>setSpeed(+e.target.value));
 $('#mis-fold').onclick=()=>{ $('#mission').classList.toggle('collapsed'); const cl=$('#mission').classList.contains('collapsed'); $('#mis-fold').innerHTML=cl?'<span class="lg2">Déplier</span><span class="sh2">▾</span>':'<span class="lg2">Réduire</span><span class="sh2">▴</span>'; $('#mis-fold').setAttribute('aria-label',cl?'Déplier la consigne':'Réduire la consigne'); };
 function setSpeed(v){ A.speed=v; syncAll(); }
 function setTab(t){ A.tab=t; document.body.dataset.tab=t; $$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t)); if(t==='trend') setTimeout(drawCharts,30); if(t==='synop') setTimeout(drawDI,30); }
+
+/* ================= Poste de pilotage (ordinateur) : vues au centre, commandes par famille ================= */
+/* Sur ordinateur, chaque carte reste à sa place : une vue au centre (onglets du bas), une famille de commandes à droite (onglets du haut).
+   Leçons, pointeur, corrections commentées et clics du bandeau ouvrent la vue ou la famille de la carte visée. */
+const VUE_NM={synop:'Synoptique',crv:'Courbes',di:'ΔI',pt:'P-T',react:'Réactivité',instr:'Neutronique',trend:'Tendances',alarm:'Alarmes',log:'Journal'};
+const FAMS={core:{t:'Réactivité',c:['rods','bore']},prim:{t:'Primaire',c:['pzr']},sec:{t:'Secondaire',c:['turb','are']},saf:{t:'Sûreté',c:['prot']}};
+const FAM_OF={}; for(const [f,o] of Object.entries(FAMS)) for(const c of o.c) FAM_OF[c]=f;
+const TAB_NM={synop:'Surveiller',cmd:'Agir',trend:'Tendances',alarm:'Suivre'};
+A.vues=['synop']; A.fams=['core'];
+const desk=()=>innerWidth>=1080, wide=()=>innerWidth>=1700;
+const col3=c=>c==='alarm'||c==='log';
+function setVue(v){ A.vues=[].concat(v); applyVues(); }
+function applyVues(){
+  let vs=A.vues.filter(v=>VUE_NM[v]&&!(wide()&&col3(v))); if(!vs.length) vs=['synop'];
+  const on=new Set(vs); if(vs.length===1&&vs[0]==='synop'&&innerHeight>=1000) on.add('crv');
+  $$('#views>.card,#col3>.card').forEach(c=>c.classList.toggle('von',on.has(c.dataset.c)));
+  document.body.classList.toggle('c3v',vs.every(col3));
+  $$('#vtabs button').forEach(b=>b.classList.toggle('on',vs.includes(b.dataset.vue)));
+  setTimeout(()=>{ drawCharts(); drawDI(); drawPT(); },30);
+}
+/* largeur du centre : le synoptique est limité par la hauteur, donc le centre prend juste sa largeur (ou celle des onglets des vues)
+   et le reste va à la colonne de droite (consigne, commandes). Recalculé au redimensionnement seulement, pour que rien ne bouge en cours de partie. */
+let FIT_EX=0;
+function fitPoste(){
+  const P=$('#poste'), r=document.documentElement.style;
+  if(!desk()){ r.removeProperty('--famW'); return; }
+  const pc=$('.pc'), cs=getComputedStyle(P), W=P.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-parseFloat(cs.columnGap||8);
+  const vt=$('#vtabs'), bs=[...vt.children].filter(b=>b.offsetWidth), ic=P.classList.contains('vtc')?0:bs.reduce((a,b)=>{ const i=b.querySelector('svg'); const w=i?i.getBoundingClientRect().width:0; return a+(w?w+6:0); },0);
+  let tb=bs.reduce((a,b)=>a+b.offsetWidth+2,14)-ic, ti=tb+(ic||bs.length*21);
+  const sc=$('#views>.card[data-c="synop"]'), sy=$('#synw');
+  if(sc.offsetHeight&&sy.clientHeight) FIT_EX=sc.offsetHeight-sy.clientHeight;
+  let vh=pc.clientHeight-$('.pc>.run').offsetHeight-vt.offsetHeight;
+  if(innerHeight>=1000) vh=vh*1.4/2.4;
+  const sw=Math.max(0,vh-(FIT_EX||78))*990/610+26, c3=wide()?Math.max(320,Math.min(460,innerWidth*.19)):0;
+  /* onglets des vues sans pictogrammes quand leur largeur dépasserait celle du synoptique */
+  const nb=sw<ti&&innerWidth>=1400; P.classList.toggle('vtc',nb); if(!nb) tb=ti;
+  const fam=Math.round(Math.max(360,Math.min(W*.5,760,W-Math.max(sw,tb,560)-c3)));
+  r.setProperty('--famW',fam+'px');
+  /* très grand écran : ce qui reste après la colonne de droite élargit la 3e colonne (tableau d'alarmes, journal) */
+  if(c3) r.setProperty('--c3W',Math.round(c3+Math.max(0,Math.min(700-c3,W-fam-c3-Math.max(sw,tb,560))))+'px'); else r.removeProperty('--c3W');
+}
+function setFam(f){ A.fams=[].concat(f); $$('#famb>.card').forEach(c=>c.classList.toggle('fon',A.fams.includes(FAM_OF[c.dataset.c]))); $$('#ftabs button').forEach(b=>b.classList.toggle('on',A.fams.includes(b.dataset.fam))); }
+/* place d'une carte : vue, famille ou onglet mobile */
+const cardOf=e=>e&&e.closest('.card[data-c]');
+const tabOf=e=>{ const c=e&&e.closest('.card[data-t]'); return c?c.dataset.t:null; };
+function placeOf(e){ const c=cardOf(e); if(!c) return null; const k=c.dataset.c; return FAM_OF[k]?{fam:FAM_OF[k]}:VUE_NM[k]&&!(wide()&&col3(k))?{vue:k}:null; }
+/* rend visibles les cartes qui contiennent ces éléments ; renvoie vrai si l'affichage a changé */
+function reveal(els){
+  els=[].concat(els).filter(Boolean); if(!els.length) return false;
+  if(!desk()){ const t=tabOf(els[0]); if(t&&t!==A.tab){ setTab(t); return true; } return false; }
+  const vs=[], fs=[];
+  for(const e of els){ const p=placeOf(e); if(!p) continue; if(p.vue&&!vs.includes(p.vue)) vs.push(p.vue); if(p.fam&&!fs.includes(p.fam)) fs.push(p.fam); }
+  let ch=false;
+  if(vs.length&&!vs.every(v=>A.vues.includes(v))){ setVue(vs.slice(0,2)); ch=true; }
+  if(fs.length&&!fs.every(f=>A.fams.includes(f))){ setFam(fs); ch=true; }
+  return ch;
+}
+/* partie réellement visible d'un élément : fenêtre, sous la barre du haut (et la consigne sur téléphone), dans ses conteneurs qui défilent */
+function clipOf(e){
+  const tb=$('#tabs'); let top=e.closest('header.top')?0:$('header.top').getBoundingClientRect().bottom, bot=innerHeight-(tb&&getComputedStyle(tb).display!=='none'?tb.getBoundingClientRect().height:0);
+  if(!desk()&&!$('#mission').hidden) top=Math.max(top,$('#mission').getBoundingClientRect().bottom);
+  for(let p=e.parentElement;p&&p!==document.body;p=p.parentElement){ const o=getComputedStyle(p).overflowY; if(o==='auto'||o==='scroll'||o==='hidden'){ const r=p.getBoundingClientRect(); top=Math.max(top,r.top); bot=Math.min(bot,r.bottom); } }
+  return {top,bot};
+}
+function inView(e){ if(!e||!e.getClientRects().length) return false; const r=e.getBoundingClientRect(), c=clipOf(e); return r.bottom>c.top+4&&r.top<c.bot-4; }
+/* clic sur une case du bandeau : ouvre la carte liée */
+const BAND_CARD={pn:'instr',td:'react',rg:'rods',di:'di',cb:'bore',tm:'crv',th:'synop',pp:'pzr',lp:'pzr',pe:'turb',psg:'are',lg:'are',dtm:'prot',sat:'pt'};
+function openCard(k){
+  const cd=document.querySelector('.card[data-c="'+k+'"]'); if(!cd) return;
+  if(desk()){ reveal(cd); requestAnimationFrame(()=>{ if(!inView(cd)) cd.scrollIntoView({block:'nearest',behavior:'smooth'}); }); }
+  else { if(cd.classList.contains('folded')) toggleFold(cd); setTab(tabOf(cd)); requestAnimationFrame(()=>{ const r=cd.getBoundingClientRect(), off=$('header.top').offsetHeight+($('#mission').hidden?0:$('#mission').offsetHeight)+10; scrollTo({top:scrollY+r.top-off,behavior:'smooth'}); }); }
+  cd.classList.remove('flash'); void cd.offsetWidth; cd.classList.add('flash'); setTimeout(()=>cd.classList.remove('flash'),1400);
+}
 
 /* ================= Synchronisation de l'interface ================= */
 function syncSeg(key,val){ $$('.seg[data-key="'+key+'"] button').forEach(b=>b.classList.toggle('on',b.dataset.v===String(val))); }
@@ -274,28 +351,7 @@ function updateUI(){
   const st=s.is?'IS':s.tripped?'AAR':s.ilot?'Îlotage':s.coupled?'Puissance':(s.n>1e-7?'Critique':'Sous-crit.');
   T('b-state',st); lamp('b-lamp',s.is||s.tripped?'r':s.ilot||s.limitNow?'a':'g');
   updateBand(s);
-  /* synoptique */
-  T('m-pn',(s.n<0.001?fmt(s.n*100,3):fmt(s.n*100,1))+' %');
-  T('m-tavg','Tmoy '+fmt(s.Tavg,1)+' °C');
-  document.getElementById('m-core').setAttribute('opacity',String(clamp(0.18+0.75*Math.min(1,s.Qcore),0.18,0.95)));
-  const rod=(id,p)=>{ const h=6+70*(1-p/225); document.getElementById(id).setAttribute('height',h.toFixed(1)); };
-  rod('m-rSD',s.rods.SD.p); rod('m-rG',s.rods.G.p); rod('m-rR',s.rods.R.p);
-  T('m-pp',fmt(s.Ppzr,1)+' bar'); T('m-lp','Niv. '+fmt(s.Lpzr,0)+' %');
-  T('m-hs','Asp. '+fmt(s.spray*100,0)+' %');
-  const pz=clamp(s.Lpzr,0,100)/100*54; const pf=document.getElementById('m-pzf'); pf.setAttribute('y',(26+54-pz).toFixed(1)); pf.setAttribute('height',pz.toFixed(1));
-  T('m-th','Tch '+fmt(s.Thot,1)); T('m-tc','Tfr '+fmt(s.Tcold,1));
-  const np=s.pumps.filter(Boolean).length; T('m-pumpt','GMPP '+np+'/3');
-  document.getElementById('m-pump').setAttribute('class','pump '+(np===3?'on':'off'));
-  const sg=clamp(s.Lsg,0,100)/100*156; const sf=document.getElementById('m-sgf'); sf.setAttribute('y',(43+156-sg).toFixed(1)); sf.setAttribute('height',sg.toFixed(1));
-  T('m-psg',fmt(s.Psg,1)+' bar'); T('m-lsg','Niv. '+fmt(s.Lsg,0)+' %');
-  document.getElementById('m-asg').style.fill=s.asg?'var(--warn)':'var(--dim)';
-  T('m-mwe',s.coupled?fmt(s.Qt*K.MWE,0)+' MWe':(s.turbTripped?'Déclenchée':'Découplée'));
-  document.getElementById('m-brk').setAttribute('class','brk'+(s.coupled&&!s.ilot?' on':''));
-  T('m-grid',s.grid?'Réseau':'Réseau ✕'); document.getElementById('m-grid').style.fill=s.grid?'var(--mute)':'var(--crit)';
-  document.getElementById('m-gctv').setAttribute('class','valve'+(s.gct>0.02?' open':''));
-  T('m-gct','GCT-c '+fmt(s.gct/0.85*100,0)+' %');
-  T('m-feed','ARE '+fmt(s.Wf*100,0)+' %'+(s.Wasg>0.005?' · ASG '+fmt(s.Wasg*100,0)+' %':''));
-  document.getElementById('m-tpa').setAttribute('class','pump '+(s.tpa[0]&&s.tpa[1]?'on':(s.tpa[0]||s.tpa[1]?'':'off')));
+  updSyn(s);
   /* instrumentation */
   H('i-sr',s.srInhib?'<span style="color:var(--dim)">HT coupée</span>':fmt(s.n*1e10,0)+' c/s');
   H('i-ir',sci(Math.max(s.n*1e-3,1e-11))+' A');
@@ -537,9 +593,9 @@ async function demoAct(a){
   const el=$(a.sel); if(!el) return;
   const vis=e=>e&&e.getClientRects().length>0;
   let tg=vis(el)?el:(a.ptr&&vis($(a.ptr))?$(a.ptr):el);
-  if(!vis(tg)&&innerWidth<1080){ const pn=el.closest('.panel'); if(pn&&pn.dataset.p){ setTab(pn.dataset.p); await wait(250); } }
-  const fc=tg.closest('.card.folded'); if(fc){ toggleFold(fc); await wait(250); }
-  if(!tg.closest('header.top')&&!tg.closest('#mission')){ const r=tg.getBoundingClientRect(); if(r.top<(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdrH'))||0)+(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--misH'))||0)+10||r.bottom>innerHeight-60){ tg.scrollIntoView({behavior:'smooth',block:'center'}); await wait(650); } }
+  if(!vis(tg)){ const alt=a.ptr&&$(a.ptr); if(reveal(el)){ await wait(250); tg=el; } else if(alt&&reveal(alt)){ await wait(250); tg=alt; } }
+  const fc=!desk()&&tg.closest('.card.folded'); if(fc){ toggleFold(fc); await wait(250); }
+  if(!tg.closest('header.top')&&!tg.closest('#mission')){ const r=tg.getBoundingClientRect(), c=clipOf(tg); if(r.top<c.top+6||r.bottom>Math.min(c.bot,innerHeight-60)){ tg.scrollIntoView({behavior:'smooth',block:'center'}); await wait(650); } }
   const p=$('#dptr'), r=tg.getBoundingClientRect(); p.hidden=false; p.classList.remove('press');
   p.style.left=(r.left+r.width/2)+'px'; p.style.top=(r.top+r.height/2)+'px';
   tg.classList.add('dhl'); await wait(750);
@@ -629,7 +685,7 @@ $('#menuCards').addEventListener('click',e=>{ const dm=e.target.closest('[data-d
 /* ================= Aide des cartes ================= */
 const HELP={
  synop:{t:'Synoptique',l:'tuto',h:`<h3>En bref</h3><p>C'est le plan de la centrale, en direct. Deux circuits d'eau ne se mélangent jamais : le <b>primaire</b>, qui traverse le cœur et sort à plus de 300 °C, et le <b>secondaire</b>, qui reçoit sa chaleur dans les générateurs de vapeur et fait tourner la turbine. Une comparaison utile : le primaire est le radiateur, le secondaire la casserole posée dessus.</p>
-<h3>Ce que vous voyez</h3><ul><li><b>Cuve</b> : le cœur (sa couleur s'intensifie avec la puissance) et trois barres blanches, les groupes d'arrêt, les GCP et le groupe R. Plus une barre est longue, plus le groupe est inséré.</li><li><b>Branche chaude</b> en orange (Tch, sortie du cœur) et <b>branche froide</b> en bleu (Tfr, retour vers le cœur). Les trois boucles réelles sont regroupées en une.</li><li><b>Pressuriseur</b> : pression, niveau, aspersion. <b>GV</b> : niveau et pression vapeur.</li><li><b>Turbine</b> et alternateur ; le petit carré vert est le disjoncteur (vert = couplé au réseau).</li><li><b>GCT-c</b> : la vanne qui envoie la vapeur au condenseur sans passer par la turbine. <b>ARE</b> : l'eau alimentaire (en vert) qui retourne aux GV.</li></ul>
+<h3>Ce que vous voyez</h3><p>Les équipements sont dessinés en gris : la couleur est réservée aux circuits (atténués) et aux états anormaux, pour qu'un écart saute aux yeux. Chaque valeur est dans une <b>étiquette</b> de même forme ; elle passe en <b>ambre</b> en cas d'écart ou de mode manuel, en <b>rouge</b> près d'un seuil de protection ou quand une sauvegarde est en service. Un pointillé qui défile dans une tuyauterie indique un débit ; une ligne en tirets est à l'arrêt.</p><ul><li><b>Cuve</b> : le cœur (sa couleur s'intensifie avec la puissance) et les barres des groupes S (arrêt), G1, G2, N1, N2 (GCP) et R, avec leur position en pas dessous. Plus une barre est longue, plus le groupe est inséré.</li><li><b>Branche chaude</b> (Tch, sortie du cœur) et <b>branche froide</b> (Tfr, retour vers le cœur), avec les trois pompes primaires <b>GMPP</b> (rouges si arrêtées). Les trois boucles réelles sont regroupées en une.</li><li><b>Pressuriseur</b> : pression, niveau et sa référence, chaufferettes et aspersion ; les soupapes <b>SEBIM</b> passent en rouge si elles s'ouvrent.</li><li><b>Bore et RCV</b> : concentration, appoint REA en cours, débits de charge et de décharge ; <b>IS</b> : injection de sécurité, ligne rouge pleine en service.</li><li><b>GV</b> : niveau, pression vapeur, bilan eau entrante / vapeur sortante ; <b>ARE</b> avec ses deux turbopompes A et B, et l'<b>ASG</b> (alimentation de secours), ligne rouge pleine en service.</li><li><b>Turbine</b> et alternateur ; le petit carré est le disjoncteur (vert = couplé au réseau). <b>GCT-c</b> : la vanne qui envoie la vapeur au condenseur sans passer par la turbine ; <b>GCT-a</b> : rejet à l'atmosphère, en rouge s'il s'ouvre.</li></ul><p><b>Cliquez un équipement ou une étiquette</b> : ses actions rapides s'ouvrent sur place (les mêmes commandes que dans les familles), avec un lien vers toute la famille.</p>
 <h3>Pourquoi c'est important</h3><p>Toute la conduite consiste à équilibrer ce que produit le cœur et ce que consomme le secondaire. Si la turbine prend plus de vapeur que le cœur ne fournit, le primaire se refroidit ; dans le cas inverse, il chauffe. Le synoptique permet de voir où se situe le déséquilibre.</p>
 <h3>Ordres de grandeur</h3><ul><li>Échauffement de l'eau dans le cœur : environ 37 °C à pleine puissance (286 → 323 °C).</li><li>Débit primaire : ~ 22 000 m³/h par boucle, soit environ 18 m³ par seconde pour les trois boucles : une piscine olympique toutes les 2 à 3 minutes.</li><li>Rendement : 2 785 MW de chaleur pour ~ 905 MW électriques.</li></ul>`},
  instr:{t:'Instrumentation neutronique',l:'l-cin',h:`<h3>En bref</h3><p>On ne mesure pas directement la puissance d'un réacteur : on compte les neutrons qui s'échappent de la cuve. Entre le réacteur arrêté et la pleine puissance, ce flux varie d'un facteur mille milliards. Aucun détecteur ne couvre une telle plage, d'où trois familles qui se relaient, comme les calibres d'un multimètre.</p>
@@ -682,7 +738,7 @@ const HELP={
 <h3>Pourquoi c'est important</h3><p>Toutes les montées et descentes en température et pression (démarrage, refroidissement pour un arrêt) doivent rester dans la chaussette. La forme impose l'ordre des opérations : on ne met en pression qu'après avoir chauffé, et l'on dépressurise avant de trop refroidir. En puissance, le point reste dans le petit rectangle bleu du fonctionnement normal (155 bar, 286 à 325 °C).</p>
 <h3>Ordres de grandeur</h3><ul><li>Fonctionnement : 155 bar ; Tch 323 °C à 100 %, soit ~22 °C de marge à la saturation.</li><li>Arrêt à froid : quelques dizaines de bar et moins de 90 °C.</li></ul>
 <h3>Attention</h3><p>Le simulateur ne couvre que les états chauds (arrêt à chaud et puissance) : le point reste dans le coin supérieur droit, que le bouton « Zoom » agrandit. Les limites à basse température sont indicatives : les valeurs réelles dépendent de chaque tranche et de son vieillissement.</p>`},
- run:{t:'En cours',l:null,h:`<h3>En bref</h3><p>La carte de suivi de quart : ce qui est en train de se passer sur la tranche, qu'il s'agisse de vos actions ou des automatismes.</p><h3>Ce que vous voyez</h3><ul><li><b>Actions en cours</b> : rampe de charge, mouvements de grappes, appoints, modes manuels, isolements, équipements de secours. Le point indique l'origine : bleu pour une action de l'opérateur, ambre pour un automatisme, rouge pour une sauvegarde. Un bouton permet souvent d'arrêter ou de revenir en automatique directement.</li><li><b>Alarmes actives</b>, de la plus grave à la moins grave.</li><li><b>Journal</b> : les trois dernières entrées.</li></ul><h3>Pourquoi c'est important</h3><p>Un opérateur doit toujours savoir ce qu'il a lancé et ce qui tourne en manuel. Une dilution oubliée ou un groupe laissé en manuel sont des causes classiques d'écart.</p>`},
+ run:{t:'En cours',l:null,h:`<h3>En bref</h3><p>La carte de suivi de quart : ce qui est en train de se passer sur la tranche, qu'il s'agisse de vos actions ou des automatismes.</p><h3>Ce que vous voyez</h3><ul><li><b>Alarmes actives</b>, de la plus grave à la moins grave ; elles clignotent tant qu'elles ne sont pas acquittées. « Tableau » ouvre le tableau complet.</li><li><b>Mes actions</b> : rampe de charge, mouvements de grappes, appoints (avec leur avancement), modes manuels, isolements, équipements de secours, et les sauvegardes en cours (AAR, injection de sécurité). Le point indique l'origine : bleu pour une action de l'opérateur, ambre pour un écart, rouge pour une sauvegarde. Un bouton permet souvent d'arrêter ou de revenir en automatique directement.</li><li><b>Automatismes</b> : ce que les régulations font seules (groupe R, GCP, contournement GCT, ASG…).</li><li><b>Journal</b> (sur téléphone) : les trois dernières entrées ; sur ordinateur, le journal complet est dans la vue Journal.</li></ul><h3>Pourquoi c'est important</h3><p>Un opérateur doit toujours savoir ce qu'il a lancé et ce qui tourne en manuel. Une dilution oubliée ou un groupe laissé en manuel sont des causes classiques d'écart.</p>`},
  trend:{t:'Tendances',l:null,h:`<h3>En bref</h3><p>Un chiffre dit où l'on est, une courbe dit où l'on va. Les tendances enregistrent chaque seconde les grandeurs principales pour voir les dérives lentes et la forme des transitoires.</p>
 <h3>Ce que vous voyez</h3><ul><li>Les puces choisissent les courbes ; la fenêtre va de 5 minutes à 8 heures.</li><li>Le point au bout de chaque courbe est la valeur actuelle ; les pointillés sont des références (Tref, ΔI de référence).</li></ul>
 <h3>Bonnes associations</h3><ul><li><b>Puissance + Température</b> pour tout transitoire.</li><li><b>Grappes + Bore + Xénon</b> sur 8 h pour le suivi de charge.</li><li><b>Niveaux + Pression</b> pour les aléas d'eau alimentaire ou de RCV.</li></ul>`},
@@ -833,38 +889,88 @@ function closeHelp(){ $('#help').hidden=true; if(A.s) A.paused=helpWasPaused; sy
 
 
 /* ================= Bandeau ================= */
+/* Chaque case : pictogramme et libellé, valeur, courbe des dernières minutes derrière la valeur (sp), une ligne d'état (z : puces, mode, mini-diagramme),
+   la ligne secondaire (sb, ou v2 à côté de la valeur quand la place manque) et la plage de fonctionnement en bas (gz). Un clic ouvre la carte liée. */
 const TdS=s=>Number.isFinite(s.Td)&&s.Td<9999?fmt(s.Td,0)+' s':(s.rate<-1e-4?'décroiss.':'∞');
+const PIC={
+  pn:'<circle cx="12" cy="12" r="2"/><path d="M12 10V3a9 9 0 0 1 7.8 4.5L13.7 11M10.3 11 4.2 7.5A9 9 0 0 1 12 3M13.7 13l6.1 3.5A9 9 0 0 1 4.2 16.5L10.3 13"/>',
+  td:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  rg:'<path d="M6 3v12M12 3v8M18 3v15M4 21h16"/>',
+  di:'<path d="M4 20V4M4 20h16"/><path d="M9 18 13 6h4l-4 12z"/>',
+  cb:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/>',
+  tm:'<path d="M10 14V5a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0z"/><path d="M12 9v7"/>',
+  th:'<path d="M4 8h12l-3-3M20 16H8l3 3"/>',
+  pp:'<circle cx="12" cy="12" r="8"/><path d="m12 12 4-4"/>',
+  lp:'<path d="M8 3h8v18H8z"/><path d="M8 13h8"/>',
+  pe:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  psg:'<path d="M7 20c-2-3 2-5 0-8s2-5 0-8M12 20c-2-3 2-5 0-8s2-5 0-8M17 20c-2-3 2-5 0-8s2-5 0-8"/>',
+  lg:'<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/>',
+  dtm:'<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>',
+  sat:'<path d="M4 8a3 3 0 0 1 5-1 3 3 0 0 1 5 0 3 3 0 0 1 5 1"/><path d="M6 20c0-4 3-4 3-8M12 20c0-4 3-4 3-8M18 20c0-4 3-4 3-8"/>',
+  heat:'<path d="M12 21c-4 0-6-3-6-6 0-4 4-6 4-11 3 2 7 6 7 11 0 3-2 6-5 6z"/>',
+  spr:'<path d="M5 9h14"/><path d="M12 4v5M7 13l-1 3M12 13v3M17 13l1 3M9 19l-.5 1.5M15 19l.5 1.5"/>'
+};
+const pic=(k,c)=>'<svg class="'+(c||'pic')+'" viewBox="0 0 24 24" aria-hidden="true">'+(PIC[k]||'')+'</svg>';
+const chip=(cls,t,ic,p)=>'<span class="bchip '+cls+'"'+(p!=null?' style="--p:'+(p*100).toFixed(1)+'%"':'')+'>'+(ic?pic(ic,'ci'):'<i class="dot"></i>')+'<span>'+t+'</span></span>';
+const rampOn=s=>s.coupled&&!s.ilot&&Math.abs(s.LtSet-s.Lt)>0.002;
 const BG=[
  {g:'core',t:'Cœur',c:[
-  {id:'pn',k:'P nucléaire',u:'%',m:1,v:s=>s.n<0.001?fmt(s.n*100,3):fmt(s.n*100,1),sb:s=>s.coupled?'turb. '+fmt(s.Qt*100,0)+' %':(s.tripped?'résid. '+fmt(s.Qdh*100,1)+' %':'découplée'),gz:{min:0,max:120,lo:0,hi:103,tr:[109],x:s=>s.n*100},st:s=>s.n>1.09?'crit':s.n>1.03?'warn':''},
-  {id:'td',vid:'rho',k:'Réactivité',u:'pcm',m:1,v:s=>sgn(s.rho.tot,0),sb:s=>'Td '+TdS(s),st:s=>s.tripped?'':s.Td<12?'crit':s.Td<30?'warn':''},
-  {id:'rg',vid:'r',k:'Groupe R · GCP',u:'pas',v:s=>fmt(s.rods.R.p,0),sb:s=>'GCP '+fmt(s.rods.G.p,0),gz:{min:0,max:225,lo:150,hi:215,x:s=>s.rods.R.p},st:s=>!s.tripped&&s.coupled&&(s.rods.R.p<130)?'crit':!s.tripped&&s.coupled&&(s.rods.R.p<150||s.rods.R.p>215)?'warn':''},
-  {id:'di',k:'ΔI',u:'% PN',v:s=>fmt(s.DI,1),sb:s=>'écart '+sgn(s.DI+1.5*s.n,1),gz:{min:-10,max:10,lo:-5,hi:5,x:s=>s.DI+1.5*s.n},st:s=>!s.tripped&&s.n>0.15&&Math.abs(s.DI+1.5*s.n)>5?'warn':''},
-  {id:'cb',k:'Bore',u:'ppm',m:1,v:s=>fmt(s.Cb,0),sb:s=>'α '+fmt(s.rho.am,1)}]},
+  {id:'pn',k:'P nucléaire',u:'%',m:1,v:s=>s.n<0.001?fmt(s.n*100,3):fmt(s.n*100,1),sb:s=>s.coupled?'turb. '+fmt(s.Qt*100,0)+' %':(s.tripped?'résid. '+fmt(s.Qdh*100,1)+' %':'découplée'),gz:{min:0,max:120,lo:0,hi:103,tr:[109],x:s=>s.n*100},st:s=>s.n>1.09?'crit':s.n>1.03?'warn':'',sp:{k:'pn',k2:'pt',span:2}},
+  {id:'td',vid:'rho',k:'Réactivité',u:'pcm',m:1,v:s=>sgn(s.rho.tot,0),sb:s=>'Td '+TdS(s),v2:s=>'Td '+TdS(s),st:s=>s.tripped?'':s.Td<12?'crit':s.Td<30?'warn':'',z:s=>{ const r=clamp(s.rho.tot,-60,60), w=Math.abs(r)/60*50; return '<span class="ctr"><i class="ok"></i><i class="b" style="left:'+(r<0?50-w:50)+'%;width:'+w+'%"></i><i class="o"></i></span>'; }},
+  {id:'rg',vid:'r',k:'Groupe R · GCP',u:'pas',v:s=>fmt(s.rods.R.p,0),sb:s=>'GCP '+fmt(s.rods.G.p,0),v2:s=>'GCP '+fmt(s.rods.G.p,0),gz:{min:0,max:225,lo:150,hi:215,x:s=>s.rods.R.p},st:s=>!s.tripped&&s.coupled&&(s.rods.R.p<130)?'crit':!s.tripped&&s.coupled&&(s.rods.R.p<150||s.rods.R.p>215)?'warn':'',
+   z:s=>{ const r=s.rods.R, mv=Math.abs(r.tg-r.p)>0.4?(r.tg>r.p?' ▲':' ▼'):''; return s.tripped?chip('cr','En bas'):'<span class="pill'+(s.modeR==='man'?' man':'')+'">R '+(s.modeR==='man'?'manuel':'auto')+mv+'</span><span class="pill'+(s.modeG==='man'?' man':'')+'">GCP '+(s.modeG==='man'?'man.':'auto')+'</span>'; }},
+  {id:'di',k:'ΔI',u:'% PN',v:s=>fmt(s.DI,1),sb:s=>'écart '+sgn(s.DI+1.5*s.n,1),v2:s=>'écart '+sgn(s.DI+1.5*s.n,1),gz:{min:-10,max:10,lo:-5,hi:5,x:s=>s.DI+1.5*s.n},st:s=>!s.tripped&&s.n>0.15&&Math.abs(s.DI+1.5*s.n)>5?'warn':'',dg:1},
+  {id:'cb',k:'Bore',u:'ppm',m:1,v:s=>fmt(s.Cb,0),sb:s=>'α '+fmt(s.rho.am,1),
+   z:s=>{ if(s.reaIsol) return chip('warn','REA isolé'); if(s.rea.run){ const d=s.rea.mode==='dil'; return chip('live pg '+(d?'dil':'bor'),(d?'Dil. ':'Bor. ')+fmt(s.rea.v*1000,0)+(s.rea.vt===Infinity?' L':'/'+fmt(s.rea.vt*1000,0)),null,s.rea.vt===Infinity?null:clamp(s.rea.v/s.rea.vt,0,1)); }
+    if(s.Qdil>0) return chip('warn live','Eau d\'appoint '+fmt(s.Qdil,0)+' m³/h'); return chip('off','Arrêt'); }}]},
  {g:'prim',t:'Primaire',c:[
-  {id:'tm',k:'Tmoy',u:'°C',m:1,v:s=>fmt(s.Tavg,1),sb:s=>s.coupled?'écart '+sgn(s.Tavg-s.Tref,1):'pas de Tref',gz:{min:-5,max:5,lo:-1.5,hi:1.5,x:s=>s.coupled?s.Tavg-s.Tref:0},st:s=>s.coupled&&!s.tripped&&Math.abs(s.Tavg-s.Tref)>3?'crit':s.coupled&&!s.tripped&&Math.abs(s.Tavg-s.Tref)>1.5?'warn':''},
-  {id:'th',k:'Tch · Tfr',u:'°C',v:s=>fmt(s.Thot,1),sb:s=>'Tfr '+fmt(s.Tcold,1)},
-  {id:'pp',k:'Pression pressu',u:'bar',m:1,v:s=>fmt(s.Ppzr,1),sb:s=>s.sebim?'SEBIM !':'cons. 155',gz:{min:125,max:170,lo:152,hi:157.5,tr:[131,165],x:s=>s.Ppzr},st:s=>s.Ppzr>164||s.Ppzr<132?'crit':s.Ppzr>157.5||s.Ppzr<152?'warn':''},
-  {id:'lp',k:'Niveau pressu',u:'%',m:1,v:s=>fmt(s.Lpzr,0),sb:s=>'réf. '+fmt(s.Lref,0)+' %',gz:{min:0,max:100,lo:s=>s.Lref-5,hi:s=>s.Lref+5,tr:[14,92],x:s=>s.Lpzr},st:s=>s.Lpzr<15||s.Lpzr>90?'crit':Math.abs(s.Lpzr-s.Lref)>5?'warn':''}]},
+  {id:'tm',k:'Tmoy',u:'°C',m:1,v:s=>fmt(s.Tavg,1),sb:s=>s.coupled?'écart '+sgn(s.Tavg-s.Tref,1):'pas de Tref',v2:s=>s.coupled?sgn(s.Tavg-s.Tref,1):'',gz:{min:-5,max:5,lo:-1.5,hi:1.5,x:s=>s.coupled?s.Tavg-s.Tref:0},st:s=>s.coupled&&!s.tripped&&Math.abs(s.Tavg-s.Tref)>3?'crit':s.coupled&&!s.tripped&&Math.abs(s.Tavg-s.Tref)>1.5?'warn':'',sp:{k:'ta',k2:'tr',span:1}},
+  {id:'th',k:'Tch · Tfr',u:'°C',v:s=>fmt(s.Thot,1),sb:s=>'Tfr '+fmt(s.Tcold,1),v2:s=>'Tfr '+fmt(s.Tcold,1),sp:{k:'th',span:1}},
+  {id:'pp',k:'Pression pressu',u:'bar',m:1,v:s=>fmt(s.Ppzr,1),sb:s=>s.sebim?'SEBIM !':'cons. 155',gz:{min:125,max:170,lo:152,hi:157.5,tr:[131,165],x:s=>s.Ppzr},st:s=>s.Ppzr>164||s.Ppzr<132?'crit':s.Ppzr>157.5||s.Ppzr<152?'warn':'',sp:{k:'pp',span:1},
+   z:s=>s.sebim?chip('cr live','SEBIM ouvertes'):chip(s.hEff>0.04?'heat':'off',fmt(s.hEff*100,0),'heat')+chip(s.spray>0.005?'spr':'off',fmt(s.spray*100,0),'spr'),zt:s=>'Chaufferettes '+fmt(s.hEff*1440,0)+' kW · aspersion '+fmt(s.spray*100,0)+' %'},
+  {id:'lp',k:'Niveau pressu',u:'%',m:1,v:s=>fmt(s.Lpzr,0),sb:s=>'réf. '+fmt(s.Lref,0)+' %',v2:s=>'réf. '+fmt(s.Lref,0),gz:{min:0,max:100,lo:s=>s.Lref-5,hi:s=>s.Lref+5,tr:[14,92],x:s=>s.Lpzr},st:s=>s.Lpzr<15||s.Lpzr>90?'crit':Math.abs(s.Lpzr-s.Lref)>5?'warn':''}]},
  {g:'sec',t:'Secondaire',c:[
-  {id:'pe',k:'P électrique',u:'MWe',m:1,v:s=>fmt(s.Qt*K.MWE,0),sb:s=>s.ilot?'îlotage':s.coupled?(Math.abs(s.LtSet-s.Lt)>0.002?'→ '+fmt(s.LtSet*100,0)+' %':'charge '+fmt(s.Lt*100,0)+' %'):'découplée'},
-  {id:'psg',k:'Pression GV',u:'bar',v:s=>fmt(s.Psg,1),sb:s=>s.qa>0.005?'GCT-a ouvert':'GCT-c '+fmt(s.gct/0.85*100,0)+' %'},
-  {id:'lg',k:'Niveau GV',u:'%',m:1,v:s=>fmt(s.Lsg,0),sb:s=>fmt((s.Wf+s.Wasg)*100,0)+' / '+fmt(s.Wst*100,0)+' %',gz:{min:0,max:100,lo:40,hi:60,tr:[15,80],x:s=>s.Lsg},st:s=>s.Lsg<20||s.Lsg>75?'crit':s.Lsg<40||s.Lsg>60?'warn':''}]},
+  {id:'pe',k:'P électrique',u:'MWe',m:1,v:s=>fmt(s.Qt*K.MWE,0),zt:s=>rampOn(s)?'rampe '+s.ramp+' %/min':'',sb:s=>s.ilot?'îlotage':s.coupled?(Math.abs(s.LtSet-s.Lt)>0.002?'→ '+fmt(s.LtSet*100,0)+' %':'charge '+fmt(s.Lt*100,0)+' %'):'découplée',sp:{k:'pt',span:2},
+   z:s=>s.ilot?chip('warn live','Îlotage'):!s.coupled?chip('off',s.turbTripped?'Déclenchée':'Découplée'):rampOn(s)?chip('live pg tu','→ '+fmt(s.LtSet*100,0)+' %'):chip('off','Charge '+fmt(s.Lt*100,0)+' % stable')},
+  {id:'psg',k:'Pression GV',u:'bar',v:s=>fmt(s.Psg,1),sb:s=>s.qa>0.005?'GCT-a ouvert':'GCT-c '+fmt(s.gct/0.85*100,0)+' %',v2:s=>s.qa>0.005?'GCT-a':'GCT-c '+fmt(s.gct/0.85*100,0)+' %',sp:{k:'sg',span:1}},
+  {id:'lg',k:'Niveau GV',u:'%',m:1,v:s=>fmt(s.Lsg,0),sb:s=>fmt((s.Wf+s.Wasg)*100,0)+' / '+fmt(s.Wst*100,0)+' %',v2:s=>fmt((s.Wf+s.Wasg)*100,0)+'/'+fmt(s.Wst*100,0),gz:{min:0,max:100,lo:40,hi:60,tr:[15,80],x:s=>s.Lsg},st:s=>s.Lsg<20||s.Lsg>75?'crit':s.Lsg<40||s.Lsg>60?'warn':''}]},
  {g:'saf',t:'Sûreté',c:[
   {id:'dtm',k:'Marge ΔT',u:'%',v:s=>s.tripped?'—':fmt(s.dtMargin,1),sb:s=>'seuil '+fmt(Math.min(s.OTsp,s.OPsp),0)+' %',gz:{min:0,max:30,lo:5,hi:30,tr:[0],x:s=>s.tripped?30:s.dtMargin},st:s=>s.tripped?'':s.dtMargin<3?'crit':s.dtMargin<5?'warn':''},
   {id:'sat',k:'Marge saturation',u:'°C',v:s=>fmt(s.satMargin,1),sb:s=>'Tsat '+fmt(tsat(s.Ppzr),1),gz:{min:0,max:50,lo:15,hi:50,tr:[10],x:s=>s.satMargin},st:s=>s.satMargin<10?'crit':s.satMargin<15?'warn':''}]},
 ];
+const BAND_TIP={pn:'Instrumentation neutronique',td:'Bilan de réactivité',rg:'Grappes de commande',di:'Diagramme de pilotage ΔI',cb:'Bore — RCV / REA',tm:'Courbes clés',th:'Synoptique',pp:'Pressuriseur — RCV',lp:'Pressuriseur — RCV',pe:'Turbine — GCT',psg:'Eau alimentaire — ARE / ASG',lg:'Eau alimentaire — ARE / ASG',dtm:'Protection et sauvegarde',sat:'Chaussette P-T'};
 function buildBand(){
-  $('#band').innerHTML=BG.map(g=>'<div class="bg" data-g="'+g.g+'" style="--n:'+g.c.length+'"><div class="bgh">'+g.t+'</div><div class="bgc">'+g.c.map(c=>'<div class="rd'+(c.m?' mb':'')+'" id="rd-'+c.id+'"><div class="k">'+c.k+'</div><div class="v"><span id="b-'+(c.vid||c.id)+'">—</span><small>'+c.u+'</small></div><div class="sb" id="s-'+c.id+'"></div>'+(c.gz?'<div class="gz" id="g-'+c.id+'"><i class="n"></i>'+(c.gz.tr||[]).map(()=>'<i class="t"></i>').join('')+'<b></b></div>':'')+'</div>').join('')+'</div></div>').join('');
+  $('#band').innerHTML=BG.map(g=>'<div class="bg" data-g="'+g.g+'" style="--n:'+g.c.length+'"><div class="bgh">'+g.t+'</div><div class="bgc">'+g.c.map(c=>'<div class="rd'+(c.m?' mb':'')+(c.sp?' hsp':'')+(c.z?' hz':'')+(c.dg?' hdg':'')+'" id="rd-'+c.id+'" role="button" tabindex="0" aria-label="'+c.k+' : ouvrir la carte « '+BAND_TIP[c.id]+' »">'+(c.sp?'<div class="bsp" id="sp-'+c.id+'"></div>':'')+(c.dg?'<div class="bdg" id="dg-'+c.id+'"></div>':'')+'<div class="k">'+pic(c.id)+'<span>'+c.k+'</span></div><div class="v"><span id="b-'+(c.vid||c.id)+'">—</span><small>'+c.u+'</small>'+(c.v2?'<em class="v2" id="v2-'+c.id+'"></em>':'')+'</div>'+(c.z?'<div class="z" id="z-'+c.id+'"></div>':'')+'<div class="sb" id="s-'+c.id+'"></div>'+(c.gz?'<div class="gz" id="g-'+c.id+'"><i class="n"></i>'+(c.gz.tr||[]).map(()=>'<i class="t"></i>').join('')+'<b></b></div>':'')+'</div>').join('')+'</div></div>').join('');
   for(const g of BG) for(const c of g.c) if(c.gz){ const z=c.gz, el=document.getElementById('g-'+c.id), pc=v=>clamp((v-z.min)/(z.max-z.min)*100,0,100); [...el.querySelectorAll('.t')].forEach((t,i)=>t.style.left=pc(z.tr[i])+'%'); }
 }
 function updateBand(s){
   for(const g of BG) for(const c of g.c){
-    T('b-'+(c.vid||c.id),c.v(s)); if(c.sb) T('s-'+c.id,c.sb(s));
+    T('b-'+(c.vid||c.id),c.v(s)); if(c.sb) T('s-'+c.id,c.sb(s)); if(c.v2) T('v2-'+c.id,c.v2(s)); if(c.z) H('z-'+c.id,c.z(s));
     const st=c.st?c.st(s):''; const cell=document.getElementById('rd-'+c.id); cell.classList.toggle('warn',st==='warn'); cell.classList.toggle('crit',st==='crit');
+    const zt=c.zt?c.zt(s):'', tip=(c.sb?c.sb(s)+(zt?' · '+zt:'')+' — ':'')+'clic : carte « '+BAND_TIP[c.id]+' »'; if(cell.title!==tip) cell.title=tip;
     if(c.gz){ const z=c.gz, el=document.getElementById('g-'+c.id), pc=v=>clamp((v-z.min)/(z.max-z.min)*100,0,100);
       const lo=typeof z.lo==='function'?z.lo(s):z.lo, hi=typeof z.hi==='function'?z.hi(s):z.hi, n=el.firstChild;
       n.style.left=pc(lo)+'%'; n.style.width=Math.max(0,pc(hi)-pc(lo))+'%'; el.lastChild.style.left=pc(z.x(s))+'%'; }
   }
 }
-
+/* courbes derrière les valeurs et mini-diagramme ΔI (toutes les 0,5 s) : 5 min de temps simulé, plus long en accéléré */
+function drawBand(){
+  const s=A.s; if(!s) return; const H0=s.hist; if(!H0.length) return;
+  const win=Math.min(A.speed>=300?7200:A.speed>=60?1800:300,Math.max(30,s.t-H0[0].t)), t0=s.t-win;
+  let i0=H0.length-1; while(i0>0&&H0[i0-1].t>=t0) i0--;
+  const pts=H0.slice(i0), st=Math.max(1,Math.ceil(pts.length/140)), P=[]; for(let i=0;i<pts.length;i+=st) P.push(pts[i]); if(P[P.length-1]!==pts[pts.length-1]) P.push(pts[pts.length-1]);
+  const W=100,Hh=30, X=t=>((t-t0)/win*W).toFixed(1);
+  for(const g of BG) for(const c of g.c){
+    if(c.sp){ const el=document.getElementById('sp-'+c.id); if(!el||!el.getClientRects().length) continue;
+      const k=c.sp.k, k2=c.sp.k2; let mn=Infinity,mx=-Infinity; for(const p of P){ for(const q of [k,k2]) if(q){ const v=p[q]; if(v<mn) mn=v; if(v>mx) mx=v; } }
+      if(!Number.isFinite(mn)) continue; if(mx-mn<c.sp.span){ const m=(mx+mn)/2; mn=m-c.sp.span/2; mx=m+c.sp.span/2; } const pd=(mx-mn)*.12; mn-=pd; mx+=pd;
+      const Y=v=>(Hh-(clamp((v-mn)/(mx-mn),0,1))*Hh).toFixed(1), ln=P.map(p=>X(p.t)+','+Y(p[k])).join(' ');
+      el.innerHTML='<svg viewBox="0 0 '+W+' '+Hh+'" preserveAspectRatio="none" aria-hidden="true"><polygon class="a" points="'+X(P[0].t)+','+Hh+' '+ln+' '+X(P[P.length-1].t)+','+Hh+'"/>'+(k2?'<polyline class="r" points="'+P.map(p=>X(p.t)+','+Y(p[k2])).join(' ')+'"/>':'')+'<polyline class="l" points="'+ln+'"/></svg>'; }
+    if(c.dg){ const el=document.getElementById('dg-'+c.id); if(!el||!el.getClientRects().length) continue;
+      const Xd=d=>((clamp(d,-15,10)+15)/25*W).toFixed(1), Yp=p=>(Hh-clamp(p,0,110)/110*Hh).toFixed(1);
+      const band=[[-5,0],[-6.65,110],[3.35,110],[5,0]].map(([d,p])=>Xd(d)+','+Yp(p)).join(' ');
+      const n=Math.min(H0.length,3600), tr=[]; for(let i=H0.length-n;i<H0.length;i+=30) tr.push(Xd(H0[i].di)+','+Yp(H0[i].pn));
+      const ok=Math.abs(s.DI+1.5*s.n)<=5;
+      el.innerHTML='<svg viewBox="0 0 '+W+' '+Hh+'" preserveAspectRatio="none" aria-hidden="true"><polygon class="ok" points="'+band+'"/><line class="ax" x1="'+Xd(0)+'" x2="'+Xd(0)+'" y1="0" y2="'+Hh+'"/><polyline class="tr" points="'+tr.join(' ')+'"/><path class="pt'+(ok?'':' out')+'" d="M'+Xd(s.DI)+' '+Yp(s.n*100)+'l0 .01"/></svg>'; }
+  }
+}

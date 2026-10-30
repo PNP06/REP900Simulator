@@ -227,7 +227,7 @@ function aarWatch(){
 
 /* ================= Carte « En cours » ================= */
 function runItems(s){
-  const L=[]; const it=(k,t,b,b2)=>L.push({k,t,b,b2});
+  const L=[]; const it=(k,t,b,b2,p)=>L.push({k,t,b,b2,p});
   if(s.is) it('r','Injection de sécurité : '+fmt(s.Qis,0)+' m³/h d\'eau borée',['isStop','','Arrêter l\'IS']);
   if(s.tripped) it('r','AAR — '+s.tripCause,['rearm','','Réarmer'],['aarWhy','','Pourquoi ?']);
   if(s.sebim) it('r','Soupapes SEBIM ouvertes');
@@ -237,7 +237,7 @@ function runItems(s){
   for(const b of ['SD','G','R']){ const r=s.rods[b]; if(!s.tripped&&Math.abs(r.tg-r.p)>0.4) it('op',NM[b]+' '+fmt(r.p,0)+' → '+fmt(r.tg,0)+' pas',['rodStopB',b,'Stop']); }
   if(!s.tripped&&s.coupled&&s.modeR==='auto'&&s.rAuto) it('auto','Groupe R en régulation automatique ('+fmt(s.rods.R.p,0)+' pas)');
   if(!s.tripped&&s.coupled&&s.modeG==='auto'&&Math.abs(calG(s.Lt)-s.rods.G.p)>0.6) it('auto','GCP vers leur position de calibrage ('+fmt(calG(s.Lt),0)+' pas)');
-  if(s.rea.run&&!s.reaIsol) it('op',(s.rea.mode==='dil'?'Dilution ':'Borication ')+s.rea.q+' m³/h · '+fmt(s.rea.v*1000,0)+(s.rea.vt===Infinity?' L (continu)':' / '+fmt(s.rea.vt*1000,0)+' L · reste '+dur((s.rea.vt-s.rea.v)/s.rea.q*3600)),['reaStop','','Arrêter']);
+  if(s.rea.run&&!s.reaIsol) it('op',(s.rea.mode==='dil'?'Dilution ':'Borication ')+s.rea.q+' m³/h · '+fmt(s.rea.v*1000,0)+(s.rea.vt===Infinity?' L (continu)':' / '+fmt(s.rea.vt*1000,0)+' L · reste '+dur((s.rea.vt-s.rea.v)/s.rea.q*3600)),['reaStop','','Arrêter'],null,s.rea.vt===Infinity?null:clamp(s.rea.v/s.rea.vt,0,1));
   else if(s.Qdil>0) it('a','Débit d\'eau d\'appoint '+fmt(s.Qdil,0)+' m³/h');
   if(s.gct>0.02) it('auto','GCT-c ouvert '+fmt(s.gct/0.85*100,0)+' % (mode '+(s.coupled?'température':'pression')+')');
   if(s.qa>0.005) it(s.gctaMan>0?'op':'auto','GCT-a : '+fmt(s.qa*100,1)+' % de vapeur à l\'atmosphère',s.gctaMan>0?['gctaZero','','Fermer']:null);
@@ -257,15 +257,18 @@ function runItems(s){
 }
 function updateRun(){
   const s=A.s; if(!s) return;
-  const L=runItems(s);
-  const lh=L.length?L.map(x=>'<div class="ri '+x.k+'"><span class="rdot"></span><span class="rt">'+x.t+'</span>'+[x.b2,x.b].map(b=>b?'<button class="btn sm" data-act="'+b[0]+'" data-v="'+b[1]+'">'+b[2]+'</button>':'').join('')+'</div>').join(''):'<div class="ri none">Aucune action en cours. Régulations en automatique.</div>';
-  const el=$('#runList'); if(el&&el.dataset.h!==lh){ el.innerHTML=lh; el.dataset.h=lh; }
+  const L=runItems(s), set=(id,h)=>{ const el=$(id); if(el&&el.dataset.h!==h){ el.innerHTML=h; el.dataset.h=h; } };
+  const ri=x=>'<div class="ri '+x.k+(x.p!=null?' rpg':'')+'"'+(x.p!=null?' style="--p:'+(x.p*100).toFixed(1)+'%"':'')+'><span class="rdot"></span><span class="rt">'+x.t+'</span>'+[x.b2,x.b].map(b=>b?'<button class="btn sm" data-act="'+b[0]+'" data-v="'+b[1]+'">'+b[2]+'</button>':'').join('')+'</div>';
+  const me=L.filter(x=>x.k!=='auto'), au=L.filter(x=>x.k==='auto');
+  set('#runList',me.length?me.map(ri).join(''):'<div class="ri none">Aucune action en cours.</div>');
+  set('#runAuto',au.length?au.map(ri).join(''):'<div class="ri none">Régulations en automatique, rien de particulier.</div>');
   const rk={r:0,a:1,i:2};
   const al=ALM.filter(([id])=>s.alarms[id]&&s.alarms[id].on).map(([id,lab,sev])=>({lab,sev,t:s.alarms[id].since,ack:s.alarms[id].ack})).sort((a,b)=>rk[a.sev]-rk[b.sev]||b.t-a.t);
-  const ah=al.length?al.slice(0,6).map(x=>'<div class="ra '+x.sev+(x.ack?'':' nack')+'"><span class="tm">'+hms(x.t)+'</span>'+x.lab+'</div>').join('')+(al.length>6?'<div class="ra more">+ '+(al.length-6)+' autres</div>':''):'<div class="ra none">Aucune alarme.</div>';
-  const ea=$('#runAl'); if(ea&&ea.dataset.h!==ah){ ea.innerHTML=ah; ea.dataset.h=ah; }
-  const lg=s.log.slice(-3).reverse().map(l=>'<div><span class="tm">'+hms(l.t)+'</span><span class="'+l.type+'">'+l.txt+'</span></div>').join('');
-  const er=$('#runLog'); if(er&&er.dataset.h!==lg){ er.innerHTML=lg; er.dataset.h=lg; }
+  const mx=desk()?16:6;
+  set('#runAl',al.length?al.slice(0,mx).map(x=>'<div class="ra '+x.sev+(x.ack?'':' nack')+'" title="Depuis '+hms(x.t)+'"><span class="tm">'+hms(x.t)+'</span>'+x.lab+'</div>').join('')+(al.length>mx?'<div class="ra more">+ '+(al.length-mx)+' autres</div>':''):'<div class="ra none">Aucune alarme.</div>');
+  const n=$('#runN'); if(n){ T('runN',String(al.length)); n.classList.toggle('z',!al.some(x=>x.sev!=='i')); }
+  const ak=$('#runAck'); if(ak) ak.hidden=!al.some(x=>!x.ack);
+  set('#runLog',s.log.slice(-3).reverse().map(l=>'<div><span class="tm">'+hms(l.t)+'</span><span class="'+l.type+'">'+l.txt+'</span></div>').join(''));
 }
 function buildMini(){
   $('#mcharts').innerHTML=['pw','tp','pp','lv'].map(k=>{ const c=CH[k]; return '<div class="chart mini"><div class="ct"><span>'+c.t+'</span><span class="lg">'+c.s.map(x=>'<span style="color:var(--'+x[2]+')">'+x[1]+'</span>').join('')+'</span></div><canvas id="mc-'+k+'" role="img" aria-label="Courbe : '+c.t+'"></canvas></div>'; }).join('');
@@ -300,7 +303,7 @@ function buildCharts(){
   $('#charts').innerHTML=A.charts.map(k=>{ const c=CH[k]; return '<div class="chart"><div class="ct"><span>'+c.t+'</span><span class="lg">'+c.s.map(x=>'<span style="color:var(--'+x[2]+')">'+x[1]+'</span>').join('')+'</span></div><canvas id="ch-'+k+'" role="img" aria-label="Courbe : '+c.t+'"></canvas></div>'; }).join('');
 }
 $('#chips').addEventListener('click',e=>{ const b=e.target.closest('[data-ch]'); if(!b) return; const k=b.dataset.ch; A.charts=A.charts.includes(k)?A.charts.filter(x=>x!==k):Object.keys(CH).filter(x=>x===k||A.charts.includes(x)); store('charts',A.charts); buildCharts(); drawCharts(); });
-function prepCanvas(cv){ const w=cv.clientWidth,h=cv.clientHeight; if(!w) return null; const dpr=window.devicePixelRatio||1; if(cv.width!==Math.round(w*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);} const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h); return {g,w,h}; }
+function prepCanvas(cv){ const w=cv.clientWidth,h=cv.clientHeight; if(!w) return null; const dpr=window.devicePixelRatio||1; if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);} const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h); return {g,w,h}; }
 function drawCharts(){ drawSet(A.charts,'ch-',A.win); drawSet(['pw','tp','pp','lv'],'mc-',A.mwin); }
 function drawSet(keys,pre,win){
   const s=A.s; if(!s) return;
