@@ -497,6 +497,10 @@ const DA={
 const fd=d=>(s,c)=>c.fired!=null&&s.t-c.fired>=d;
 const stableFor=(sec,tol)=>(s,c,k)=>{ if(Math.abs(s.rate)<(tol||0.0015)) k.st=(k.st||0)+DT; else k.st=0; return k.st>=sec; };
 const reaIdle=s=>!s.rea.run;
+/* îlotage : le xénon s'accumule après la chute de puissance, R remonte ; on dilue par petits volumes pour le garder dans sa bande */
+const xeIlot=s=>{ if(s.rea.run) return null; const d=s.Tavg-s.Tref;
+  if(s.rods.R.p>215||(d<-0.8&&s.rods.R.p>200)) return {t:'Dilution de 1 m³ à 30 m³/h',why:"La puissance a chuté mais l'iode continue de se transformer en xénon, qui freine le réacteur : R remonte vers sa butée haute. Une dilution franche lui redonne de la marge, sinon Tmoy décrocherait sous Tref.",a:DA.bore('dil','30','1')};
+  if(s.rods.R.p<170&&d>0.8) return {t:'Borication de 100 L',why:"R est descendu un peu bas : on reprend un peu de bore.",a:DA.bore('bor','10','0.1')}; return null; };
 const DM={
  tpa:{speed:1,intro:"À pleine puissance, une turbopompe alimentaire va déclencher. Regardez comment on la repère et pourquoi on baisse aussitôt la charge.",steps:[
   {w:fd(4),t:"Repérer l'aléa",why:"Le niveau des GV baisse et l'alarme d'écart de débit apparaît. Dans la carte Eau alimentaire, le voyant de la TPA B est éteint : il n'entre plus que 58 % du débit d'eau nécessaire.",a:[DA.look('#rd-lg'),DA.look('#l-tpa2'),DA.ack()]},
@@ -507,9 +511,10 @@ const DM={
  ilot:{speed:1,intro:"Le réseau électrique va disparaître. Regardez la tranche se caler sur ses propres besoins, puis le recouplage.",steps:[
   {w:fd(3),t:"Comprendre : c'est un îlotage",why:"La charge turbine tombe vers 5 % sans demande et le GCT-c s'ouvre : le réseau a disparu, la turbine n'alimente plus que la centrale.",a:[DA.look('#c-tst'),DA.look('#c-gct'),DA.ack()]},
   {w:fd(25),t:'Vérifier les automatismes',why:"Les GCP et R s'insèrent pour réduire la puissance, l'excès de vapeur part au condenseur. On ne contrarie pas les automatismes : on vérifie qu'ils font leur travail.",a:[DA.look('[data-bank="G"]'),DA.look('#rd-pp'),DA.look('#rd-tm')]},
-  {w:fd(60),t:'Laisser la régulation recaler la température',why:"R s'est enfoncé très bas pour compenser le défaut de puissance libéré par la baisse. Le xénon va maintenant s'accumuler et R remontera de lui-même : on ne bore pas, on surveille.",a:[DA.look('[data-bank="R"]'),DA.speed(5)]},
-  {w:s=>s.Tavg-s.Tref<-1.2,t:'Tmoy passe sous Tref : on laisse faire',why:"Pendant le transitoire, les grappes se sont enfoncées plus que nécessaire et la puissance nucléaire est passée sous la charge. La régulation ressort R d'elle-même ; on surveille sans intervenir.",a:[DA.look('#rd-tm'),DA.look('[data-bank="R"]')]},
-  {w:s=>s.grid,t:'Recoupler au réseau',why:"Le réseau est revenu. On recouple ; la charge reste d'abord à son niveau et Tmoy reste sur Tref.",a:[DA.btn('recouple'),DA.speed(2)]}]},
+  {w:fd(60),t:'Laisser la régulation recaler la température',why:"La puissance nucléaire est passée sous la charge : la régulation le voit et ressort R aussitôt, avant que Tmoy ne plonge. On ne bore pas, on surveille.",a:[DA.look('[data-bank="R"]'),DA.look('#rd-tm'),DA.speed(5)]},
+  {ctl:{every:60,until:s=>s.grid,f:xeIlot},t:'Compenser le xénon'},
+  {t:'Recoupler au réseau',why:"Le réseau est revenu. On recouple ; la charge reste d'abord à son niveau et Tmoy reste sur Tref.",a:[DA.btn('recouple'),DA.speed(2)]},
+  {ctl:{every:60,until:()=>false,f:xeIlot},t:'Compenser le xénon après le recouplage'}]},
  drop:{speed:5,intro:"Une grappe va tomber dans le cœur à pleine puissance. Regardez pourquoi on fige les grappes et on agit sur la turbine.",steps:[
   {w:fd(3),t:'Repérer la chute de grappe',why:"Alarme rouge « Chute de grappe », puissance qui baisse d'un coup, Tmoy sous Tref. Le bilan de réactivité montre −280 pcm sur la ligne Grappes.",a:[DA.look('#alb'),DA.look('#rd-tm'),DA.ack()]},
   {t:'Passer les GCP en manuel',why:"L'extraction est bloquée : R ne peut pas compenser. En automatique, les GCP s'enfonceraient encore à chaque baisse de charge, et Tmoy resterait sous Tref. On les fige.",a:[DA.seg('modeG','man')]},

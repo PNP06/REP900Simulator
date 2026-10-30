@@ -94,6 +94,16 @@ check('Psat(273 °C) ≈ 57,5 bar', near(psat(273), 57.5, 1.5), psat(273).toFixe
 { const s = makeState(P100); run(s, 5); s.grid = false; s.ilot = true; run(s, 120);
   check('Élec : îlotage réussi, auxiliaires sur le TS, rien ne s\'arrête', s.coupled && s.el.src.LG === 'ts' && s.pumps.every(Boolean) && !s.tripped); }
 
+/* îlotage depuis 100 % : Tmoy reste près de Tref pendant le transitoire ; ensuite le xénon impose de diluer */
+{ const s = makeState(P100); run(s, 5); s.grid = false; s.ilot = true; const t0 = s.t; let dmin = 99, dmax = -99;
+  while (s.t - t0 < 720) { step(s); if (s.t - t0 > 90) { const d = s.Tavg - s.Tref; dmin = Math.min(dmin, d); dmax = Math.max(dmax, d); } }
+  check('Îlotage : Tmoy à ±1,5 °C de Tref de 1 min 30 à 12 min, sans AAR', dmin > -1.5 && dmax < 1.5 && !s.tripped, `écart ${dmin.toFixed(2)} à ${dmax.toFixed(2)} °C`);
+  let last = -1e9; dmin = 99; dmax = -99;
+  while (s.t - t0 < 2700) { step(s); const t = s.t - t0, d = s.Tavg - s.Tref;
+    if (t - last >= 60 && !s.rea.run) { last = t; if (s.rods.R.p > 215 || (d < -0.8 && s.rods.R.p > 200)) Object.assign(s.rea, { mode: 'dil', q: 30, vt: 1, v: 0, run: true }); }
+    dmin = Math.min(dmin, d); dmax = Math.max(dmax, d); }
+  check('Îlotage : avec dilutions de 1 m³ quand R est en haut, Tmoy tenue à ±1,5 °C jusqu\'à 45 min', dmin > -1.5 && dmax < 1.5, `écart ${dmin.toFixed(2)} à ${dmax.toFixed(2)} °C, ${s.volDil.toFixed(1)} m³ dilués`); }
+
 /* manque de tension externe : 400 et 225 kV perdus, îlotage raté */
 const mdte = (failA, failB, dur) => { const s = makeState(P100); run(s, 5); s.el.dg.A.fail = failA; s.el.dg.B.fail = failB;
   s.grid = false; s.el.r225 = false; s.ilot = true; s.el.ilotRate = true; const t0 = s.t; let tA = null, fmin = 9, fmax = 0;
