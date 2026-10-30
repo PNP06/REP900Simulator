@@ -616,15 +616,17 @@ const DM={
   {t:'Vérifier la stabilisation',why:"Le GCT-c tient 70 bar dans les GV, Tmoy se stabilise vers 286 °C : c'est l'arrêt à chaud.",a:[DA.look('#rd-tm')]}]}
 };
 /* TMI : instruments de 1979, un opérateur qui connaît le piège */
-DM.tmi={speed:2,intro:"L'accident de Three Mile Island rejoué sur notre tranche, avec les instruments de 1979. Regardez comment un opérateur qui connaît le piège s'en sort. Chaque événement et sa conséquence s'ajoutent à la chaîne, sous ce texte.",steps:[
-  {w:fd(3),t:"Constater la perte de l'eau alimentaire",why:"Les deux pompes alimentaires viennent de s'arrêter. Le niveau des générateurs de vapeur chute : la vapeur part toujours vers la turbine, mais plus rien ne rentre.",a:[DA.look('#rd-lg'),DA.ack()]},
-  {w:s=>s.asg,t:"Vérifier que l'ASG débite",why:"Les pompes de secours ASG ont démarré, mais le débit reste nul : leurs vannes sont fermées. On les ouvre tout de suite. À TMI, il a fallu 8 minutes pour s'en apercevoir.",a:[DA.btn('asgV')]},
-  {w:s=>s.porvStuck&&s.tripped&&s.Ppzr<145,t:"Lire la pression et le niveau du pressuriseur",why:"Après l'arrêt automatique, la pression devrait se stabiliser. Elle continue de baisser, alors que le niveau du pressuriseur remonte. Pression qui baisse et niveau qui monte : de la vapeur s'échappe par le haut du pressuriseur.",a:[DA.look('#rd-pp'),DA.look('#rd-lp')]},
-  {w:s=>s.Tdech>90,t:"Regarder la ligne de décharge",why:"Le voyant de la soupape SEBIM dit « fermée ». Mais la ligne derrière elle est très chaude et le réservoir de décharge se remplit : la soupape est restée ouverte. Le voyant montre l'ordre envoyé, pas la position réelle.",a:[DA.look('#c-tdech'),DA.look('#c-rdp')]},
-  {t:"Fermer la vanne d'isolement de la soupape",why:"Cette vanne motorisée, montée en série avec la soupape, ferme la brèche. C'est le geste qui a manqué pendant 2 heures 22 à TMI.",a:[DA.btn('porvIsol')]},
-  {t:"Laisser l'injection de sécurité à plein débit",why:"Le pressuriseur paraît plein, mais c'est la vapeur dans le circuit qui pousse l'eau vers le haut. Il faut au contraire remplir le circuit : on ne touche pas à l'IS. À TMI, l'équipe l'a réduite au bout de 4 minutes 30.",a:[DA.look('.seg[data-key="isThr"]')]},
-  {t:"Garder les pompes primaires",why:"Elles brassent l'eau et la vapeur, et ce mélange refroidit encore le cœur. On ne les arrête pas, même si elles vibrent.",a:[DA.look('#l-p1')]},
-  {w:s=>s.porvIsol&&s.satMargin>10,t:"La situation est sous contrôle",why:"La brèche est fermée et l'IS remplit le circuit : la pression remonte et l'eau reste loin de l'ébullition. Le cœur est resté sous l'eau du début à la fin.",a:[DA.look('#rd-pp')]}]};
+DM.tmi={speed:2,intro:"L'accident de Three Mile Island rejoué sur notre tranche, avec les instruments de 1979. Le pilote applique les bons réflexes. Les faits s'inscrivent dans la chaîne des événements ; la voix explique le raisonnement.",steps:[
+  {w:fd(3),t:"Lire la première alarme",why:"Les deux pompes alimentaires sont perdues. Dans le bandeau, le niveau des GV plonge : c'en est la conséquence directe.",a:[DA.look('#rd-lg'),DA.ack()]},
+  {w:s=>s.asg,t:"Ouvrir les vannes ASG",why:"Les pompes ASG tournent, mais leur débit reste nul. Une pompe en marche sans débit, c'est un circuit fermé quelque part : ici, des vannes oubliées après un essai.",a:[DA.btn('asgV')]},
+  {w:s=>s.porvStuck&&s.tripped&&s.Ppzr<145,t:"Repérer la contradiction",why:"Après l'arrêt, la pression devrait se stabiliser. Elle continue de baisser pendant que le niveau du pressuriseur monte : c'est la signature d'une fuite de vapeur en haut du pressuriseur.",a:[DA.look('#rd-pp'),DA.look('#rd-lp')]},
+  {w:s=>s.Tdech>90,t:"Croire les mesures plutôt que le voyant",why:"Le voyant dit « fermée ». Mais la ligne de décharge est chaude et le réservoir de décharge se remplit : la soupape est ouverte.",a:[DA.look('#c-tdech'),DA.look('#c-rdp')]},
+  {t:"Fermer la vanne d'isolement",why:"Montée en série avec la soupape, elle coupe la fuite. À TMI, ce geste a attendu 2 heures 22.",a:[DA.btn('porvIsol')]},
+  {t:"Ne pas toucher à l'injection de sécurité",why:"Un pressuriseur haut ne prouve pas que le circuit est plein quand il y a de la vapeur dans la cuve. Réduire l'IS a été l'erreur de TMI, dès 4 minutes 30.",a:[DA.look('.seg[data-key="isThr"]')]},
+  {t:"Laisser tourner les pompes primaires",why:"Elles tournent et le cœur est refroidi : on ne les arrête pas. À TMI, leur arrêt tardif a laissé la vapeur se séparer de l'eau et découvrir le cœur.",a:[DA.look('#l-p1')]},
+  {w:s=>s.porvIsol&&s.satMargin>10,t:"Situation stabilisée",why:"La pression remonte, l'eau est revenue loin de l'ébullition et le cœur n'a jamais été découvert. Il reste à refroidir la tranche normalement.",a:[DA.look('#rd-pp')]}]};
+/* maillons de la chaîne que la correction lit à voix haute : les autres sont déjà dits par les étapes */
+const CHAIN_SAY=new Set(['chaud','aar','is','sat','iscut','rdp','vib','pmp','unc','fus']);
 const DEMO_IDS=Object.keys(DM);
 /* voix des corrections commentées (synthèse vocale du navigateur, en français) */
 const canSpeak=()=>typeof speechSynthesis!=='undefined'&&typeof SpeechSynthesisUtterance!=='undefined';
@@ -633,7 +635,7 @@ function say(t){ if(!A.voice||!canSpeak()||!t) return; try{ const u=new SpeechSy
 function hush(){ if(canSpeak()) try{ speechSynthesis.cancel(); }catch(e){} }
 const speaking=()=>canSpeak()&&A.voice&&(speechSynthesis.speaking||speechSynthesis.pending);
 /* un nouveau maillon de la chaîne TMI : la correction le lit à voix haute */
-function onChain(it){ if(A.demo){ A.demo.v++; say(it.e+' '+it.q); } }
+function onChain(it){ if(A.demo){ A.demo.v++; if(CHAIN_SAY.has(it.id)) say(it.e+' '+it.q); } }
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 function demoStart(id,fast){
   launch(id); $('#brief').hidden=true;

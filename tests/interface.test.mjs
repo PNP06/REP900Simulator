@@ -166,6 +166,10 @@ for (const [w, h] of [[1280, 720], [1440, 900], [1920, 1080]]) {
     aarWatch(); const tx = w.textContent; r.gv = /Niveau GV très bas/.test(tx) && /seuil 15 %/.test(tx) && /ARE était en manuel/.test(tx);
     finish(); const d = document.querySelector('#dAar'); r.deb = !!d; aarClose(); if (d) d.click();
     r.top = !w.hidden && +getComputedStyle(w).zIndex > +getComputedStyle(document.querySelector('#debrief')).zIndex;
+    launch('l-gv'); document.querySelector('#brief').hidden = true; A.paused = true; aarWatch(); const s2 = A.s; act('areMode', 'man'); s2.areMan = 0; n = 0;
+    while (!s2.tripped && n < 3600 / DT) { step(s2); evalAlarms(s2); tick(s2, A.ctx); n++; } aarWatch();
+    w.dispatchEvent(new PointerEvent('pointerenter')); const b0 = w.querySelector('#awC');
+    for (let i = 0; i < 20 / DT; i++) step(s2); aarWatch(); r.stable = w.querySelector('#awC') === b0; b0.click(); r.ferme = w.hidden;
     return r; });
   check('Fenêtre « Pourquoi l\'AAR ? » ouverte à l\'AAR, avec les vérifications avant réarmement', aw.man);
   check('Fenêtre AAR : la simulation continue (pas de pause)', aw.run);
@@ -173,6 +177,7 @@ for (const [w, h] of [[1280, 720], [1440, 900], [1920, 1080]]) {
   check('Fenêtre AAR : fermée au changement de séance', aw.closed);
   check('Fenêtre AAR : protection, valeur/seuil et origine probable (niveau GV très bas)', aw.gv);
   check('Fenêtre AAR : rouvrable depuis le débriefing, au-dessus de celui-ci', aw.deb && aw.top);
+  check('Fenêtre AAR : pas réécrite sous le pointeur, le bouton « Fermer » répond', aw.stable && aw.ferme);
   check('Leçons : aucune erreur JavaScript', errs.length === 0, errs.slice(0, 2).join(' | ')); }
 // Retours : envoi Netlify Forms et onglet « Retours publiés », servis par un petit serveur local comme sur Netlify.
 { const root = new URL('..', import.meta.url), posts = [];
@@ -268,7 +273,7 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
     renderMission(true); const mb = q('#mis-body').textContent;
     const ch = c.k.chain || [], pv = ch.find(x => x.id === 'porv');
     o.chaine = /Chaîne des événements/.test(mb) && ch[0] && ch[0].id === 'tpa' && !!pv && /indique « fermée »/.test(pv.q) && ch.length >= 5;
-    o.visite = ['tmichaine', 'tmivoir', 'tmiapres'].every(k => TOUR.some(ch => ch.inset === k && ch.th === 'surete'));
+    o.visite = ['tmichaine', 'tmivoir', 'tmidiff', 'tmiapres'].every(k => TOUR.some(ch => ch.inset === k && ch.th === 'surete'));
     o.masque = q('#b-sat').textContent === '—' && /1979/.test(q('#s-sat').textContent);
     act('porvIsol'); act('asgV');
     for (let i = 0; i < 600 / DT; i++) { step(s); evalAlarms(s); tick(s, c); }
@@ -283,7 +288,7 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
   check(`${w}px : TMI : la soupape reste bloquée ouverte et le primaire se dépressurise`, r.soupape);
   check(`${w}px : TMI : marge à la saturation masquée en salle de 1979`, r.masque);
   check(`${w}px : TMI : chaîne des événements et de leurs conséquences affichée en direct`, r.chaine);
-  check(`${w}px : TMI : trois chapitres dans le thème Sûreté de la visite`, r.visite);
+  check(`${w}px : TMI : quatre chapitres dans le thème Sûreté de la visite`, r.visite);
   check(`${w}px : TMI : isolement de la soupape`, r.isole);
   check(`${w}px : TMI : débriefing comparé à 1979`, r.debrief);
   check(`${w}px : TMI : retour au pilotage libre sans trace du scénario`, r.retour);

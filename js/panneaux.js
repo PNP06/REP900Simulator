@@ -212,17 +212,20 @@ function aarHTML(s,i){
   h+='<div class="row aw-f">'+(s.aars.length>1?'<button class="btn sm" id="awP"'+(i?'':' disabled')+'>‹ Précédent</button><button class="btn sm" id="awN"'+(i<s.aars.length-1?'':' disabled')+'>Suivant ›</button>':'')+(i===s.aars.length-1&&s.tripped?'<button class="btn sm" data-act="rearm">Réarmer l\'AAR</button>':'')+'<button class="btn sm" id="awC">Fermer</button></div>';
   return h;
 }
-function aarRender(){
+/* les valeurs en direct réécrivent la fenêtre : pas pendant que le pointeur est dessus, sinon un clic sur « Fermer » peut tomber entre deux rendus */
+function aarRender(force){
   const s=A.s, w=$('#aarw'); if(!s||!s.aars||!s.aars[AW.i]) { w.hidden=true; return; }
+  if(!w._hk){ w._hk=1; w.addEventListener('pointerenter',()=>{ AW.hov=true; }); w.addEventListener('pointerleave',()=>{ AW.hov=false; }); w.addEventListener('pointerdown',()=>{ AW.down=performance.now(); }); w.addEventListener('click',e=>{ if(e.target.closest('[data-act]')) setTimeout(()=>{ if(!w.hidden) aarRender(true); },0); }); }
+  if(!force&&(AW.hov||performance.now()-(AW.down||-1e9)<1500)) return;
   const h=aarHTML(s,AW.i); if(w.dataset.h===h) return;
   const dt=w.querySelector('details'), op=dt&&dt.open;
   w.innerHTML=h; w.dataset.h=h; glossDom(w); if(op) w.querySelector('details').open=true;
   const on=(id,f)=>{ const e=document.getElementById(id); if(e) e.onclick=f; };
   on('awX',aarClose); on('awC',aarClose);
-  on('awP',()=>{ AW.i=Math.max(0,AW.i-1); aarRender(); }); on('awN',()=>{ AW.i=Math.min(s.aars.length-1,AW.i+1); aarRender(); });
+  on('awP',()=>{ AW.i=Math.max(0,AW.i-1); aarRender(true); }); on('awN',()=>{ AW.i=Math.min(s.aars.length-1,AW.i+1); aarRender(true); });
 }
-function aarOpen(i){ const s=A.s; if(!s||!s.aars||!s.aars.length) return toast('Aucun AAR pendant cette séance.'); AW.i=i==null?s.aars.length-1:i; const w=$('#aarw'); w.dataset.h=''; w.hidden=false; aarRender(); }
-function aarClose(){ $('#aarw').hidden=true; }
+function aarOpen(i){ const s=A.s; if(!s||!s.aars||!s.aars.length) return toast('Aucun AAR pendant cette séance.'); AW.i=i==null?s.aars.length-1:i; const w=$('#aarw'); w.dataset.h=''; w.hidden=false; aarRender(true); }
+function aarClose(){ $('#aarw').hidden=true; AW.hov=false; }
 function aarWatch(){
   const s=A.s, n=(s&&s.aars||[]).length;
   if(AW.s!==s){ AW.s=s; AW.n=n; aarClose(); return; }

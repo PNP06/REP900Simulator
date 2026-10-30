@@ -1074,3 +1074,4 @@ body.demo #ptr{display:none!important}
 .chain li.new{opacity:1}
 .chain .cht{grid-row:span 2;font-family:var(--f-num);font-size:12px;color:var(--mute)}
 .chain .chq{color:var(--mute)}.chain .chq::before{content:'→ ';color:var(--warn);font-weight:700}
+.tmv.tmd thead th:nth-child(2){color:var(--warn)}.tmv.tmd thead th:nth-child(3){color:var(--ok)}
