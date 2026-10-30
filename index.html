@@ -194,6 +194,13 @@
             <div><div class="k">SEBIM</div><div class="v" id="c-sebim">—</div></div>
           </div>
           <div class="row"><span class="lbl" style="width:80px">Charge</span><div class="seg" data-key="chgMode"><button data-v="auto">Auto</button><button data-v="man">Manuel</button></div><button class="btn sm amber" data-act="ldIsol" id="c-ldi">Isoler décharge</button></div>
+          <div class="tmi-only"><h3>Décharge du pressuriseur</h3>
+          <div class="ro">
+            <div><div class="k">Soupape de tête</div><div class="v" id="c-porv">—</div></div>
+            <div><div class="k">Ligne de décharge</div><div class="v" id="c-tdech">—</div></div>
+            <div><div class="k">Réservoir de décharge</div><div class="v" id="c-rdp">—</div></div>
+          </div>
+          <div class="row"><button class="btn sm amber" data-act="porvIsol" id="c-porvi">Fermer la vanne d'isolement</button></div></div>
           <div class="sl"><span class="lbl">Charge man.</span><input type="range" id="chgMan" min="0" max="34" step="0.5" value="13.6" aria-label="Débit de charge manuel"><output id="chgManO" class="num">13,6</output></div>
         </div>
 <div class="card" data-c="turb" data-t="cmd">
@@ -231,10 +238,12 @@
           <div class="row"><span class="lbl" style="width:70px">Régul. ARE</span><div class="seg" data-key="areMode"><button data-v="auto">Auto</button><button data-v="man">Manuel</button></div></div>
           <div class="sl"><span class="lbl">Débit man.</span><input type="range" id="areMan" min="0" max="120" step="1" value="100" aria-label="Débit ARE manuel"><output id="areManO" class="num">100 %</output></div>
           <div class="row" style="margin-top:8px"><span class="lamp" id="l-asg"></span><span>ASG</span><span class="num" id="c-wasg" style="color:var(--mute)">—</span><button class="btn sm" data-act="asg" id="c-asgb">Démarrer ASG</button></div>
+          <div class="row tmi-only"><span class="lamp" id="l-asgv"></span><span>Vannes ASG</span><button class="btn sm" data-act="asgV" id="c-asgv">Ouvrir les vannes ASG</button></div>
         </div>
 <div class="card danger" data-c="prot" data-t="cmd">
           <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></i>Protection et sauvegarde<button class="qm" data-help="prot" aria-label="Aide : Protection et sauvegarde">?</button></h2>
           <div class="row"><span class="lpair"><span class="lamp" id="l-p1"></span><span>GMPP 1</span></span><span class="lpair"><span class="lamp" id="l-p2"></span><span>GMPP 2</span></span><span class="lpair"><span class="lamp" id="l-p3"></span><span>GMPP 3</span></span></div>
+          <div class="row tmi-only"><button class="btn sm" data-act="gmpp" data-v="0" id="c-gm0">Arrêter GMPP 1</button><button class="btn sm" data-act="gmpp" data-v="1" id="c-gm1">Arrêter GMPP 2</button><button class="btn sm" data-act="gmpp" data-v="2" id="c-gm2">Arrêter GMPP 3</button></div>
           <div class="row"><span class="lpair"><span class="lamp" id="l-is"></span><span>Injection de sécurité</span></span><span class="lpair"><span class="lamp" id="l-sr"></span><span id="c-srst">Gamme source</span></span><span class="lpair"><span class="lamp" id="l-lb"></span><span id="c-lbst">Seuil bas 25 %</span></span></div>
           <div class="row" style="margin-top:12px">
             <button class="btn red" id="aarBtn">AAR manuel</button>
@@ -245,6 +254,13 @@
           <div class="row">
             <button class="btn red" id="isBtn">IS manuelle</button>
             <button class="btn" data-act="isStop">Arrêter l'IS</button>
+          </div>
+          <div class="row tmi-only"><span class="lbl" style="width:70px">Débit IS</span><div class="seg" data-key="isThr"><button data-v="1">100 %</button><button data-v="0.5">50 %</button><button data-v="0.1">10 %</button><button data-v="0">0 %</button></div></div>
+          <div class="ro tmi-only">
+            <div><div class="k">Enceinte</div><div class="v" id="c-penc">—</div></div>
+            <div><div class="k">Niveau cuve</div><div class="v" id="c-hcuve">—</div></div>
+            <div><div class="k">Sortie cœur</div><div class="v" id="c-ttc">—</div></div>
+            <div><div class="k">Vibrations GMPP</div><div class="v" id="c-vib">—</div></div>
           </div>
           <div class="note" id="c-trip">—</div>
         </div>

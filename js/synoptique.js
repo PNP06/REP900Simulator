@@ -70,7 +70,9 @@ function updSyn(s){
   sTag('lp',fmt(s.Lpzr,0)+' / '+fmt(s.Lref,0)+' %',s.Lpzr<15||s.Lpzr>90?'crit':Math.abs(s.Lpzr-s.Lref)>5?'warn':'');
   const hsMan=s.heatMode!=='auto'||s.sprayMode==='man'||s.sprayIsol;
   sTag('hs',fmt(s.hEff*1440,0)+' kW · '+fmt(s.spray*100,0)+' %'+(hsMan?' MAN':''),hsMan?'warn':'');
-  sVlv('seb',s.sebim,1); sLine('seb',s.sebim,1); const sb=$('#sy-seb'); sb.classList.toggle('al',!!s.sebim); T('sy-seb',s.sebim?'SEBIM OUVERTES':'SEBIM');
+  /* soupape bloquée ouverte : visible ici seulement avec les instruments d'après TMI (en 1979, le voyant montrait l'ordre) */
+  const vb=!s.era79&&s.porvOpen&&!s.porvIsol&&!s.sebim, vo=s.sebim||vb;
+  sVlv('seb',vo,1); sLine('seb',vo,1); const sb=$('#sy-seb'); sb.classList.toggle('al',!!vo); T('sy-seb',s.sebim?'SEBIM OUVERTES':vb?'SOUPAPE OUVERTE':'SEBIM');
   const pz=clamp(s.Lpzr,0,100)*.5; $('#sy-pzL').setAttribute('y',(150-pz).toFixed(1)); $('#sy-pzL').setAttribute('height',pz.toFixed(1));
   sTag('psg',fmt(s.Psg,1)+' bar',s.qa>0.005?'warn':'');
   sTag('lg',fmt(s.Lsg,0)+' %',s.Lsg<20||s.Lsg>75?'crit':s.Lsg<40||s.Lsg>60?'warn':'');
@@ -126,7 +128,8 @@ const PALB={
     +rowH('Charge',sgH('chgMode',[['auto','Auto'],['man','Manuel']])+btH('ldIsol',s.ldIsolMan?'Rétablir décharge':'Isoler décharge',null,'amber'))+rgH('#chgMan','Charge man.')},
   pzr:{kv:s=>kvH([['P',fmt(s.Ppzr,1)+' bar'],['Niv.',fmt(s.Lpzr,0)+' / '+fmt(s.Lref,0)+' %'],['Chauff.',fmt(s.hEff*1440,0)+' kW'],['Asp.',fmt(s.spray*100,0)+' %'],['SEBIM',s.sebim?'ouvertes':'fermées']]),
    ctl:s=>rowH('Chaufferettes',sgH('heatMode',[['auto','Auto'],['on','Forcé'],['off','Arrêt']]))
-    +rowH('Aspersion',sgH('sprayMode',[['auto','Auto'],['man','Manuel']])+btH('sprayIsol',s.sprayIsol?'Rétablir':'Isoler',null,'amber'))+rgH('#sprayMan','Asp. man.')},
+    +rowH('Aspersion',sgH('sprayMode',[['auto','Auto'],['man','Manuel']])+btH('sprayIsol',s.sprayIsol?'Rétablir':'Isoler',null,'amber'))+rgH('#sprayMan','Asp. man.')
+    +(document.body.classList.contains('tmi')?rowH('Soupape',btH('porvIsol',s.porvIsol?'Rouvrir la vanne d\'isolement':'Fermer la vanne d\'isolement',null,'amber')):'')},
   gv:{kv:s=>kvH([['Niveau',fmt(s.Lsg,1)+' %'],['ARE',fmt(s.Wf*100,0)+' %'],['Vapeur',fmt(s.Wst*100,0)+' %'],['P GV',fmt(s.Psg,1)+' bar']]),
    ctl:s=>rowH('Régul. ARE',sgH('areMode',[['auto','Auto'],['man','Manuel']]))+rgH('#areMan','Débit man.')+rowH('ASG',btH('asg',s.asg?'Arrêter ASG':'Démarrer ASG'))},
   are:{kv:s=>kvH([['TPA A',s.tpa[0]?'en service':'arrêtée'],['TPA B',s.tpa[1]?'en service':'arrêtée'],['APD',s.apd?'en service':'arrêt'],['ARE',fmt(s.Wf*100,0)+' %']]),
@@ -137,8 +140,8 @@ const PALB={
     +rowH('Vitesse',sgH('ramp',[['1','1'],['3','3'],['5','5'],['10','10'],['30','30']])+'<span class="lbl">%/min</span>')
     +rowH('Réseau',btH('couple','Coupler')+btH('decouple','Découpler')+btH('recouple','Recoupler')+btH('ttrip','Déclencher',null,'amber'))},
   gct:{kv:s=>kvH([['GCT-c',fmt(s.gct/0.85*100,0)+' % (mode '+(s.coupled?'température':'pression')+')'],['GCT-a',fmt(s.qa*100,1)+' % vapeur'],['P GV',fmt(s.Psg,1)+' bar']]),ctl:s=>rgH('#gcta','GCT-a man.')},
-  pump:{kv:s=>kvH(s.pumps.map((p,i)=>['GMPP '+(i+1),p?'en service':'arrêtée'])),ctl:s=>'<p class="note">Les pompes primaires ne se commandent pas depuis le pupitre du simulateur ; leur perte est un aléa. Au-dessus de P7, la perte d\'une pompe arrête le réacteur.</p>'},
-  is:{kv:s=>kvH([['IS',s.is?'en service, '+fmt(s.Qis,0)+' m³/h':'prête'],['P pressu',fmt(s.Ppzr,1)+' bar'],['Marge sat.',fmt(s.satMargin,1)+' °C']]),ctl:s=>(s.is?rowH('IS',btH('isStop','Arrêter l\'IS')):'<p class="note">L\'IS manuelle se déclenche depuis la famille Sûreté, avec confirmation.</p>')}
+  pump:{kv:s=>kvH(s.pumps.map((p,i)=>['GMPP '+(i+1),p?'en service':'arrêtée'])),ctl:s=>document.body.classList.contains('tmi')?rowH('Pompes',s.pumps.map((p,i)=>btH('gmpp',(p?'Arrêter ':'Démarrer ')+(i+1),i)).join('')):'<p class="note">Les pompes primaires ne se commandent pas depuis le pupitre du simulateur ; leur perte est un aléa. Au-dessus de P7, la perte d\'une pompe arrête le réacteur.</p>'},
+  is:{kv:s=>kvH([['IS',s.is?'en service, '+fmt(s.Qis,0)+' m³/h':'prête'],['P pressu',fmt(s.Ppzr,1)+' bar'],['Marge sat.',fmt(s.satMargin,1)+' °C']]),ctl:s=>(s.is?rowH('IS',btH('isStop','Arrêter l\'IS'))+(document.body.classList.contains('tmi')?rowH('Débit',sgH('isThr',[['1','100 %'],['0.5','50 %'],['0.1','10 %'],['0','0 %']])):''):'<p class="note">L\'IS manuelle se déclenche depuis la famille Sûreté, avec confirmation.</p>')}
 };
 function palOpen(c,ev){
   if(!SYC[c]) return; SY.pal=c; const w=$('#synw'), b=w.getBoundingClientRect();
