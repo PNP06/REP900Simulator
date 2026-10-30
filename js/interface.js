@@ -13,7 +13,7 @@ function launch(id){
   if(A.demo) demoStop();
   let scn=byId(id), mystery=false;
   if(id==='myst'){ const real=byId(ALEA_IDS[Math.floor(Math.random()*ALEA_IDS.length)]); scn=Object.assign({},real,{mystery:true,realTitle:real.title,realId:real.id,title:'Aléa mystère',id:'myst'}); mystery=true; }
-  A.s=makeState(scn.init); A.trk={}; A.scn=scn; A.ctx=newCtx(scn,A.s); A.done=false; A.acc=0;
+  clearTimeout(A.finishT); A.s=makeState(scn.init); A.trk={}; A.scn=scn; A.ctx=newCtx(scn,A.s); A.done=false; A.acc=0;
   const c=A.ctx;
   if(scn.kind==='alea') c.fireAt=A.s.t+(scn.id==='rodwd'?25+Math.random()*20:45+Math.random()*60);
   if(scn.kind==='histo'){ c.fireAt=A.s.t+60; A.s.era79=true; }
@@ -67,7 +67,7 @@ function tick(s,c){
   else if(scn.update) scn.update(s,c);
   if(scn.obj) for(const o of scn.obj) if(c.o[o.id]==null&&o.test(s,c)){ c.o[o.id]=s.t; c.dirty=true; SFX.obj(); }
   if(scn.steps){ const stp=scn.steps[c.step], k=c.sk; k.minLg=Math.min(k.minLg,s.Lsg); k.maxLg=Math.max(k.maxLg,s.Lsg); k.minP=Math.min(k.minP,s.Ppzr); k.maxP=Math.max(k.maxP,s.Ppzr); k.minLp=Math.min(k.minLp,s.Lpzr); if(stp.ok&&!c.stepOk&&stp.ok(s,c,k)){ c.stepOk=true; c.dirty=true; SFX.step(); try{ c.after=stp.after?stp.after(s,c,k):''; }catch(e){ c.after=''; } } }
-  if(scn.end&&!A.done&&scn.end.call(scn,s,c)){ A.done=true; setTimeout(finish,600); }
+  if(scn.end&&!A.done&&scn.end.call(scn,s,c)){ A.done=true; clearTimeout(A.finishT); A.finishT=setTimeout(()=>{ if(A.ctx===c) finish(); },600); }
 }
 
 /* ================= Actions opérateur ================= */
@@ -105,6 +105,7 @@ function act(a,v){
   case 'reaV': s.rea.vt=v==='inf'?Infinity:+v; break;
   case 'reaStart':
     if(s.reaIsol) return toast('Appoint REA isolé : rétablissez-le d\'abord.');
+    if(!dispo(s,'chg')) return toast('Pompes de charge RCV sans tension : l\'appoint ne peut pas être injecté.');
     s.rea.v=0; s.rea.run=true; op((s.rea.mode==='dil'?'Dilution':'Borication')+' '+s.rea.q+' m³/h, '+(s.rea.vt===Infinity?'continu':fmt(s.rea.vt*1000,0)+' L'));
     break;
   case 'reaStop': if(s.rea.run){ s.rea.run=false; op('Arrêt de l\'appoint ('+fmt(s.rea.v*1000,0)+' L)'); } break;
@@ -135,7 +136,7 @@ function act(a,v){
     break;
   case 'ttrip': if(!s.coupled) return toast('Turbine non couplée.'); op('Déclenchement manuel de la turbine'); turbineTrip(s,'manuel'); break;
   case 'dg': case 'dus': { const t=elecCmd(s,a,v); if(t){ op(t); ctxAct(a+(v||'')); } else toast(a==='dus'?'DUS : il faut un tableau secouru hors tension et le DUS prêt.':'Diesel '+v+' : commande refusée (en défaut, ou il alimente son tableau).'); break; }
-  case 'apd': s.apd=!s.apd; op(s.apd?'Démarrage motopompe APD':'Arrêt motopompe APD'); if(s.apd) ctxAct('apd'); break;
+  case 'apd': if(!s.apd&&!dispo(s,'apd')) return toast('Tableaux normaux hors tension : la motopompe APD ne peut pas démarrer.'); s.apd=!s.apd; op(s.apd?'Démarrage motopompe APD':'Arrêt motopompe APD'); if(s.apd) ctxAct('apd'); break;
   case 'areMode': if(v==='man'){ s.areMode='man'; s.areMan=Math.round(s.Wf*100)/100; op('ARE en manuel'); ctxAct('areMan'); } else { s.areMode='auto'; s.Iare=0; op('ARE en automatique'); } break;
   case 'asg': if(s.asg){ s.asg=false; op('Arrêt ASG'); } else { s.asg=true; op('Démarrage ASG'); } break;
   case 'heatMode': s.heatMode=v; op('Chaufferettes : '+{auto:'auto',on:'marche forcée',off:'arrêt'}[v]); break;
@@ -187,7 +188,7 @@ function twoStep(btn,label,armed,fn){
 twoStep($('#aarBtn'),'AAR manuel','Confirmer l\'AAR',()=>act('aar'));
 twoStep($('#isBtn'),'IS manuelle','Confirmer l\'IS',()=>act('is'));
 
-document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('g')){ e.preventDefault(); showGloss(+e.target.dataset.g); } if(e.key==='Escape'){ if(!$('#gpop').hidden) $('#gpop').hidden=true; else if(!$('#help').hidden) closeHelp(); else if(!$('#limov').hidden) $('#limov').hidden=true; else if(!$('#srcov').hidden) $('#srcov').hidden=true; else if(!$('#about').hidden) $('#about').hidden=true; } });
+document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('#band .rd')){ e.preventDefault(); e.target.click(); return; } if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('g')){ e.preventDefault(); showGloss(+e.target.dataset.g); } if(e.key==='Escape'){ if(!$('#gpop').hidden) $('#gpop').hidden=true; else if(!$('#help').hidden) closeHelp(); else if(!$('#limov').hidden) $('#limov').hidden=true; else if(!$('#srcov').hidden) $('#srcov').hidden=true; else if(!$('#about').hidden) $('#about').hidden=true; } });
 document.addEventListener('click',e=>{
   if(e.target.closest('button,.seg button,.bank')&&!e.target.closest('#ackBtn,#alb-ack,#runAck,#tour')) SFX.tick();
   if(e.target.closest('[data-about]')){ $('#about').hidden=false; return; }
@@ -362,8 +363,11 @@ function trackVar(s){
     e.classList.toggle('up',on&&o.dir>0); e.classList.toggle('dn',on&&o.dir<0);
   }
 }
+/* empreinte de ce que syncAll affiche : un automatisme (AAR, perte de tension, îlotage…) qui change l'un de ces états resynchronise les commandes */
+const syncSig=s=>[s.modeR,s.modeG,s.rea.mode,s.rea.q,s.rea.vt,s.isThr,s.era79,s.ramp,s.areMode,s.heatMode,s.sprayMode,s.chgMode,s.rodSel,s.reaIsol,s.sprayIsol,s.ldIsolMan,s.apd,s.asg,s.porvIsol,s.asgV,s.pumps.join(),s.LtSet,s.gctaMan,s.areMan,s.sprayMan,s.chgMan].join('|');
 function updateUI(){
   const s=A.s; if(!s) return;
+  const sg=syncSig(s); if(sg!==A.syncSig){ A.syncSig=sg; syncAll(); }
   trackVar(s);
   T('clock',hms(s.t));
   const st=s.is?'IS':s.tripped?'AAR':s.ilot?'Îlotage':s.coupled?'Puissance':(s.n>1e-7?'Critique':'Sous-crit.');

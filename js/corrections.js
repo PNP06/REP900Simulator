@@ -106,7 +106,7 @@ const DM={
   {t:'Troisième palier : R à 160 pas',why:"On s'arrête avant la cote prédite.",a:[DA.btn('rod','10',2)]},
   {w:stableFor(20,0.0012),t:'Approche finale',why:"Près de la criticité, la stabilisation devient lente. On avance maintenant de 2 pas à la fois, en attendant chaque fois.",a:[DA.look('#rd-td')]},
   {ctl:{every:45,until:s=>s.Td<300&&s.n>2e-8,f:s=>s.Td>300?{t:'+2 pas',why:"Le comptage finit par se stabiliser : on avance encore de 2 pas.",a:[DA.btn('rod','1',2)]}:null},t:'Approche par pas de 2'},
-  {t:'Le réacteur est critique',why:"Un temps de doublement constant apparaît : la réaction s'entretient seule. On n'extrait plus.",a:[DA.look('#rd-td')]},
+  {t:'La criticité est franchie',why:"Un temps de doublement constant apparaît : le réacteur est légèrement surcritique, la réaction s'entretient seule et la puissance monte doucement. On n'extrait plus.",a:[DA.look('#rd-td')]},
   {w:s=>s.n>1e-7,t:'Inhiber la gamme source à P6',why:"Les compteurs de démarrage vont saturer : à l'alarme P6, on les inhibe, sinon ils arrêteraient le réacteur.",a:[DA.btn('srInhib')]},
   {ctl:{every:25,until:()=>false,f:s=>{ const lo=Math.LN2/900, td=s.rate>0?Math.LN2/s.rate:1e9;
     if(s.n<0.006){ if(td>120) return {t:'+1 pas',why:"Puissance encore faible et montée trop lente : on accélère un peu.",a:[DA.btn('rod','1')]}; if(td<50) return {t:'−1 pas',why:"La montée devient trop rapide : on ralentit.",a:[DA.btn('rod','-1')]}; return null; }

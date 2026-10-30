@@ -54,7 +54,7 @@ function elecStep(s,dt){
   for(const k of ['A','B']){
     const g=e.dg[k];
     if(g.st==='demarrage'){ g.t+=dt; if(g.t>=EL.DG_START){ if(g.fail){ g.st='defaut'; elecLog(s,'Échec de démarrage du diesel '+k); } else { g.st='service'; elecLog(s,'Diesel '+k+' en service, couplé sur LH'+k); } } }
-    if(g.st==='service'){ g.fuel=Math.max(0,g.fuel-dt/(EL.FUEL_J*86400)); if(g.fail){ g.st='defaut'; elecLog(s,'Déclenchement du diesel '+k); } }
+    if(g.st==='service'){ g.fuel=Math.max(0,g.fuel-dt/(EL.FUEL_J*86400)); if(g.fail){ g.st='defaut'; elecLog(s,'Déclenchement du diesel '+k); } else if(g.fuel<=0){ g.st='defaut'; elecLog(s,'Diesel '+k+' arrêté : réservoir de fioul vide'); } }
   }
   if(e.dus.st==='demarrage'){ e.dus.t+=dt; if(e.dus.t>=EL.DUS_START){ e.dus.st='service'; elecLog(s,'DUS en service sur '+e.dus.voie); } }
   /* disponibilité des consommateurs */
