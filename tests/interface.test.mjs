@@ -305,6 +305,43 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
   check(`${w}px : TMI : aucune erreur JavaScript`, errs.length === 0, errs.slice(0, 2).join(' | '));
   await pg.close();
 }
+// Cohérence de l'interface (audits du 30/10/2026) : minuteur de fin, commandes après un automatisme, clavier, AAR, fenêtres.
+{
+  const pg = await browser.newPage({ viewport: { width: 1440, height: 900 } }); const errs = []; pg.on('pageerror', e => errs.push(e.message));
+  await pg.goto(url); await pg.evaluate(() => { store('about', 1); document.querySelector('#about').hidden = true; });
+  // une fin de séance programmée ne doit pas terminer la séance lancée juste après
+  await pg.evaluate(() => { launch('libre'); document.querySelector('#goBtn').click(); A.paused = true; A.scn = Object.assign({}, A.scn, { end: () => true }); tick(A.s, A.ctx);
+    launch('libre'); document.querySelector('#goBtn').click(); A.paused = true; });
+  await pg.waitForTimeout(900);
+  check('Fin de séance programmée puis nouvelle séance : la nouvelle n\'est pas terminée', await pg.evaluate(() => !A.done && document.querySelector('#debrief').hidden));
+  // AAR automatique sur perte de GMPP, en vraie boucle : les commandes affichent l'état du moteur
+  await pg.evaluate(() => { launch('gmpp'); document.querySelector('#goBtn').click(); A.paused = false; setSpeed(60); });
+  await pg.waitForFunction(() => A.s && A.s.tripped, null, { timeout: 30000 }); await pg.waitForTimeout(400);
+  const sy = await pg.evaluate(() => { const on = k => (document.querySelector('.seg[data-key="' + k + '"] button.on') || {}).dataset?.v;
+    const i = A.s.pumps.findIndex(p => !p); return { r: on('modeR'), g: on('modeG'), mr: A.s.modeR, gm: i < 0 || document.querySelector('#c-gm' + i).textContent === 'Démarrer GMPP ' + (i + 1) }; });
+  check('Après un AAR automatique, les boutons R et GCP affichent « manuel » et la GMPP arrêtée se propose au démarrage', sy.r === 'man' && sy.g === 'man' && sy.mr === 'man' && sy.gm, JSON.stringify(sy));
+  // cases du bandeau au clavier
+  await pg.evaluate(() => { A.paused = true; setFam('core'); });
+  await pg.focus('#rd-pp'); await pg.keyboard.press('Enter'); await pg.waitForTimeout(200);
+  const fam1 = await pg.evaluate(() => (document.querySelector('#ftabs button.on') || {}).dataset?.fam);
+  await pg.evaluate(() => setFam('core')); await pg.focus('#rd-lg'); await pg.keyboard.press(' '); await pg.waitForTimeout(200);
+  const fam2 = await pg.evaluate(() => (document.querySelector('#ftabs button.on') || {}).dataset?.fam);
+  check('Cases du bandeau : Entrée et Espace ouvrent la carte comme un clic', fam1 === 'prim' && fam2 === 'sec', fam1 + ' / ' + fam2);
+  // « Pourquoi l'AAR ? » après perte des alimentations externes : pas de GCT-c promis
+  const aw = await pg.evaluate(() => { launch('libre'); document.querySelector('#goBtn').click(); A.paused = true; const s = A.s;
+    s.grid = false; s.el.r225 = false; s.ilot = true; s.el.ilotRate = true; for (let i = 0; i < 60 / DT; i++) { step(s); evalAlarms(s); }
+    aarOpen(); const t = document.querySelector('#aarw').textContent; aarClose(); return { tripped: s.tripped, t }; });
+  check('« Pourquoi l\'AAR ? » sans condenseur : GCT-a annoncé, pas de GCT-c', aw.tripped && /GCT-a/.test(aw.t) && !/GCT-c tient/.test(aw.t));
+  // fenêtre de retours : le focus y entre, y reste, puis revient
+  await pg.focus('#pauseBtn'); await pg.evaluate(() => openFB('new')); await pg.waitForTimeout(150);
+  let inside = await pg.evaluate(() => document.querySelector('#fb').contains(document.activeElement));
+  for (let i = 0; i < 25; i++) await pg.keyboard.press('Tab');
+  inside = inside && await pg.evaluate(() => document.querySelector('#fb').contains(document.activeElement));
+  await pg.evaluate(() => closeFB()); await pg.waitForTimeout(150);
+  check('Fenêtre de retours : focus à l\'intérieur, Tab y reste, retour au bouton d\'origine', inside && await pg.evaluate(() => document.activeElement && document.activeElement.id === 'pauseBtn'));
+  check('Cohérence de l\'interface : aucune erreur JavaScript', errs.length === 0, errs.slice(0, 2).join(' | '));
+  await pg.close();
+}
 await browser.close();
 console.log(fails ? `\n${fails} test(s) en échec` : '\nTous les tests passent');
 process.exit(fails ? 1 : 0);

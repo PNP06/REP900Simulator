@@ -233,7 +233,7 @@ function step(s){
   const qa=clamp((s.Psg-78)*0.06,0,0.3)+s.gctaMan*0.3*clamp(s.Psg/70,0,1.2); s.qa=qa;
   const qv=s.Psg>85?clamp((s.Psg-85)*0.4,0,1.2):0; s.qv=qv;
   const Wst=Qt+aux+s.gct+qa+qv; s.Wst=Wst;
-  const cap=s.areIsol?0:((s.tpa[0]?0.58:0)+(s.tpa[1]?0.58:0)+(s.apd?0.12:0));
+  const cap=s.areIsol?0:((s.tpa[0]?0.58:0)+(s.tpa[1]?0.58:0)+(s.apd&&dispo(s,'apd')?0.12:0));
   const capE=s.tripped?Math.min(cap,0.15):cap; s.areCap=capE;
   let dem;
   if(s.areMode==='auto'){
@@ -298,12 +298,14 @@ function step(s){
   primDiph(s,Q,np,vOpen,dt);
   /* bore */
   let Qd=0,Qb=0;
-  if(s.rea.run&&!s.reaIsol){
+  /* l'appoint passe par les pompes de charge RCV : sans elles, rien n'entre dans le primaire */
+  const chgOk=dispo(s,'chg');
+  if(s.rea.run&&!s.reaIsol&&chgOk){
     if(s.rea.mode==='dil') Qd=s.rea.q; else Qb=s.rea.q;
     s.rea.v+=s.rea.q/3600*dt;
     if(s.rea.v>=s.rea.vt){ s.rea.run=false; logEv(s,'auto','Appoint terminé ('+fmt(s.rea.v*1000,0)+' L)'); }
   }
-  if(s.dilFault&&!s.reaIsol) Qd+=25;
+  if(s.dilFault&&!s.reaIsol&&chgOk) Qd+=25;
   s.Qdil=Qd; s.Qbor=Qb; s.volDil+=Qd/3600*dt; s.volBor+=Qb/3600*dt;
   s.Cb+=((Qd*(0-s.Cb)+Qb*(7700-s.Cb)+QisH*(2500-s.Cb))/3600/270)*dt;
   if(s.Cb<0) s.Cb=0;

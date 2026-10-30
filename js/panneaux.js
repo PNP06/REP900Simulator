@@ -56,7 +56,7 @@ async function fbLoad(force){
     const r=await fetch(FB.data,{cache:'no-cache'});
     if(!r.ok) throw new Error('Erreur '+r.status);
     const js=await r.json();
-    FB.list=(js.retours||[]).map((i,k)=>({n:i.n||k+1,title:i.titre||'',lv:FB.lv.some(v=>v[0]===i.niveau)?i.niveau:null,part:i.partie||'',desc:i.description||'',state:i.statut==='résolu'?'closed':'open',rep:i.reponse||'',repDate:i.date_reponse||'',date:i.date||''}));
+    FB.list=(js.retours||[]).map((i,k)=>({n:Number.isInteger(i.n)&&i.n>0?i.n:k+1,title:i.titre||'',lv:FB.lv.some(v=>v[0]===i.niveau)?i.niveau:null,part:i.partie||'',desc:i.description||'',state:i.statut==='résolu'?'closed':'open',rep:i.reponse||'',repDate:i.date_reponse||'',date:i.date||''}));
     fbRender();
   }catch(e){ box.innerHTML='<p class="note">Impossible de charger les retours publiés ('+esc(e.message||'réseau')+'). Ils se consultent sur le simulateur en ligne.</p>'; }
   FB.loading=false;
@@ -205,7 +205,7 @@ function aarHTML(s,i){
   if(sp.role) h+='<h4>À quoi sert cette protection</h4><p>'+sp.role+'</p>';
   h+='<h4>Origine probable</h4><ul>'+or.map(t=>'<li>'+t+'</li>').join('')+'</ul>';
   if(a.ops.length) h+='<details><summary>Vos dernières actions avant l\'AAR</summary><div class="log">'+a.ops.map(l=>'<div><span class="tm">'+hms(l.t)+'</span><span class="op">'+l.txt+'</span></div>').join('')+'</div></details>';
-  h+='<h4>Et maintenant</h4><p>Les grappes sont tombées en moins de 2 s : la puissance chute d\'un coup puis décroît avec une période d\'environ −80 s ; il reste la puissance résiduelle à évacuer. La turbine est déclenchée, l\'ASG démarre et le GCT-c tient environ 70 bar dans les GV : Tmoy redescend vers 286 °C. '+sp.fix+'</p>';
+  h+='<h4>Et maintenant</h4><p>Les grappes sont tombées en moins de 2 s : la puissance chute d\'un coup puis décroît avec une période d\'environ −80 s ; il reste la puissance résiduelle à évacuer. '+aarSuite(s)+' '+sp.fix+'</p>';
   if(i===s.aars.length-1&&s.tripped){
     h+='<h4>Avant de réarmer</h4><ul class="aw-ck">'+aarChecks(s,a).map(([t,ok,d])=>'<li class="'+(ok?'ok':'ko')+'"><span class="i">'+(ok?'✓':'○')+'</span><span>'+t+(d?' <small>'+d+'</small>':'')+'</span></li>').join('')+'</ul><p class="aw-n">Réarmer ne redémarre pas le réacteur : cela autorise seulement à extraire de nouveau les grappes, une fois la cause comprise et traitée.</p>';
   } else h+='<p class="aw-n">'+(s.tripped?'Un AAR plus récent a eu lieu.':'AAR réarmé depuis.')+'</p>';
@@ -213,6 +213,15 @@ function aarHTML(s,i){
   return h;
 }
 /* les valeurs en direct réécrivent la fenêtre : pas pendant que le pointeur est dessus, sinon un clic sur « Fermer » peut tomber entre deux rendus */
+/* suite de l'arrêt selon ce qui est réellement disponible : condenseur (GCT-c) ou décharge à l'atmosphère (GCT-a), ASG qui débite ou non */
+function aarSuite(s){
+  const av=s.el&&s.el.av, cond=!av||av.cond;
+  let t=cond?'La turbine est déclenchée, l\'ASG démarre et le GCT-c tient environ 70 bar dans les GV : Tmoy redescend vers 286 °C.'
+    :'La turbine est déclenchée et l\'ASG démarre. Le condenseur est perdu (tableaux normaux hors tension) : le GCT-c ne peut pas servir, ce sont les vannes de décharge à l\'atmosphère (GCT-a) qui évacuent la vapeur, vers 78 bar dans les GV.';
+  if(av&&av.asg<=0) t+=' Aucune pompe ASG n\'est alimentée : les GV ne reçoivent plus d\'eau.';
+  else if(!s.asgV) t+=' Les vannes ASG sont fermées : l\'ASG est démarrée mais ne débite pas.';
+  return t;
+}
 function aarRender(force){
   const s=A.s, w=$('#aarw'); if(!s||!s.aars||!s.aars[AW.i]) { w.hidden=true; return; }
   if(!w._hk){ w._hk=1; w.addEventListener('pointerenter',()=>{ AW.hov=true; }); w.addEventListener('pointerleave',()=>{ AW.hov=false; }); w.addEventListener('pointerdown',()=>{ AW.down=performance.now(); }); w.addEventListener('click',e=>{ if(e.target.closest('[data-act]')) setTimeout(()=>{ if(!w.hidden) aarRender(true); },0); }); }
@@ -347,3 +356,21 @@ function drawDI(){
   const ok=Math.abs(s.DI+1.5*s.n)<=5; g.fillStyle=ok?COL.fg:COL.warn; g.beginPath(); g.arc(X(clamp(s.DI,-15,15)),Y(clamp(s.n*100,0,110)),4.5,0,7); g.fill();
 }
 
+/* ================= Fenêtres superposées : focus clavier ================= */
+/* À l'ouverture d'une fenêtre .ov, le focus y entre ; Tab et Maj+Tab y restent ; à la fermeture, il revient là où il était.
+   Les panneaux non bloquants (visite, « Pourquoi l'AAR ? », définitions) ne sont pas concernés. */
+const OV_FOC='a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+const ovTop=()=>{ const v=[...document.querySelectorAll('.ov')].filter(o=>!o.hidden); return v[v.length-1]||null; };
+const ovFoc=o=>[...o.querySelectorAll(OV_FOC)].filter(e=>e.getClientRects().length);
+(()=>{ const prev=new Map();
+  const mo=new MutationObserver(ms=>{ for(const m of ms){ const o=m.target;
+    if(o.hidden){ const p=prev.get(o); prev.delete(o); if(p&&document.contains(p)&&!ovTop()) try{ p.focus({preventScroll:true}); }catch(e){} }
+    else if(!prev.has(o)){ prev.set(o,document.activeElement); requestAnimationFrame(()=>{ if(!o.hidden&&!o.contains(document.activeElement)){ const f=ovFoc(o)[0]; if(f) f.focus({preventScroll:true}); } }); } } });
+  document.querySelectorAll('.ov').forEach(o=>{ if(!o.getAttribute('role')) o.setAttribute('role','dialog'); o.setAttribute('aria-modal','true'); if(!o.hidden) prev.set(o,null); mo.observe(o,{attributes:true,attributeFilter:['hidden']}); });
+  document.addEventListener('keydown',e=>{ if(e.key!=='Tab') return; const o=ovTop(); if(!o) return;
+    const ae=document.activeElement; if(ae&&ae.closest&&ae.closest('[role="dialog"]:not(.ov)')&&!o.contains(ae)) return;
+    const f=ovFoc(o); if(!f.length) return; const a=f[0], z=f[f.length-1];
+    if(!o.contains(ae)){ e.preventDefault(); (e.shiftKey?z:a).focus(); }
+    else if(e.shiftKey&&ae===a){ e.preventDefault(); z.focus(); }
+    else if(!e.shiftKey&&ae===z){ e.preventDefault(); a.focus(); } });
+})();

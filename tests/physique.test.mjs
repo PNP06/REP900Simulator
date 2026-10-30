@@ -122,5 +122,20 @@ const mdte = (failA, failB, dur) => { const s = makeState(P100); run(s, 5); s.el
   check('H3 : la turbopompe ASG tient le niveau des GV', s.el.av.asg === 1 && s.Wasg > 0.005 && s.Lsg > 30, `niveau GV ${s.Lsg.toFixed(0)} %`);
   check('H3 : pas d\'IS ni de charge RCV possibles', s.el.av.is === 0 && s.el.av.chg === 0 && s.Qc < 0.5); }
 
+/* ---- Disponibilités et contrats (audits du 30/10/2026) ---- */
+{ // APD et appoint REA soumis à leurs alimentations
+  const { s } = mdte(true, true, 120); const cap0 = s.areCap;
+  s.apd = true; run(s, 5);
+  check('Sans tableaux normaux, une APD commandée n\'apporte aucun débit', s.areCap === cap0, `capacité ${s.areCap.toFixed(3)}`);
+  const cb0 = s.Cb; Object.assign(s.rea, { mode: 'dil', q: 30, vt: Infinity, v: 0, run: true }); run(s, 120);
+  check('Sans pompe de charge RCV, une dilution demandée ne change pas le bore', Math.abs(s.Cb - cb0) < 1e-6, `${(s.Cb - cb0).toFixed(4)} ppm en 120 s`); }
+{ // diesel dont le réservoir se vide
+  const { s } = mdte(false, false, 60); s.el.dg.A.fuel = 1e-6; run(s, 5);
+  check('Diesel à réservoir vide : il s\'arrête et ne tient plus son tableau', s.el.dg.A.st === 'defaut' && s.el.src.LHA !== 'dg', s.el.dg.A.st); }
+{ // pic xénon calculé par le moteur lui-même après un AAR depuis 100 %
+  const s = makeState(P100); run(s, 5); trip(s, 'test', 'op'); const t0 = s.t; let mx = 0, tm = 0, nx = 0;
+  while (s.t - t0 < 14 * 3600) { step(s); if (s.t >= nx) { nx = s.t + 60; if (s.X > mx) { mx = s.X; tm = (s.t - t0) / 3600; } } }
+  check('Pic xénon du moteur après AAR entre 7 et 11 h, entre −4 500 et −5 500 pcm', tm > 7 && tm < 11 && -2700 * mx < -4500 && -2700 * mx > -5500, tm.toFixed(1) + ' h, ' + (-2700 * mx).toFixed(0) + ' pcm'); }
+
 console.log(fails ? `\n${fails} test(s) en échec` : '\nTous les tests passent');
 process.exit(fails ? 1 : 0);
