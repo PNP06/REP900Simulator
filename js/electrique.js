@@ -17,12 +17,15 @@ function makeElec(){
     av:{lg:true,lha:true,lhb:true,heat:1,chg:1,is:1,asg:1,cond:true}};
 }
 function elecLog(s,txt){ logEv(s,'auto',txt); }
-/* commandes opérateur (onglet Électrique, run 2) */
+/* commandes opérateur (vue Électrique) : renvoient le texte du journal, ou null si la commande est sans effet */
 function elecCmd(s,cmd,x){
-  const e=s.el; if(!e) return;
-  if(cmd==='dgStart'){ const d=e.dg[x]; if(d.st==='pret'||d.st==='arret'){ d.st='demarrage'; d.t=0; logEv(s,'op','Démarrage manuel du diesel '+x); } }
-  else if(cmd==='dgStop'){ const d=e.dg[x]; if(d.st==='service'||d.st==='demarrage'){ d.st='arret'; logEv(s,'op','Arrêt du diesel '+x); } }
-  else if(cmd==='dus'){ if(e.dus.st==='pret'){ e.dus.st='demarrage'; e.dus.t=0; e.dus.voie=x||'LHA'; logEv(s,'op','Démarrage du DUS sur '+e.dus.voie); } }
+  const e=s.el; if(!e) return null;
+  if(cmd==='dg'){ const d=e.dg[x]; if(!d||d.st==='defaut') return null;
+    if(d.st==='service'||d.st==='demarrage'){ if(e.src['LH'+x]==='dg') return null; d.st='pret'; return 'Arrêt du diesel '+x+' (retour en attente)'; }
+    d.st='demarrage'; d.t=0; return 'Démarrage manuel du diesel '+x; }
+  if(cmd==='dus'){ if(e.dus.st!=='pret') return null; const v=!e.src.LHA?'LHA':!e.src.LHB?'LHB':null; if(!v) return null;
+    e.dus.st='demarrage'; e.dus.t=0; e.dus.voie=v; return 'Démarrage du DUS pour réalimenter '+v; }
+  return null;
 }
 function elecStep(s,dt){
   const e=s.el, d=e.def;

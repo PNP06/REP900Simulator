@@ -210,6 +210,43 @@ for (const [w, h] of [[1280, 720], [1440, 900], [1920, 1080]]) {
   check('retours.json du dépôt bien formé', Array.isArray(real.retours) && real.retours.every(x => x.titre && x.niveau && x.statut));
   check('Retours : aucune erreur JavaScript', errs.length === 0, errs.slice(0, 2).join(' | '));
   await pg.close(); srv.close(); }
+// Alimentations électriques : zone du synoptique, vue Électrique, manque de tension externe, commandes des diesels.
+for (const [w, h] of [[1440, 900], [390, 844]]) {
+  const pg = await browser.newPage({ viewport: { width: w, height: h } }); const errs = []; pg.on('pageerror', e => errs.push(e.message));
+  await pg.goto(url); await pg.evaluate(() => { store('about', 1); document.querySelector('#about').hidden = true; launch('libre'); document.querySelector('#goBtn').click(); A.paused = true; });
+  await pg.waitForTimeout(300);
+  const r = await pg.evaluate(() => {
+    const o = {}, q = x => document.querySelector(x), txt = x => q(x).textContent;
+    if (!desk()) setTab('synop'); updateUI();
+    o.zone = /TS · TS · TS/.test(txt('#sv-elt')) && /prêts/.test(txt('#sv-eld'));
+    q('#sy-elt').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    return o; });
+  await pg.waitForTimeout(900);
+  Object.assign(r, await pg.evaluate(() => {
+    const o = {}, q = x => document.querySelector(x), txt = x => q(x).textContent;
+    const cd = q('.card[data-c="elec"]'); o.open = !q('#synpal') && inView(cd) && (!desk() || A.vues.includes('elec'));
+    updateUI(); o.normal = /6,6 kV · sur TS/.test(txt('#et-LHA')) && q('#eb-tsA').classList.contains('on');
+    const s = A.s; s.grid = false; s.el.r225 = false; s.ilot = true; s.el.ilotRate = true;
+    for (let i = 0; i < 60 / DT; i++) { step(s); evalAlarms(s); } updateUI();
+    o.mdte = /sur diesel/.test(txt('#et-LHA')) && /sur diesel/.test(txt('#et-LHB')) && /hors tension/.test(txt('#et-LG')) && q('#eb-dgA').classList.contains('on') && q('#eld-LG0').classList.contains('al');
+    if (!desk()) setTab('synop'); setVue('synop'); updateUI();
+    o.syn = /✕ · DG · DG/.test(txt('#sv-elt')) && q('#sy-elt').classList.contains('crit') && q('#sy-gm0').classList.contains('off');
+    o.alarm = !!(A.s.alarms.mdt||{}).on && !!(A.s.alarms.dgs||{}).on;
+    act('dg', 'A'); o.refus = s.el.dg.A.st === 'service';
+    s.el.dg.B.fail = true; for (let i = 0; i < 5 / DT; i++) step(s); updateUI();
+    act('dus'); o.dus = s.el.dus.st === 'demarrage' && s.el.dus.voie === 'LHB';
+    return o; }));
+  check(`${w}px : synoptique : zone Électricité (réseaux, tableaux, diesels)`, r.zone);
+  check(`${w}px : un clic sur la zone Électricité ouvre la vue Électrique`, r.open);
+  check(`${w}px : vue Électrique en fonctionnement normal : tableaux sur le TS, disjoncteurs fermés`, r.normal);
+  check(`${w}px : manque de tension externe : LHA et LHB sur diesel, tableaux normaux perdus`, r.mdte);
+  check(`${w}px : synoptique en manque de tension : zone en rouge, GMPP arrêtées`, r.syn);
+  check(`${w}px : alarmes « manque de tension » et « diesel en service »`, r.alarm);
+  check(`${w}px : on ne peut pas arrêter un diesel qui alimente son tableau`, r.refus);
+  check(`${w}px : DUS démarré sur la voie restée hors tension`, r.dus);
+  check(`${w}px : vue Électrique sans erreur JavaScript`, errs.length === 0, errs.slice(0, 2).join(' | '));
+  await pg.close();
+}
 await browser.close();
 console.log(fails ? `\n${fails} test(s) en échec` : '\nTous les tests passent');
 process.exit(fails ? 1 : 0);

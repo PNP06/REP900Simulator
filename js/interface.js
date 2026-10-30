@@ -131,6 +131,7 @@ function act(a,v){
     s.ilot=false; s.LtSet=s.Lt; op('Recouplage au réseau'); ctxAct('recouple');
     break;
   case 'ttrip': if(!s.coupled) return toast('Turbine non couplée.'); op('Déclenchement manuel de la turbine'); turbineTrip(s,'manuel'); break;
+  case 'dg': case 'dus': { const t=elecCmd(s,a,v); if(t){ op(t); ctxAct(a+(v||'')); } else toast(a==='dus'?'DUS : il faut un tableau secouru hors tension et le DUS prêt.':'Diesel '+v+' : commande refusée (en défaut, ou il alimente son tableau).'); break; }
   case 'apd': s.apd=!s.apd; op(s.apd?'Démarrage motopompe APD':'Arrêt motopompe APD'); if(s.apd) ctxAct('apd'); break;
   case 'areMode': if(v==='man'){ s.areMode='man'; s.areMan=Math.round(s.Wf*100)/100; op('ARE en manuel'); ctxAct('areMan'); } else { s.areMode='auto'; s.Iare=0; op('ARE en automatique'); } break;
   case 'asg': if(s.asg){ s.asg=false; op('Arrêt ASG'); } else { s.asg=true; op('Démarrage ASG'); } break;
@@ -234,7 +235,7 @@ function setTab(t){ A.tab=t; document.body.dataset.tab=t; $$('#tabs button').for
 /* ================= Poste de pilotage (ordinateur) : vues au centre, commandes par famille ================= */
 /* Sur ordinateur, chaque carte reste à sa place : une vue au centre (onglets du bas), une famille de commandes à droite (onglets du haut).
    Leçons, pointeur, corrections commentées et clics du bandeau ouvrent la vue ou la famille de la carte visée. */
-const VUE_NM={synop:'Synoptique',crv:'Courbes',di:'ΔI',pt:'P-T',react:'Réactivité',instr:'Neutronique',trend:'Tendances',alarm:'Alarmes',log:'Journal'};
+const VUE_NM={synop:'Synoptique',crv:'Courbes',di:'ΔI',pt:'P-T',react:'Réactivité',instr:'Neutronique',elec:'Électrique',trend:'Tendances',alarm:'Alarmes',log:'Journal'};
 const FAMS={core:{t:'Réactivité',c:['rods','bore']},prim:{t:'Primaire',c:['pzr']},sec:{t:'Secondaire',c:['turb','are']},saf:{t:'Sûreté',c:['prot']}};
 const FAM_OF={}; for(const [f,o] of Object.entries(FAMS)) for(const c of o.c) FAM_OF[c]=f;
 const TAB_NM={synop:'Surveiller',cmd:'Agir',trend:'Tendances',alarm:'Suivre'};
@@ -265,7 +266,7 @@ function fitPoste(){
   if(innerHeight>=1000) vh=vh*1.4/2.4;
   const sw=Math.max(0,vh-(FIT_EX||78))*990/610+26, c3=wide()?Math.max(320,Math.min(460,innerWidth*.19)):0;
   /* onglets des vues sans pictogrammes quand leur largeur dépasserait celle du synoptique */
-  const nb=sw<ti&&innerWidth>=1400; P.classList.toggle('vtc',nb); if(!nb) tb=ti;
+  const nb=sw<ti; P.classList.toggle('vtc',nb); if(!nb) tb=ti;
   const fam=Math.round(Math.max(360,Math.min(W*.5,760,W-Math.max(sw,tb,560)-c3)));
   r.setProperty('--famW',fam+'px');
   /* très grand écran : ce qui reste après la colonne de droite élargit la 3e colonne (tableau d'alarmes, journal) */
@@ -351,7 +352,7 @@ function updateUI(){
   const st=s.is?'IS':s.tripped?'AAR':s.ilot?'Îlotage':s.coupled?'Puissance':(s.n>1e-7?'Critique':'Sous-crit.');
   T('b-state',st); lamp('b-lamp',s.is||s.tripped?'r':s.ilot||s.limitNow?'a':'g');
   updateBand(s);
-  updSyn(s);
+  updSyn(s); if(typeof updElec==='function') updElec(s);
   /* instrumentation */
   H('i-sr',s.srInhib?'<span style="color:var(--dim)">HT coupée</span>':fmt(s.n*1e10,0)+' c/s');
   H('i-ir',sci(Math.max(s.n*1e-3,1e-11))+' A');
@@ -713,6 +714,10 @@ const HELP={
 <h3>Pourquoi c'est important</h3><p>Le bore compense ce qui évolue lentement : l'usure du combustible (de ~ 1 200 ppm en début de cycle à ~ 0 en fin), le xénon, et la position du groupe R. C'est le « réglage fin de long terme » de l'opérateur.</p>
 <h3>Ordres de grandeur</h3><ul><li>Vers 800 ppm : 1 m³ de dilution ≈ −3 ppm ≈ +27 pcm ; 100 L de borication ≈ +2,5 ppm ≈ −23 pcm.</li><li>L'effet arrive au rythme du mélange dans 270 m³ d'eau : plusieurs minutes.</li></ul>
 <h3>Pièges fréquents</h3><ul><li>Plus le bore est bas, plus une dilution coûte de volume pour le même effet.</li><li>Un bore élevé rend α moins négatif : le réacteur est moins autorégulé.</li><li>Une dilution qui continue sans demande (« Appoint REA en service » alors qu'on n'a rien lancé) est un incident classique.</li></ul>`},
+ elec:{t:'Alimentations électriques',h:`<h3>En bref</h3><p>Une centrale consomme elle-même beaucoup d'électricité : les trois pompes primaires font chacune environ 6 MW. En marche, c'est l'alternateur qui alimente la tranche par le <b>transformateur de soutirage (TS)</b>. Si la turbine s'arrête, les auxiliaires basculent sur le <b>transformateur auxiliaire (TA)</b>, branché sur le réseau 225 kV.</p><p>Les matériels de sûreté sont regroupés sur deux <b>tableaux secourus</b>, LHA (voie A) et LHB (voie B). Si plus rien n'arrive de l'extérieur, chacun est repris par son <b>diesel</b> en une dizaine de secondes, puis les charges redémarrent par paliers.</p>
+<h3>Ce que vous voyez</h3><ul><li>En haut, les sources ; au milieu, les trois tableaux 6,6 kV ; en dessous, ce que chaque tableau alimente : ● en service, ○ perdu.</li><li>Les <b>disjoncteurs</b> : carré plein = fermé, vide = ouvert, contour orange = ouvert sur défaut. Trait pointillé : chemin de repli par le TA.</li><li>Les <b>diesels</b> : état, tension et fréquence, reprise des charges, fioul restant.</li><li>Les <b>batteries 125 V</b> (contrôle-commande) et les <b>moyens ultimes</b> : turboalternateur LLS et diesel d'ultime secours DUS.</li></ul>
+<h3>Pourquoi c'est important</h3><p>Les pompes primaires sont sur les tableaux <b>normaux</b> : en manque de tension externe, elles s'arrêtent, le réacteur est arrêté et la chaleur résiduelle s'évacue par <b>circulation naturelle</b> vers les GV, alimentés par l'ASG. Si les deux diesels sont aussi perdus (situation <b>H3</b>), il ne reste que la turbopompe ASG, qui tourne sur la vapeur des GV, et les batteries.</p>
+<h3>Ce que le simulateur simplifie</h3><p>On s'arrête aux deux voies et aux tableaux 6,6 kV. Les tableaux 380 V, les alimentations 220 V et 125 V détaillées et les onduleurs ne sont pas représentés. Les durées (10 s pour un diesel, environ 1 h de batteries) sont des ordres de grandeur.</p>`},
  turb:{t:'Turbine — GCT',l:'l-fb',h:`<h3>En bref</h3><p>La turbine transforme la vapeur en rotation, l'alternateur en électricité. En France, on pilote les réacteurs en <b>mode G</b> : c'est la turbine qui commande. On règle la charge demandée par le réseau, et le réacteur suit automatiquement, un peu comme un régulateur de vitesse où l'on choisit la vitesse et où le moteur s'adapte.</p>
 <h3>Ce que vous voyez</h3><ul><li><b>Charge</b> réelle et <b>consigne</b>, vitesse de variation en %/min, bouton <b>Maintenir</b> pour figer la charge.</li><li><b>Coupler / Découpler</b> l'alternateur ; <b>Recoupler au réseau</b> après un îlotage.</li><li><b>GCT-c</b> : contournement vers le condenseur. Turbine découplée, il règle la pression vapeur (mode P) ; couplée, il s'ouvre si le primaire est trop chaud (mode T).</li><li><b>GCT-a</b> : décharge de vapeur à l'atmosphère, utilisable à la main pour refroidir.</li></ul>
 <h3>Pourquoi c'est important</h3><p>La charge fixe la température de consigne : <b>Tref = 286 + 18,5 × charge</b>. Elle fixe aussi la position des GCP et le débit de vapeur. Changer la charge, c'est demander au réacteur de changer de puissance.</p>
@@ -809,6 +814,11 @@ const GLOSS=[
  ['GCT-c','GCT-c',0,"Contournement de la turbine vers le condenseur : envoie la vapeur directement au condenseur quand la turbine ne la consomme pas."],
  ['GCT-a','GCT-a',0,"Décharge de vapeur à l'atmosphère, le panache visible sur le toit des bâtiments. Utilisée pour refroidir quand le condenseur n'est pas disponible."],
  ['Condenseur','condenseur',1,"Échangeur refroidi par l'eau d'une rivière ou de la mer, qui retransforme la vapeur en eau."],
+ ['Tableau secouru','tableaux? secourus?',1,"Tableau électrique 6,6 kV (LHA pour la voie A, LHB pour la voie B) qui alimente les matériels de sûreté : injection de sécurité, charge RCV, motopompes ASG. Chacun peut être repris par son diesel."],
+ ['Diesel de secours','diesels? de secours|groupes? électrogènes?',1,"Groupe électrogène de plusieurs mégawatts, un par voie secourue. Il démarre seul sur manque de tension et reprend son tableau en une dizaine de secondes."],
+ ['Manque de tension externe','manque de tension externe|MDTE',1,"Perte simultanée des réseaux 400 kV et 225 kV, îlotage raté : seuls les diesels peuvent alors réalimenter les tableaux secourus."],
+ ['DUS','DUS',0,"Diesel d'ultime secours, ajouté sur chaque réacteur après l'accident de Fukushima : il réalimente une voie secourue si les deux diesels sont perdus."],
+ ['LLS','LLS',0,"Turboalternateur de secours entraîné par la vapeur des GV : il alimente l'injection aux joints des pompes primaires quand plus aucun tableau secouru n'est sous tension."],
  ['Îlotage','îlotage|îlotée',1,"Perte du réseau sans arrêt du réacteur : la tranche continue de tourner en alimentant seulement ses propres auxiliaires (~ 5 %)."],
  ['Couplage','couplage|coupler|couplée?',1,"Raccordement de l'alternateur au réseau électrique : la turbine commence alors à fournir de la puissance."],
  ['AAR','AAR',0,"Arrêt automatique du réacteur : toutes les grappes tombent en moins de 2 s, apportant plus de 7 000 pcm d'antiréactivité."],
