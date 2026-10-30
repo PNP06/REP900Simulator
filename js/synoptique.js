@@ -6,21 +6,21 @@ const SYC={
   gv:{t:'Générateurs de vapeur',fam:'sec',card:'are'}, turb:{t:'Turbine et alternateur',fam:'sec',card:'turb'}, gct:{t:'Contournement turbine (GCT)',fam:'sec',card:'turb'},
   are:{t:'Eau alimentaire ARE',fam:'sec',card:'are'}, asg:{t:'Alimentation de secours ASG',fam:'sec',card:'are'}, pump:{t:'Pompes primaires GMPP',fam:'saf',card:'prot'}, is:{t:'Injection de sécurité',fam:'saf',card:'prot'}
 };
-/* étiquettes : id, x, y, largeur, libellé, équipement */
+/* étiquettes : id, x, y, largeur, libellé, équipement (hauteur 44, libellé 12,5 et valeur 17 en unités du dessin) */
 const SYT=[
- ['rods',8,150,104,'Groupe R','core'],['pn',8,214,104,'P nucléaire','core'],['cb',8,262,104,'Bore','rcv'],['rea',8,486,118,'Appoint REA','rcv'],
- ['th',222,196,104,'Tch','core'],['tm',222,282,104,'Tmoy · écart','core'],['tf',222,362,104,'Tfr','core'],
- ['pp',378,34,112,'Pression pressu','pzr'],['lp',378,74,112,'Niveau / réf.','pzr'],['hs',378,114,140,'Chauff. · asp.','pzr'],
- ['psg',530,196,112,'Pression GV','gv'],['lg',530,236,112,'Niveau GV','gv'],['wf',530,276,112,'Eau / vapeur','gv'],
- ['gctc',698,206,122,'GCT-c condenseur','gct'],['gcta',530,96,116,'GCT-a atmosphère','gct'],
- ['pe',852,110,128,'P électrique','turb'],['ch',852,150,128,'Charge','turb'],
- ['are',652,560,112,'ARE · TPA','are'],['asg',530,404,128,'ASG','asg'],
- ['rcv',296,566,160,'RCV charge · décharge','rcv'],['is',466,566,150,'IS','is']
+ ['rods',4,140,108,'Groupe R','core'],['pn',4,194,108,'P nucléaire','core'],['cb',4,248,108,'Bore','rcv'],['rea',4,474,122,'Appoint REA','rcv'],
+ ['th',220,190,112,'Tch','core'],['tm',220,272,140,'Tmoy · écart','core'],['tf',220,350,112,'Tfr','core'],
+ ['pp',378,20,134,'Pression pressu','pzr'],['lp',378,68,134,'Niveau / réf.','pzr'],['hs',378,116,150,'Chauff. · asp.','pzr'],
+ ['psg',526,184,128,'Pression GV','gv'],['lg',526,232,128,'Niveau GV','gv'],['wf',526,280,128,'Eau / vapeur','gv'],
+ ['gctc',698,206,150,'GCT-c condenseur','gct'],['gcta',544,74,140,'GCT-a atmosphère','gct'],
+ ['pe',850,112,136,'P électrique','turb'],['ch',850,160,136,'Charge','turb'],
+ ['are',650,560,150,'ARE · TPA','are'],['asg',526,392,150,'ASG','asg'],
+ ['rcv',296,562,178,'RCV charge · décharge','rcv'],['is',484,562,156,'IS','is']
 ];
 const SYR=[['S','SD'],['G1','G'],['G2','G'],['N1','G'],['N2','G'],['R','R']];
 function synSVG(){
-  const tg=([id,x,y,w,lb,c])=>'<g class="stg" id="sy-'+id+'" data-sy="'+c+'" role="button" tabindex="0" aria-label="'+lb+' : actions rapides"><rect x="'+x+'" y="'+y+'" width="'+w+'" height="34" rx="4"/><text x="'+(x+7)+'" y="'+(y+12)+'" class="tl">'+lb+'</text><text x="'+(x+7)+'" y="'+(y+28)+'" class="tv" id="sv-'+id+'">—</text></g>';
-  const rods=SYR.map(([n,k],i)=>{ const x=128+i*12; return '<rect x="'+x+'" y="206" width="7" height="200" rx="2" class="eqh"/><rect class="rod" data-k="'+k+'" x="'+x+'" y="206" width="7" height="0" rx="2"/><text x="'+(x+3.5)+'" y="200" text-anchor="middle" class="tiny">'+n+'</text>'; }).join('')
+  const tg=([id,x,y,w,lb,c])=>'<g class="stg" id="sy-'+id+'" data-sy="'+c+'" role="button" tabindex="0" aria-label="'+lb+' : actions rapides"><rect x="'+x+'" y="'+y+'" width="'+w+'" height="44" rx="5"/><text x="'+(x+7)+'" y="'+(y+15)+'" class="tl">'+lb+'</text><text x="'+(x+7)+'" y="'+(y+36)+'" class="tv" id="sv-'+id+'" data-w="'+(w-14)+'">—</text></g>';
+  const rods=SYR.map(([n,k],i)=>{ const x=128+i*12; return '<rect x="'+x+'" y="206" width="7" height="200" rx="2" class="eqh"/><rect class="rod" data-k="'+k+'" x="'+x+'" y="206" width="7" height="0" rx="2"/><text x="'+(x+3.5)+'" y="200" text-anchor="middle" class="tiny rl">'+n+'</text>'; }).join('')
    +'<text x="131.5" y="420" text-anchor="middle" class="tiny num" id="sy-pS">—</text><text x="170" y="420" text-anchor="middle" class="tiny num" id="sy-pG">—</text><text x="203.5" y="420" text-anchor="middle" class="tiny num" id="sy-pR">—</text>';
   const pump=(x,y,id,lb)=>'<g class="pmp" id="'+id+'"><circle cx="'+x+'" cy="'+y+'" r="9"/><path d="M'+(x-4)+' '+(y+4)+' L'+x+' '+(y-5)+' L'+(x+4)+' '+(y+4)+'z"/>'+(lb?'<text x="'+x+'" y="'+(y+21)+'" text-anchor="middle" class="tiny">'+lb+'</text>':'')+'</g>';
   const vlv=(x,y,id,vert)=>'<path class="vlv" id="'+id+'" d="'+(vert?'M'+(x-6)+' '+(y-7)+' L'+(x+6)+' '+(y-7)+' L'+(x-6)+' '+(y+7)+' L'+(x+6)+' '+(y+7)+'z':'M'+(x-7)+' '+(y-6)+' L'+(x-7)+' '+(y+6)+' L'+(x+7)+' '+(y-6)+' L'+(x+7)+' '+(y+6)+'z')+'"/>';
@@ -32,11 +32,11 @@ function synSVG(){
   +'<g class="comp" data-sy="gct"><rect class="hl" x="590" y="70" width="126" height="320" rx="6"/>'+ln('gctc','steam thin','M690 170 V360 H738')+vlv(690,300,'sv-vgctc',true)+ln('gcta','steam thin','M610 170 V136')+vlv(610,150,'sv-vgcta',true)+'</g>'
   +'<path class="ln steam thin" d="M780 128 V340"/>'
   +ln('are','feed','M790 380 V540 H600 V440 H516')
-  +'<g class="comp" data-sy="asg"><rect class="hl" x="516" y="396" width="132" height="62" rx="6"/>'+ln('asg','feed thin','M560 452 V458 H516')+'</g>'
-  +ln('dech','bore thin','M262 470 H242 V575 H232')+ln('chg','bore thin','M290 590 H300 V520')+ln('rea','bore thin','M126 522 H140 V578 H170')
-  +'<g class="comp" data-sy="is"><rect class="hl" x="360" y="526" width="234" height="80" rx="6"/>'+ln('is','isl thin','M470 583 H360 V520')+vlv(410,583,'sv-vis',false)+'</g>'
+  +'<g class="comp" data-sy="asg"><rect class="hl" x="516" y="386" width="166" height="72" rx="6"/>'+ln('asg','feed thin','M560 452 V458 H516')+'</g>'
+  +ln('dech','bore thin','M262 470 H242 V575 H232')+ln('chg','bore thin','M272 566 V520')+ln('rea','bore thin','M126 522 H140 V578 H170')
+  +'<g class="comp" data-sy="is"><rect class="hl" x="410" y="530" width="236" height="78" rx="6"/>'+ln('is','isl thin','M540 562 V540 H420 V520')+vlv(474,540,'sv-vis',false)+'</g>'
   +'<g class="comp" data-sy="core"><rect class="hl" x="112" y="160" width="106" height="270" rx="12"/><rect x="118" y="168" width="92" height="320" rx="40" class="eq"/><rect x="124" y="300" width="80" height="106" rx="4" class="core" id="sy-coreR"/>'+rods+'<text x="164" y="156" text-anchor="middle" class="nm">Cuve</text></g>'
-  +'<g class="comp" data-sy="pzr"><rect class="hl" x="310" y="14" width="64" height="146" rx="12"/><rect x="318" y="44" width="44" height="108" rx="20" class="eq"/><rect x="320" y="100" width="40" height="50" rx="4" class="lvl" id="sy-pzL"/><path class="ln thin" id="sp-seb" d="M340 44 V26"/>'+vlv(340,30,'sv-vseb',true)+'<text x="352" y="22" class="tiny" id="sy-seb">SEBIM</text><text x="340" y="172" text-anchor="middle" class="nm">Pressu</text></g>'
+  +'<g class="comp" data-sy="pzr"><rect class="hl" x="310" y="14" width="64" height="146" rx="12"/><rect x="318" y="44" width="44" height="108" rx="20" class="eq"/><rect x="320" y="100" width="40" height="50" rx="4" class="lvl" id="sy-pzL"/><path class="ln thin" id="sp-seb" d="M340 44 V26"/>'+vlv(340,30,'sv-vseb',true)+'<text x="330" y="34" text-anchor="end" class="tiny" id="sy-seb">SEBIM</text><text x="340" y="172" text-anchor="middle" class="nm">Pressu</text></g>'
   +'<g class="comp" data-sy="gv"><rect class="hl" x="426" y="170" width="94" height="326" rx="20"/><rect x="434" y="182" width="78" height="306" rx="36" class="eq"/><rect x="440" y="300" width="66" height="160" rx="8" class="lvl sec" id="sy-gvL"/><path d="M452 470 V250 a21 21 0 0 1 42 0 V470" class="tube"/><text x="473" y="508" text-anchor="middle" class="nm">GV ×3</text></g>'
   +'<g class="comp" data-sy="turb"><rect class="hl" x="722" y="58" width="262" height="136" rx="8"/><path d="M730 68 L800 82 V114 L730 128 Z" class="eq"/><line x1="800" y1="98" x2="830" y2="98" class="shaft"/><circle cx="850" cy="98" r="20" class="eq"/><text x="850" y="103" text-anchor="middle" class="nm" style="font-size:14px">~</text><line x1="870" y1="98" x2="930" y2="98" class="shaft" id="sy-res"/><rect x="896" y="92" width="10" height="12" class="brk" id="sy-brk"/><text x="934" y="102" class="tiny" id="sy-grid">Réseau</text><text x="765" y="56" text-anchor="middle" class="nm">Turbine</text></g>'
   +'<rect x="738" y="340" width="104" height="40" rx="6" class="eq"/><text x="790" y="364" text-anchor="middle" class="nm">Condenseur</text>'
@@ -47,7 +47,7 @@ function synSVG(){
 }
 function buildSyn(){ const w=$('#synw'); if(w&&!w.firstElementChild) w.innerHTML=synSVG(); }
 const SY={pal:null,at:null};
-function sTag(id,txt,st){ const g=document.getElementById('sy-'+id); if(!g) return; T('sv-'+id,txt); const c='stg'+(st?' '+st:'')+(SY.pal&&g.dataset.sy===SY.pal?' on':''); if(g.getAttribute('class')!==c) g.setAttribute('class',c); }
+function sTag(id,txt,st){ const g=document.getElementById('sy-'+id); if(!g) return; const v=document.getElementById('sv-'+id); if(v&&v.textContent!==txt){ v.textContent=txt; const w=+v.dataset.w; if(txt.length*10.3>w){ v.setAttribute('textLength',w); v.setAttribute('lengthAdjust','spacingAndGlyphs'); } else v.removeAttribute('textLength'); } const c='stg'+(st?' '+st:'')+(SY.pal&&g.dataset.sy===SY.pal?' on':''); if(g.getAttribute('class')!==c) g.setAttribute('class',c); }
 function sLine(id,on,red){ const p=document.getElementById('sp-'+id), f=document.getElementById('sf-'+id); if(p){ p.classList.toggle('off',!on); p.classList.toggle('alarm',!!(on&&red)); } if(f) f.classList.toggle('off',!on); }
 function sVlv(id,open,red){ const v=document.getElementById('sv-v'+id); if(!v) return; v.classList.toggle('open',!!open); v.classList.toggle('alarm',!!(open&&red)); }
 function updSyn(s){
