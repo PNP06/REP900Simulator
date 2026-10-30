@@ -12,6 +12,8 @@ const ALM=[
  ['lhx','Tableau secouru hors tension','r',s=>s.el&&(!s.el.src.LHA||!s.el.src.LHB)],
  ['dgf','Défaut diesel','r',s=>s.el&&(s.el.dg.A.st==='defaut'||s.el.dg.B.st==='defaut')],
  ['rtb','Groupe R limite très basse','r',s=>!s.tripped&&s.coupled&&s.rods.R.p<130],
+ ['rdpd','Disque de rupture du réservoir de décharge pressu rompu','r',s=>s.tmi&&s.rdpBurst],
+ ['tc','Thermocouples sortie cœur hors échelle','r',s=>s.tmi&&s.Ttc>371],
  ['hflux','Puissance nucléaire > 103 %','a',s=>s.n>1.03],
  ['per','Temps de doublement < 20 s','a',s=>!s.tripped&&s.Td<20],
  ['dtm','Marge ΔT protection < 5 %','a',s=>!s.tripped&&s.dtMargin<5],
@@ -26,10 +28,10 @@ const ALM=[
  ['aret','Écart débit ARE / vapeur','a',s=>!s.tripped&&Math.abs(s.Wf+s.Wasg-s.Wst)>0.15],
  ['tpa','Turbopompe alimentaire déclenchée','a',s=>!s.tpa[0]||!s.tpa[1]],
  ['chg','Débit de charge RCV élevé','a',s=>s.Qc>28],
- ['kenc','Activité enceinte élevée (KRT)','a',s=>s.Qleak>0.5],
+ ['kenc','Activité enceinte élevée (KRT)','a',s=>s.Qleak>0.5||s.tmi&&s.mEnc>0.5],
  ['rlb','Groupe R limite basse','a',s=>!s.tripped&&s.coupled&&s.rods.R.p<150],
  ['di','ΔI hors domaine','a',s=>!s.tripped&&s.n>0.15&&Math.abs(s.DI+1.5*s.n)>5],
- ['sat','Marge à la saturation < 15 °C','a',s=>s.satMargin<15],
+ ['sat','Marge à la saturation < 15 °C','a',s=>!s.era79&&s.satMargin<15],
  ['grid','Perte réseau — îlotage','a',s=>s.ilot],
  ['turb','Turbine déclenchée','a',s=>s.turbTripped],
  ['dgs','Diesel en service','a',s=>s.el&&['service','demarrage'].some(x=>x===s.el.dg.A.st||x===s.el.dg.B.st)],
@@ -44,6 +46,10 @@ const ALM=[
  ['ldis','Décharge RCV isolée','i',s=>s.Qld===0],
  ['p6','P6 — gamme source à inhiber','i',s=>!s.srInhib&&s.n>1e-7],
  ['p10','P10 — seuil bas haut flux à bloquer','i',s=>s.p10&&!s.lowBlk&&!s.tripped],
+ ['tdech','Température ligne de décharge pressu haute','a',s=>s.tmi&&s.Tdech>90],
+ ['rdp','Réservoir de décharge pressu : pression haute','a',s=>s.tmi&&s.Prdp>3&&!s.rdpBurst],
+ ['penc','Pression enceinte haute','a',s=>s.tmi&&s.Penc>1.05],
+ ['vib','Vibrations des pompes primaires','a',s=>s.tmi&&s.vib>0.3],
  ['blk','Blocage extraction grappes','i',s=>!s.tripped&&(s.n>1.03||s.dropped||s.dtMargin<3)],
 ];
 function evalAlarms(s){ let nw=null; const rk={r:0,a:1,i:2};
@@ -422,6 +428,42 @@ const SCN=[
  end:(s,c)=>c.fired&&((c.k.p50&&s.t-c.k.p50>120)||s.t-c.fired>3000||(c.st.aar&&s.t-c.st.aar.t>60)),
  evaluate(s,c){ return [Cr('Repli engagé en moins de 10 min',c.k.red!=null&&c.k.red-c.fired<=600,c.k.red!=null?'En '+dur(c.k.red-c.fired):'Non réalisé'),Cr('Charge à 50 % en moins de 40 min',c.k.p50!=null&&c.k.p50-c.fired<=2400,c.k.p50!=null?'En '+dur(c.k.p50-c.fired):'Non réalisé'),Cr('Vitesse de baisse ≤ 5 %/min',s.ramp<=5),Cr("Pas d'AAR",!c.st.aar,c.st.aar?c.st.aar.cause:''),...common(s,c)]; },
  expected:"Un défaut sur le tableau LHB le met hors tension : la motopompe ASG B, la file B d'injection de sécurité, la charge RCV voie B et les chaufferettes secourues B sont perdues. En fonctionnement, rien ne change, car les tableaux normaux et la voie A suffisent. Mais un accident survenant maintenant ne trouverait plus qu'une seule voie : les règles d'exploitation imposent de <b>replier</b> la tranche dans un délai fixé. Repérer l'alarme, confirmer dans la vue Électrique, puis engager une baisse de charge calme (3 à 5 %/min). Le simulateur s'arrête à 50 %."},
+{id:'tmi',kind:'histo',title:'Three Mile Island, à votre place',desc:"L'accident de TMI-2 (1979) transposé sur notre tranche : mêmes pannes, mêmes indications trompeuses. Trouverez-vous la fuite ?",diff:3,speed:1,init:P100,
+ brief:"<p>Le 28 mars 1979 à 4 h du matin, la tranche 2 de Three Mile Island (Pennsylvanie) perd son eau alimentaire. Une soupape de décharge du pressuriseur s'ouvre puis reste bloquée ouverte, alors que son voyant indique « fermée ». En moins de trois heures, environ la moitié du cœur fond.</p><p>Le scénario rejoue ces pannes sur notre REP 900, à pleine puissance. Il y a des différences avec la centrale américaine : nos GV gardent plus d'eau, et la pression n'irait pas assez haut pour ouvrir seule une soupape. Celle-ci s'ouvre donc de force au pic de pression.</p><p>Vous êtes l'opérateur. Aucune indication sur la nature de l'accident : à vous de comprendre ce qui se passe, avec les instruments choisis ci-dessous. Accélérez une fois la situation comprise : l'accident se joue sur deux à trois heures.</p>",
+ hints:["La pression baisse alors que le niveau du pressuriseur monte, et la ligne de décharge du pressuriseur est chaude.","C'est en tête du pressuriseur : une soupape peut être ouverte alors que son voyant indique « fermée »."],
+ hint:"Fermez la vanne d'isolement de la soupape (carte Pressuriseur), laissez l'injection de sécurité à plein débit et gardez les pompes primaires.",
+ fire:(s,c)=>{ s.tmi=true; s.tpa=[false,false]; s.asgV=false; c.k.pk=s.Ppzr; },
+ update(s,c){ if(c.fired==null) return; const k=c.k;
+  /* la soupape s'ouvre au pic de pression qui suit l'AAR, puis reste bloquée : l'ordre retombe, la soupape non */
+  if(!s.porvStuck){ k.pk=Math.max(k.pk,s.Ppzr); if(s.tripped&&s.Ppzr<k.pk-0.3){ s.porvStuck=true; s.porvOpen=true; logEv(s,'alarm','Alarme : Soupape pressu SEBIM ouverte'); logEv(s,'auto','Soupape pressu SEBIM : ordre de fermeture envoyé'); } }
+  if(k.satT==null&&s.sat) k.satT=s.t;
+  if(k.isCut==null&&s.is&&s.isThr<1&&s.satMargin<10&&!s.porvIsol) k.isCut=s.t;
+  if(k.pmpCut==null&&s.sat&&s.pumps.some(p=>!p)) k.pmpCut=s.t;
+  if(k.burstT==null&&s.rdpBurst) k.burstT=s.t;
+  if(k.uncT==null&&s.unc>0) k.uncT=s.t;
+  k.maxUnc=Math.max(k.maxUnc||0,s.unc);
+  if(k.dmgT==null&&s.coreDmg>=3) k.dmgT=s.t;
+  if(s.porvIsol&&s.satMargin>3&&s.unc===0){ if(k.safeT==null) k.safeT=s.t; } else k.safeT=null; },
+ end:(s,c)=>c.fired!=null&&((c.k.safeT!=null&&s.t-c.k.safeT>600)||(c.k.dmgT!=null&&s.t-c.k.dmgT>600)||s.t-c.fired>4*3600),
+ info:(s,c)=>c.fired==null?null:'Depuis le début de l\'accident : '+dur(s.t-c.fired),
+ evaluate(s,c){ const f=c.fired, T=x=>x==null?'non fait':dur(x-f), k=c.k;
+  return [Cr('Soupape bloquée repérée et isolée en moins de 30 min',c.acts.porvIsol!=null&&c.acts.porvIsol-f<=1800,'Vous : '+T(c.acts.porvIsol)+' · TMI : 2 h 22'),
+   Cr('Injection de sécurité laissée à plein débit tant que le primaire bout',k.isCut==null,(k.isCut!=null?'Réduite à '+T(k.isCut):'Jamais réduite')+' · TMI : réduite à 4 min 30'),
+   Cr('Vannes ASG trouvées et ouvertes en moins de 10 min',c.acts.asgV!=null&&c.acts.asgV-f<=600,'Vous : '+T(c.acts.asgV)+' · TMI : 8 min'),
+   Cr('Pompes primaires gardées tant que le primaire bout',k.pmpCut==null,(k.pmpCut!=null?'Arrêt à '+T(k.pmpCut):'Gardées')+' · TMI : arrêtées à 1 h 14 et 1 h 40'),
+   Cr('Cœur toujours sous l\'eau',!(k.maxUnc>0),k.uncT!=null?'Dénoyé à '+T(k.uncT)+' · TMI : vers 2 h':'TMI : dénoyé vers 2 h'),
+   Cr('Gaines sous 1 204 °C',s.TgMax<=1204,'Maximum '+fmt(s.TgMax,0)+' °C')]; },
+ debrief(s,c){ const f=c.fired, k=c.k, T=x=>x==null?'—':dur(x-f);
+  const fin=s.coreDmg>=3?['Fusion partielle','Une partie du combustible a fondu ('+fmt(s.fondu*100,0)+' %), '+fmt(s.H2,0)+' kg d\'hydrogène produits. C\'est ce qui est arrivé à TMI-2.']
+   :s.coreDmg>=1?['Cœur endommagé','Les gaines ont dépassé '+fmt(s.TgMax,0)+' °C et se sont oxydées ('+fmt(s.H2,0)+' kg d\'hydrogène), sans fusion du combustible.']
+   :k.satT!=null?['Petite brèche maîtrisée','Le primaire a bouilli, mais le cœur est resté refroidi.']
+   :['Arrêt propre','La fuite a été arrêtée avant que le primaire ne bouille.'];
+  const rows=[['Primaire à saturation',T(k.satT),'6 min'],['Soupape isolée',T(c.acts.porvIsol),'2 h 22'],['Injection de sécurité réduite',T(k.isCut),'4 min 30'],['Vannes ASG ouvertes',T(c.acts.asgV),'8 min'],['Disque du réservoir de décharge rompu',T(k.burstT),'15 min'],['Pompes primaires arrêtées',T(k.pmpCut),'1 h 14'],['Cœur dénoyé',T(k.uncT),'vers 2 h']];
+  return '<h3>État final : '+fin[0]+'</h3><p>'+fin[1]+'</p><h3>Vous et l\'équipe de 1979</h3><table class="kv"><tr><td></td><td class="v">Vous</td><td class="v">TMI</td></tr>'+rows.map(r=>'<tr><td>'+r[0]+'</td><td class="v">'+r[1]+'</td><td class="v">'+r[2]+'</td></tr>').join('')+'</table>'
+   +'<h3>Pourquoi l\'équipe de 1979 n\'a pas trouvé</h3><ul><li><b>Un voyant qui ment</b> : la lampe de la soupape montrait l\'ordre « fermer », pas la position réelle.</li><li><b>Un niveau trompeur</b> : la vapeur formée dans la cuve poussait l\'eau dans le pressuriseur. Son niveau montait pendant que le circuit se vidait.</li><li><b>Une règle apprise à contresens</b> : « ne jamais laisser le pressuriseur devenir plein ». Réduire l\'injection était le bon réflexe pour un autre accident.</li><li><b>L\'information utile manquait</b> : pas de marge à la saturation ni de niveau cuve, plus de cent alarmes en quelques minutes, une imprimante d\'alarmes en retard de plusieurs heures.</li><li><b>Le retour d\'expérience n\'est pas arrivé</b> : la même soupape s\'était bloquée à Davis-Besse en 1977.</li><li><b>Les pompes primaires arrêtées</b> parce qu\'elles vibraient : elles brassaient un mélange eau-vapeur qui refroidissait encore le cœur.</li></ul>'
+   +'<h3>Ce qui a changé après</h3><p>Voyants de position réelle des vannes, indicateur de marge à la saturation, panneaux de sûreté, simulateurs pleine échelle. En France : l\'<b>approche par états</b> (on conduit sur l\'état physique de la tranche, sans avoir à deviner l\'événement) et un ingénieur sûreté en salle de commande.</p>'; },
+ expected:"Signature à reconnaître : pression qui baisse <b>et</b> niveau pressuriseur qui monte, température haute sur la ligne de décharge, réservoir de décharge qui se remplit. C'est une brèche en tête du pressuriseur, même si le voyant de la soupape dit « fermée ». Il faut fermer la vanne d'isolement de la soupape, laisser l'injection de sécurité à plein débit (un pressuriseur plein n'est pas un danger quand le primaire bout), ouvrir les vannes ASG pour réalimenter les GV, et garder les pompes primaires tant qu'elles tournent : le mélange eau-vapeur refroidit encore le cœur.",
+ d:"Un circuit qui perd de l'eau par le haut du pressuriseur se met à bouillir. Les bulles poussent l'eau dans le pressuriseur, qui paraît plein alors que le circuit se vide. À TMI, l'équipe a cru le circuit trop plein et a coupé l'eau de secours : le cœur s'est découvert."},
 {id:'myst',kind:'alea',title:'Aléa mystère',desc:'Un aléa tiré au hasard, sans indication préalable.',diff:3,speed:1,init:P100},
 {id:'libre',kind:'libre',title:'Pilotage libre à 100 %',desc:'Tranche à pleine puissance, sans objectif imposé.',diff:0,speed:1,init:P100},
 {id:'libre0',kind:'libre',title:'Pilotage libre à l\'arrêt à chaud',desc:'Réacteur sous-critique, à vous de démarrer.',diff:0,speed:5,init:{P:0,critR:170,R:0,G:'cal',SD:225,coupled:false,xe:0,modeR:'man',modeG:'man'}},

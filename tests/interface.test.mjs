@@ -247,6 +247,40 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
   check(`${w}px : vue Électrique sans erreur JavaScript`, errs.length === 0, errs.slice(0, 2).join(' | '));
   await pg.close();
 }
+// Accident historique TMI : scénario à part, commandes et alarmes propres invisibles ailleurs.
+for (const [w, h] of [[1440, 900], [390, 844]]) {
+  const pg = await browser.newPage({ viewport: { width: w, height: h } }); const errs = []; pg.on('pageerror', e => errs.push(e.message));
+  await pg.goto(url);
+  const r = await pg.evaluate(() => {
+    const o = {}, q = x => document.querySelector(x), vis = x => !!q(x) && q(x).offsetParent !== null;
+    store('about', 1); q('#about').hidden = true;
+    launch('libre'); q('#goBtn').click(); A.paused = true; updateUI();
+    o.cache = !document.body.classList.contains('tmi') && !vis('#c-porvi') && !vis('#c-asgv');
+    launch('tmi'); o.brief = !!q('.seg[data-key="era"]'); q('#goBtn').click(); A.paused = true;
+    const s = A.s, c = A.ctx; updateUI();
+    o.visible = document.body.classList.contains('tmi') && s.era79;
+    for (let i = 0; i < 300 / DT; i++) { step(s); evalAlarms(s); tick(s, c); }
+    updateUI();
+    o.soupape = s.porvStuck && s.porvOpen && s.Ppzr < 150;
+    o.masque = q('#b-sat').textContent === '—' && /1979/.test(q('#s-sat').textContent);
+    act('porvIsol'); act('asgV');
+    for (let i = 0; i < 600 / DT; i++) { step(s); evalAlarms(s); tick(s, c); }
+    o.isole = s.porvIsol;
+    finish(); o.debrief = /TMI/.test(document.body.textContent) && /Vous/.test(document.body.textContent);
+    launch('libre'); q('#goBtn').click(); A.paused = true; updateUI();
+    o.retour = !document.body.classList.contains('tmi') && !A.s.era79 && !A.s.tmi;
+    return o; });
+  check(`${w}px : TMI : commandes propres à TMI cachées hors du scénario`, r.cache);
+  check(`${w}px : TMI : choix « salle de 1979 / après TMI » au briefing`, r.brief);
+  check(`${w}px : TMI : commandes propres affichées dans le scénario`, r.visible);
+  check(`${w}px : TMI : la soupape reste bloquée ouverte et le primaire se dépressurise`, r.soupape);
+  check(`${w}px : TMI : marge à la saturation masquée en salle de 1979`, r.masque);
+  check(`${w}px : TMI : isolement de la soupape`, r.isole);
+  check(`${w}px : TMI : débriefing comparé à 1979`, r.debrief);
+  check(`${w}px : TMI : retour au pilotage libre sans trace du scénario`, r.retour);
+  check(`${w}px : TMI : aucune erreur JavaScript`, errs.length === 0, errs.slice(0, 2).join(' | '));
+  await pg.close();
+}
 await browser.close();
 console.log(fails ? `\n${fails} test(s) en échec` : '\nTous les tests passent');
 process.exit(fails ? 1 : 0);

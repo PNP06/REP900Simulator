@@ -16,6 +16,7 @@ function launch(id){
   A.s=makeState(scn.init); A.trk={}; A.scn=scn; A.ctx=newCtx(scn,A.s); A.done=false; A.acc=0;
   const c=A.ctx;
   if(scn.kind==='alea') c.fireAt=A.s.t+(scn.id==='rodwd'?25+Math.random()*20:45+Math.random()*60);
+  if(scn.kind==='histo'){ c.fireAt=A.s.t+60; A.s.era79=true; }
   if(scn.kind==='libre'){ c.rnd=$('#rndAlea').checked; c.nextAlea=600+Math.random()*900; c.fires=[]; }
   if(scn.steps) enterStep(0);
   setSpeed(scn.speed||1);
@@ -26,12 +27,13 @@ function launch(id){
 }
 function showBrief(){
   const scn=A.scn;
-  let h='<h2>'+({tuto:'Tutoriel',lecon:'Leçon guidée',exo:'Exercice',alea:'Aléa',libre:'Pilotage libre'}[scn.kind])+'</h2><div class="t">'+scn.title+'</div>';
+  let h='<h2>'+({tuto:'Tutoriel',lecon:'Leçon guidée',exo:'Exercice',alea:'Aléa',libre:'Pilotage libre',histo:'Accident historique'}[scn.kind])+'</h2><div class="t">'+scn.title+'</div>';
   h+=lvlSeg();
   if(isDeb()&&scn.e&&scn.id!=='myst') h+=ecBox(scn.e)+(scn.plan?planBox(scn,true):'');
   if(scn.kind==='alea') h+=INTRO_ALEA+(scn.id==='rodwd'?"<p>État : réacteur tout juste critique à puissance nulle (GI ≈ 10⁻⁸ A), turbine découplée, groupes en manuel. Restez à ×1.</p>":'');
   else if(scn.kind==='libre') h+="<p>Aucun objectif imposé : manœuvrez librement. "+(A.ctx.rnd?'Des aléas aléatoires surviendront pendant le pilotage. ':'')+"Le bouton <kbd>Terminer</kbd> affiche un bilan.</p>";
   else h+=scn.brief||'';
+  if(scn.kind==='histo') h+='<div class="row"><span class="lbl">Instruments</span><div class="seg" data-key="era"><button data-v="79">Salle de 1979</button><button data-v="now">Après TMI</button></div></div><p class="note">Salle de 1979 : le voyant de la soupape montre l\'ordre envoyé, pas sa position, et la marge à la saturation n\'est pas affichée. Après TMI : position réelle et marge à la saturation, comme aujourd\'hui.</p>';
   if(scn.obj){ h+='<h3>Objectifs</h3><ul class="crit">'+scn.obj.map(o=>'<li><span class="i">○</span><span>'+o.t+(o.w?'<small>'+o.w+'</small>':'')+'</span></li>').join('')+'</ul>'; }
   if(scn.tips) h+='<p class="note" style="font-size:14px">'+scn.tips+'</p>';
   h+='<p class="note">Vitesse de départ : ×'+(scn.speed||1)+'. Modifiable à tout moment en haut de l\'écran.</p>';
@@ -54,6 +56,7 @@ function tick(s,c){
   if(!s.tripped&&s.coupled&&s.rods.R.p<150) st.rLow=true;
   if(!s.tripped&&s.coupled&&s.rods.R.p<130) st.rVeryLow=true;
   if(scn.kind!=='alea'||c.fired!=null){ const a=c.af; a.minLsg=Math.min(a.minLsg,s.Lsg); a.maxLsg=Math.max(a.maxLsg,s.Lsg); a.minPp=Math.min(a.minPp,s.Ppzr); a.maxPp=Math.max(a.maxPp,s.Ppzr); a.minLp=Math.min(a.minLp,s.Lpzr); a.maxLp=Math.max(a.maxLp,s.Lpzr); }
+  if(scn.kind==='histo'&&c.fired==null&&s.t>=c.fireAt){ c.fired=s.t; scn.fire(s,c); c.dirty=true; }
   if(scn.kind==='alea'&&c.fired==null&&s.t>=c.fireAt){ c.fired=s.t; const a=c.af; a.minLsg=a.maxLsg=s.Lsg; a.minPp=a.maxPp=s.Ppzr; a.minLp=a.maxLp=s.Lpzr; scn.fire(s,c); renderMission(true); }
   if(scn.kind==='libre'&&c.rnd&&!c.cur&&s.t>=c.nextAlea&&s.coupled&&!s.tripped&&s.n>0.4){
     const pool=['tpa','ilot','drop','spray','leak','are','dil'];
@@ -157,6 +160,14 @@ function act(a,v){
     if(!s.p10) return toast('P10 non atteint (puissance < 10 %) : le seuil bas de 25 % doit rester actif.');
     s.lowBlk=true; op('Blocage du seuil bas de haut flux (P10)'); ctxAct('lowBlk'); break;
   case 'is': startIS(s,'op'); break;
+  case 'isThr': s.isThr=+v; op('Débit d\'injection de sécurité réglé à '+fmt(s.isThr*100,0)+' %'); ctxAct('isThr'); break;
+  case 'porvIsol': s.porvIsol=!s.porvIsol; op(s.porvIsol?'Fermeture de la vanne d\'isolement de la soupape de tête du pressuriseur':'Réouverture de la vanne d\'isolement de la soupape de tête du pressuriseur'); if(s.porvIsol) ctxAct('porvIsol'); break;
+  case 'asgV': if(s.asgV) return toast('Vannes ASG déjà ouvertes.'); s.asgV=true; op('Ouverture des vannes ASG'); ctxAct('asgV'); break;
+  case 'gmpp': { const i=+v;
+    if(s.pumps[i]){ s.pumps[i]=false; op('Arrêt de la GMPP '+(i+1)); ctxAct('gmppStop'); }
+    else { if(s.el&&!s.el.av.lg) return toast('Tableaux normaux hors tension : la GMPP ne peut pas redémarrer.'); s.pumps[i]=true; op('Démarrage de la GMPP '+(i+1)); }
+    break; }
+  case 'era': s.era79=v==='79'; op(s.era79?'Instruments : salle de 1979':'Instruments : après TMI'); break;
   case 'isStop':
     if(!s.is) return toast('IS non en service.');
     if(!(s.Ppzr>140&&s.Lpzr>20&&s.satMargin>20)) return toast('Critères d\'arrêt IS non remplis : P > 140 bar, niveau pressu > 20 %, marge saturation > 20 °C.');
@@ -314,6 +325,7 @@ function syncAll(){
   if(!s) return;
   syncSeg('modeR',s.modeR); syncSeg('modeG',s.modeG);
   syncSeg('reaMode',s.rea.mode); syncSeg('reaQ',s.rea.q); syncSeg('reaV',s.rea.vt===Infinity?'inf':s.rea.vt);
+  syncSeg('isThr',s.isThr); syncSeg('era',s.era79?'79':'now');
   syncSeg('ramp',s.ramp); syncSeg('areMode',s.areMode); syncSeg('heatMode',s.heatMode); syncSeg('sprayMode',s.sprayMode); syncSeg('chgMode',s.chgMode);
   $$('.bank').forEach(b=>b.classList.toggle('sel',b.dataset.bank===s.rodSel));
   $('#c-sel').textContent={SD:'Groupes d\'arrêt',G:'GCP',R:'Groupe R'}[s.rodSel];
@@ -322,6 +334,9 @@ function syncAll(){
   $('#c-ldi').textContent=s.ldIsolMan?'Rétablir décharge':'Isoler décharge';
   $('#c-apd').textContent=s.apd?'Arrêter APD':'Démarrer APD';
   $('#c-asgb').textContent=s.asg?'Arrêter ASG':'Démarrer ASG';
+  $('#c-porvi').textContent=s.porvIsol?'Rouvrir la vanne d\'isolement':'Fermer la vanne d\'isolement';
+  $('#c-asgv').textContent=s.asgV?'Vannes ASG ouvertes':'Ouvrir les vannes ASG';
+  s.pumps.forEach((p,i)=>{ $('#c-gm'+i).textContent=(p?'Arrêter':'Démarrer')+' GMPP '+(i+1); });
   const setR=(id,v,o,txt)=>{ const el=$(id); if(document.activeElement!==el) el.value=v; $(o).textContent=txt; };
   setR('#ltSet',Math.round(s.LtSet*100),'#ltSetO',fmt(s.LtSet*100,0)+' %');
   setR('#gcta',Math.round(s.gctaMan*100),'#gctaO',fmt(s.gctaMan*100,0)+' %');
@@ -359,7 +374,7 @@ function updateUI(){
   T('i-pr',s.n<0.005?'< 0,5 %':fmt(s.n*100,1)+' %');
   T('i-td',Number.isFinite(s.Td)&&s.Td<99999?fmt(s.Td,0)+' s':(s.rate<-1e-4?'décroissance':'stable'));
   T('i-dt',fmt(s.DTp,0)+' % · marge '+fmt(s.dtMargin,1));
-  T('i-sat',fmt(s.satMargin,1)+' °C');
+  T('i-sat',s.era79?'non affichée':fmt(s.satMargin,1)+' °C');
   T('i-dh',fmt(s.Qdh*100,2)+' %');
   /* réactivité */
   const rp=s.rho, scale=8000;
@@ -382,6 +397,14 @@ function updateUI(){
   T('c-heat',fmt(s.hEff*1440,0)+' kW'); T('c-spr',fmt(s.spray*100,0)+' %');
   T('c-qc',fmt(s.Qc,1)+' m³/h'); T('c-qld',s.Qld>0?fmt(s.Qld,1)+' m³/h':'Isolée'); T('c-sebim',s.sebim?'Ouverte':'Fermée');
   s.pumps.forEach((p,i)=>lamp('l-p'+(i+1),p?'g':'r'));
+  /* accident de type TMI : décharge du pressuriseur, cuve, enceinte (lignes visibles seulement quand elles servent) */
+  document.body.classList.toggle('tmi',!!(A.scn&&A.scn.kind==='histo'));
+  const vo=s.porvOpen&&!s.porvIsol;
+  T('c-porv',s.porvIsol?'Isolée':s.era79?(s.sebim?'Ouverte':'Fermée'):(s.sebim||vo?'Ouverte'+(s.porvOpen&&!s.sebim?' (bloquée)':''):'Fermée'));
+  T('c-tdech',fmt(s.Tdech,0)+' °C'); T('c-rdp',s.rdpBurst?'disque rompu':fmt(s.Prdp,1)+' bar · '+fmt(s.Lrdp,0)+' %');
+  T('c-penc',fmt(s.Penc,2)+' bar'); T('c-hcuve',s.era79?'non mesuré':s.hCuve>=4?'plein':sgn(s.hCuve,1)+' m / haut du cœur');
+  T('c-ttc',s.era79&&s.Ttc>371?'???':fmt(s.Ttc,0)+' °C'); T('c-vib',s.vib>0.3?'fortes':s.vib>0.05?'faibles':'normales');
+  lamp('l-asgv',s.asgV?'g':'a');
   lamp('l-is',s.is?'r':''); lamp('l-sr',s.srInhib?'':'g'); T('c-srst',s.srInhib?'Gamme source inhibée':'Gamme source en service'); T('c-lbst',s.lowBlk?'Seuil bas 25 % bloqué':'Seuil bas 25 % actif'); lamp('l-lb',s.lowBlk?'':'g');
   T('c-trip',s.tripped?'AAR — '+s.tripCause:(s.limits.size?'Limites dépassées : '+[...s.limits].join(' ; '):'Réacteur non arrêté.'));
   updateAlarms(); renderMission(false);
@@ -411,7 +434,7 @@ function renderMission(force){
   if(!force&&scn.kind==='exo'&&COACH[scn.id]){ const t=(COACH[scn.id].find(x=>{ try{ return x[0](s,c); }catch(e){ return false; } })||[])[1]||''; if(t!==c.coach){ c.coach=t; c.dirty=true; } }
   if(!force&&!c.dirty&&!c.liveInfo&&c.lastFire===c.fired){ /* only refresh live info line */ const il=document.getElementById('mis-info'); const iv=curInfo(scn,c,s); if(il&&iv!=null) il.innerHTML=iv; return; }
   c.dirty=false; c.lastFire=c.fired;
-  const tagTxt={tuto:'Tutoriel',lecon:'Leçon',exo:'Exercice',alea:'Aléa',libre:'Libre'}[scn.kind];
+  const tagTxt={tuto:'Tutoriel',lecon:'Leçon',exo:'Exercice',alea:'Aléa',libre:'Libre',histo:'Histoire'}[scn.kind];
   T('mis-tag',tagTxt);
   let title=scn.title, body='', foot='';
   if(scn.steps){
@@ -430,6 +453,10 @@ function renderMission(force){
     body=(isDeb()?planBox(scn,c.planOpen!==false):'')+'<ul class="obj">'+scn.obj.map(o=>'<li class="'+(c.o[o.id]!=null?'done':'')+'"><span>'+o.t+(o.w&&c.o[o.id]==null?'<small class="why">'+o.w+'</small>':'')+'</span></li>').join('')+'</ul>'+(scn.info?'<div class="info" id="mis-info">'+scn.info(s,c)+'</div>':'');
     if(c.coach) body+='<div class="coach"><b>Formateur :</b> '+c.coach+'</div>';
     foot='<button class="btn" id="mEnd">Terminer et débriefer</button>';
+  } else if(scn.kind==='histo'){
+    body=c.fired==null?'<p>Tranche à pleine puissance, régulations en automatique. Il est 4 h du matin.</p>'
+     :'<p><b>Accident en cours.</b> Comprenez ce qui se passe à partir des instruments, puis mettez le cœur en sécurité.</p>'+(scn.info?'<div class="info" id="mis-info">'+scn.info(s,c)+'</div>':'')+(c.hintLv?'<div class="hintb">'+[...(scn.hints||[]),scn.hint].slice(0,c.hintLv).map((t,i)=>'<b>'+['Symptôme','Système en cause','Action'][i]+' :</b> '+t).join('<br>')+'</div>':'');
+    foot=(c.fired!=null&&(c.hintLv||0)<3?'<button class="btn" id="mHint">'+['Indice : symptôme','Indice : système','Indice : action (−1 étoile)'][c.hintLv||0]+'</button>':'')+'<button class="btn" id="mEnd">Terminer et débriefer</button>';
   } else if(scn.kind==='alea'){
     if(c.fired==null) body=(isDeb()&&scn.e&&!scn.mystery?ecBox(scn.e):'')+'<p>Fonctionnement normal. Surveillez la tranche : un aléa va survenir.</p>';
     else body='<p><b>Aléa en cours.</b> Identifiez-le, mettez la tranche en sécurité puis stabilisez.</p><p>Méthode : dans le journal, repérez la <b>première</b> alarme apparue, souvent la cause ; dans le bandeau, regardez quels paramètres varient (en gras, avec une flèche) et vers quel seuil ils vont ; puis cherchez quel équipement l\'explique.</p>'+(c.hintLv?'<div class="hintb">'+[...(scn.hints||[]),scn.hint].slice(0,c.hintLv).map((t,i)=>'<b>'+['Symptôme','Système en cause','Action'][i]+' :</b> '+t).join('<br>')+'</div>':'');
@@ -673,6 +700,7 @@ function finish(){
       h+='<div class="bigstars" aria-label="'+stars+' sur 3">'+'★'.repeat(stars)+'<span style="color:var(--dim)">'+'★'.repeat(3-stars)+'</span></div>';
       h+='<p class="note">'+okN+' critère(s) sur '+cr.length+(c.hintLv?' · indices consultés : '+c.hintLv+' / 3'+(c.hint?' (le dernier retire une étoile)':''):'')+'</p>';
       h+='<ul class="crit">'+cr.map(x=>'<li class="'+(x.ok?'ok':'ko')+'"><span class="i">'+(x.ok?'✓':'✕')+'</span><span>'+x.t+(x.d?'<small>'+x.d+'</small>':'')+'</span></li>').join('')+'</ul>';
+      if(scn.debrief) h+=scn.debrief.call(scn,s,c);
       if(c.st.aar) h+='<p>AAR '+(c.st.aar.src==='op'?'manuel':'automatique')+' à '+hms(c.st.aar.t)+' — '+c.st.aar.cause+'.</p>';
       if(isDeb()&&scn.d) h+=ecBox(scn.d,'En clair : ce qu\'il fallait comprendre');
       h+='<h3>Conduite attendue</h3><p>'+scn.expected+'</p>';
@@ -703,7 +731,7 @@ function openMenu(){
   const best=store('best')||{}, done=store('done')||{};
   const card=x=>'<button class="sc" data-scn="'+x.id+'"><span class="t">'+x.title+'</span><span class="d">'+x.desc+'</span><span class="m"><span>'+(x.kind==='lecon'?'Leçon · '+(x.speed>=60?'longue (×300)':'15 à 25 min'):x.diff?'Difficulté '+'●'.repeat(x.diff)+'○'.repeat(3-x.diff):'Sans évaluation')+'</span>'+(done[x.id]?'<span class="done-tag">✓ terminé</span>':'')+(best[x.id]!=null?'<span class="stars">'+'★'.repeat(best[x.id])+'☆'.repeat(3-best[x.id])+'</span>':'')+'</span></button>';
   const grp=(t,f)=>'<div class="sec">'+t+'</div><div class="cards">'+SCN.filter(f).map(card).join('')+'</div>';
-  $('#menuCards').innerHTML=(A.s&&!A.done?'<div class="row" style="margin-bottom:6px"><button class="btn pri" id="resume">Reprendre le quart en cours</button></div>':'')+'<div class="sec">Apprendre</div><div class="cards"><button class="sc tourc" data-tourgo="0"><span class="t">Découvrir la centrale <span class="reco">Pour commencer</span></span><span class="d">Visite illustrée, sans manipulation : fission, réaction en chaîne, circuits, pilotage, électricité, xénon, sûreté, Fukushima.</span><span class="m"><span>'+TOUR.length+' chapitres en '+THEMES.length+' thèmes · 50 à 60 min</span>'+(done.tour?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'+SCN.filter(x=>x.kind==='tuto').map(card).join('')+'</div>'+grp('Comprendre — leçons guidées',x=>x.kind==='lecon')+grp("S'entraîner",x=>x.kind==='exo')+grp('Gérer un aléa',x=>x.kind==='alea')+'<div class="sec">Corrections commentées</div><p class="note" style="margin:0 0 8px">Le pilote automatique joue l\'exercice ou l\'aléa devant vous, clique au bon endroit et explique chaque action.</p><div class="cards">'+DEMO_IDS.map(id=>{ const x=byId(id); return '<button class="sc dmc" data-demo="'+id+'"><span class="t">▶ '+x.title+'</span><span class="d">'+(x.kind==='exo'?'Exercice':'Aléa')+' corrigé pas à pas</span></button>'; }).join('')+'</div>'+grp('Pilotage libre',x=>x.kind==='libre');
+  $('#menuCards').innerHTML=(A.s&&!A.done?'<div class="row" style="margin-bottom:6px"><button class="btn pri" id="resume">Reprendre le quart en cours</button></div>':'')+'<div class="sec">Apprendre</div><div class="cards"><button class="sc tourc" data-tourgo="0"><span class="t">Découvrir la centrale <span class="reco">Pour commencer</span></span><span class="d">Visite illustrée, sans manipulation : fission, réaction en chaîne, circuits, pilotage, électricité, xénon, sûreté, Fukushima.</span><span class="m"><span>'+TOUR.length+' chapitres en '+THEMES.length+' thèmes · 50 à 60 min</span>'+(done.tour?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'+SCN.filter(x=>x.kind==='tuto').map(card).join('')+'</div>'+grp('Comprendre — leçons guidées',x=>x.kind==='lecon')+grp("S'entraîner",x=>x.kind==='exo')+grp('Gérer un aléa',x=>x.kind==='alea')+grp('Accidents historiques',x=>x.kind==='histo')+'<div class="sec">Corrections commentées</div><p class="note" style="margin:0 0 8px">Le pilote automatique joue l\'exercice ou l\'aléa devant vous, clique au bon endroit et explique chaque action.</p><div class="cards">'+DEMO_IDS.map(id=>{ const x=byId(id); return '<button class="sc dmc" data-demo="'+id+'"><span class="t">▶ '+x.title+'</span><span class="d">'+(x.kind==='exo'?'Exercice':'Aléa')+' corrigé pas à pas</span></button>'; }).join('')+'</div>'+grp('Pilotage libre',x=>x.kind==='libre');
   $('#menu').hidden=false; $('#debrief').hidden=true; $('#brief').hidden=true;
   const r=$('#resume'); if(r) r.onclick=()=>{ $('#menu').hidden=true; A.paused=false; syncAll(); };
 }
@@ -973,7 +1001,7 @@ const BG=[
   {id:'lg',k:'Niveau GV',u:'%',m:1,v:s=>fmt(s.Lsg,0),sb:s=>fmt((s.Wf+s.Wasg)*100,0)+' / '+fmt(s.Wst*100,0)+' %',v2:s=>fmt((s.Wf+s.Wasg)*100,0)+'/'+fmt(s.Wst*100,0),gz:{min:0,max:100,lo:40,hi:60,tr:[15,80],x:s=>s.Lsg},st:s=>s.Lsg<20||s.Lsg>75?'crit':s.Lsg<40||s.Lsg>60?'warn':''}]},
  {g:'saf',t:'Sûreté',c:[
   {id:'dtm',k:'Marge ΔT',u:'%',v:s=>s.tripped?'—':fmt(s.dtMargin,1),sb:s=>'seuil '+fmt(Math.min(s.OTsp,s.OPsp),0)+' %',gz:{min:0,max:30,lo:5,hi:30,tr:[0],x:s=>s.tripped?30:s.dtMargin},st:s=>s.tripped?'':s.dtMargin<3?'crit':s.dtMargin<5?'warn':''},
-  {id:'sat',k:'Marge saturation',u:'°C',v:s=>fmt(s.satMargin,1),sb:s=>'Tsat '+fmt(tsat(s.Ppzr),1),gz:{min:0,max:50,lo:15,hi:50,tr:[10],x:s=>s.satMargin},st:s=>s.satMargin<10?'crit':s.satMargin<15?'warn':''}]},
+  {id:'sat',k:'Marge saturation',u:'°C',v:s=>s.era79?'—':fmt(s.satMargin,1),sb:s=>s.era79?'non affichée en 1979':'Tsat '+fmt(tsat(s.Ppzr),1),gz:{min:0,max:50,lo:15,hi:50,tr:[10],x:s=>s.era79?50:s.satMargin},st:s=>s.era79?'':s.satMargin<10?'crit':s.satMargin<15?'warn':''}]},
 ];
 const BAND_TIP={pn:'Instrumentation neutronique',td:'Bilan de réactivité',rg:'Grappes de commande',di:'Diagramme de pilotage ΔI',cb:'Bore — RCV / REA',tm:'Courbes clés',th:'Synoptique',pp:'Pressuriseur — RCV',lp:'Pressuriseur — RCV',pe:'Turbine — GCT',psg:'Eau alimentaire — ARE / ASG',lg:'Eau alimentaire — ARE / ASG',dtm:'Protection et sauvegarde',sat:'Chaussette P-T'};
 function buildBand(){
