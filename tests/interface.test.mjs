@@ -54,6 +54,9 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
   await pg.evaluate(() => openTour(0));
   const nT = await pg.evaluate(() => TOUR.length); for (let i = 0; i < nT; i++) { await pg.evaluate(i => tourGo(i), i); await pg.waitForTimeout(120); }
   check(`${w}px : visite en 8 thèmes`, await pg.evaluate(() => new Set(TOUR.map(c => c.th)).size === 8));
+  const vk = await pg.evaluate(() => { const ids = TOUR.map(c => c.id), keys = THEMES.flatMap(t => t[2]);
+    return { manque: keys.filter(k => !ids.includes(k)), double: ids.filter((k, i) => ids.indexOf(k) !== i), n: ids.length, nk: keys.length }; });
+  check(`${w}px : chaque chapitre de THEMES existe et n'apparaît qu'une fois`, !vk.manque.length && !vk.double.length && vk.n === vk.nk, `${vk.n} chapitres ; manquants : ${vk.manque.join(', ') || 'aucun'}`);
   await pg.evaluate(() => { document.querySelector('#about').hidden = false; document.querySelector('#about [data-lim]').click(); });
   check(`${w}px : « Limites et méthode » s'ouvre depuis À propos`, await pg.evaluate(() => !document.querySelector('#limov').hidden && document.querySelectorAll('#limov .limt tbody tr').length >= 10));
   const limW = await pg.evaluate(() => document.querySelector('#limov').scrollWidth);

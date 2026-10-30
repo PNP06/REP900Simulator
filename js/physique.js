@@ -5,9 +5,16 @@ const K={EXC:11200,WSD:4800,WG:1800,WR:1100,KB:9,AD:-1.8,DTF:550,UA:1/31.5,SRC:5
 const BI=[0.000215,0.001424,0.001274,0.002568,0.000748,0.000273].map(b=>b*0.923);
 const LI=[0.0124,0.0305,0.111,0.301,1.14,3.01];
 const BETA=BI.reduce((a,b)=>a+b,0);
-/* puissance résiduelle : 7 groupes ajustés sur la courbe normalisée 0,0622·(t^-0,2 − (t+T0)^-0,2) */
+/* puissance résiduelle : 7 groupes ajustés sur la courbe normalisée 0,0622·(t^-0,2 − (t+T0)^-0,2), T0 ≈ 1 an de fonctionnement
+   à la puissance initiale (état d'équilibre supposé) : ≈ 1 % à 1 h, ≈ 0,43 % à 1 jour */
 const DHA=[0.0257,0.0156,0.0102,0.0060,0.00445,0.00176,0.00277], DHT=[3,30,300,3000,3e4,3e5,3e6], DHS=DHA.reduce((a,b)=>a+b,0);
 const DT=0.05;
+/* bilans d'énergie, en fraction de la puissance nominale (100 % PN = 1) :
+   CP_PRIM : échauffement du primaire, °C/s par unité de déséquilibre (≈ 2 785 MW / (≈ 200 t d'eau × 5,5 kJ/kg·K + métal)) ;
+   CP_SEC : même chose pour l'eau et le métal des GV ;
+   H_VAP, H_ARE, H_ASG : part de l'énergie prise par la vaporisation, par le réchauffage de l'eau alimentaire ARE (chaude)
+   et par celui de l'eau ASG (froide), pour un débit nominal ; H_VAP + H_ARE = 1 à l'équilibre. */
+const CP_PRIM=1.74, CP_SEC=2.32, H_VAP=0.81, H_ARE=0.19, H_ASG=0.66;
 const PT=[[20,.0234],[50,.1235],[100,1.0133],[150,4.76],[200,15.54],[250,39.76],[260,46.92],[270,55.0],[280,64.17],[290,74.42],[300,85.88],[310,98.65],[320,112.8],[330,128.6],[340,146.0],[350,165.2],[360,186.6],[374,220.6]];
 const LP=PT.map(p=>[p[0],Math.log(p[1])]);
 function psat(T){ if(T<=20) return .0234; if(T>=374) return 220.6; for(let i=1;i<LP.length;i++){ if(T<=LP[i][0]){ const a=LP[i-1],b=LP[i]; return Math.exp(a[1]+(b[1]-a[1])*(T-a[0])/(b[0]-a[0])); } } return 220.6; }
@@ -212,7 +219,7 @@ function step(s){
   /* soupape de tête du pressuriseur : ouverture réelle (une soupape bloquée reste ouverte quel que soit l'ordre) */
   const vOpen=s.sebim||(s.porvOpen&&!s.porvIsol);
   /* primaire saturé, soupape ouverte : le fluide qui s'échappe emporte de la chaleur */
-  const dTavg=1.74*(Q+0.002*np-Qsg-0.001-1.2e-4*QisH-(s.sat?1e-4*s.Qsoup:0))*dt;
+  const dTavg=CP_PRIM*(Q+0.002*np-Qsg-0.001-1.2e-4*QisH-(s.sat?1e-4*s.Qsoup:0))*dt;
   s.Tavg+=dTavg;
   s.Tf+=((s.Tavg+K.DTF*Q)-s.Tf)/5*dt;
   /* secondaire */
@@ -237,7 +244,7 @@ function step(s){
   s.Wf+=(dem-s.Wf)/3*dt; if(s.Wf<0) s.Wf=0;
   const ad=s.asg&&s.asgV?clamp(0.03+0.02*(45-s.Lsg),0,0.10)*av.asg:0;
   s.Wasg+=(ad-s.Wasg)/5*dt;
-  s.Ts+=2.32*(Qsg-Wst*0.81-s.Wf*0.19-s.Wasg*0.66)*dt;
+  s.Ts+=CP_SEC*(Qsg-Wst*H_VAP-s.Wf*H_ARE-s.Wasg*H_ASG)*dt;
   s.Linv=clamp(s.Linv+0.8*(s.Wf+s.Wasg-Wst)*dt,-20,115);
   s.Wslow+=(Wst-s.Wslow)/60*dt;
   s.sw+=(15*(Wst-s.Wslow)-s.sw)/8*dt;
