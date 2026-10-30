@@ -356,6 +356,30 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
   check('Cohérence de l\'interface : aucune erreur JavaScript', errs.length === 0, errs.slice(0, 2).join(' | '));
   await pg.close();
 }
+{ // écran de portable (1520 × 810) : bandeau lisible, échelle de l'affichage, « En clair » repliable
+  const pg = await browser.newPage({ viewport: { width: 1520, height: 810 } }); const errs = []; pg.on('pageerror', e => errs.push(e.message));
+  await pg.goto(url); await pg.evaluate(() => { store('about', 1); store('zoom', 1); document.querySelector('#about').hidden = true; launch('l-cin'); document.querySelector('#goBtn').click(); A.paused = true; updateUI(); });
+  await pg.waitForTimeout(400);
+  const bd = await pg.evaluate(() => { fitBand(); const cut = [], small = [];
+    document.querySelectorAll('#band .rd .k span').forEach(sp => { const r = document.createRange(); r.selectNodeContents(sp); if (r.getBoundingClientRect().width > sp.getBoundingClientRect().width + 0.05) cut.push(sp.textContent); });
+    document.querySelectorAll('#band .rd .k span, #band .v2, #band small, #band .bchip, #band .pill').forEach(e => { if (e.offsetParent && parseFloat(getComputedStyle(e).fontSize) < 11) small.push(e.textContent); });
+    const v = document.querySelector('#rd-pp .v').getBoundingClientRect(), c = document.querySelector('#sp-pp').getBoundingClientRect();
+    return { cut, small, sous: c.top >= v.bottom - 1, tabs: document.querySelector('#ftabs').offsetHeight, h2: document.querySelector('.famb .card.fon>h2').offsetHeight }; });
+  check('1520 × 810 : libellés du bandeau entiers, textes de 11 px au moins', !bd.cut.length && !bd.small.length, JSON.stringify(bd.cut.concat(bd.small)));
+  check('1520 × 810 : mini-courbe sous la valeur, onglets et titres de cartes moins hauts', bd.sous && bd.tabs <= 34 && bd.h2 <= 30, `onglets ${bd.tabs} px, titre ${bd.h2} px`);
+  const zm = await pg.evaluate(async () => { const fam0 = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--famW'));
+    document.querySelector('#zmP').click(); document.querySelector('#zmP').click(); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const o = { z: A.zoom, lab: document.querySelector('#zmV').textContent, sw: document.documentElement.scrollWidth, sh: document.documentElement.scrollHeight, memo: store('zoom'), fam0 };
+    document.querySelector('#zmV').click(); o.back = A.zoom === 1 && document.querySelector('#zmV').textContent === '100 %'; return o; });
+  check('Échelle de l\'affichage : + agrandit à 120 % sans débordement, mémorisée, 100 % y revient', zm.z === 1.2 && zm.lab === '120 %' && zm.sw <= 1520 && zm.sh <= 810 && zm.memo === 1.2 && zm.back, JSON.stringify(zm));
+  const ec = await pg.evaluate(() => { lvlSet('deb'); launch('l-cin'); document.querySelector('#goBtn').click(); A.paused = true; renderMission(true);
+    const d = document.querySelector('#mis-body details.ecd'); const o = { open0: !!d && d.open }; d.open = false; d.dispatchEvent(new Event('toggle'));
+    renderMission(true); o.reste = !document.querySelector('#mis-body details.ecd').open; o.memo = store('ecFerme') === true;
+    document.querySelector('#mis-body details.ecd').open = true; document.querySelector('#mis-body details.ecd').dispatchEvent(new Event('toggle')); return o; });
+  check('« En clair » repliable : ouvert par défaut, reste replié d\'une étape à l\'autre', ec.open0 && ec.reste && ec.memo, JSON.stringify(ec));
+  check('1520 × 810 : aucune erreur JavaScript', !errs.length, errs.join(' | '));
+  await pg.close();
+}
 await browser.close();
 console.log(fails ? `\n${fails} test(s) en échec` : '\nTous les tests passent');
 process.exit(fails ? 1 : 0);

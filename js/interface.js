@@ -270,6 +270,15 @@ function applyVues(){
 /* largeur du centre : le synoptique est limité par la hauteur, donc le centre prend juste sa largeur (ou celle des onglets des vues)
    et le reste va à la colonne de droite (consigne, commandes). Recalculé au redimensionnement seulement, pour que rien ne bouge en cours de partie. */
 let FIT_EX=0;
+/* taille de l'affichage (bureau) : le bandeau et le poste sont agrandis ou réduits d'un bloc, la mise en page se recalcule */
+const ZOOMS=[0.8,0.9,1,1.1,1.2,1.3,1.4];
+function setZoom(z){
+  z=ZOOMS.reduce((a,b)=>Math.abs(b-z)<Math.abs(a-z)?b:a,1); A.zoom=z; store('zoom',z);
+  document.documentElement.style.setProperty('--uiz',z); const v=$('#zmV'); if(v) v.textContent=Math.round(z*100)+' %';
+  const m=$('#zmM'), p=$('#zmP'); if(m) m.disabled=z<=ZOOMS[0]; if(p) p.disabled=z>=ZOOMS[ZOOMS.length-1];
+  fitPoste(); requestAnimationFrame(()=>{ fitPoste(); fitBand(); drawCharts(); drawDI(); drawPT(); drawBand(); });
+}
+const uiz=()=>desk()?(A.zoom||1):1;
 function fitPoste(){
   const P=$('#poste'), r=document.documentElement.style;
   if(!desk()){ r.removeProperty('--famW'); return; }
@@ -280,7 +289,9 @@ function fitPoste(){
   if(sc.offsetHeight&&sy.clientHeight) FIT_EX=sc.offsetHeight-sy.clientHeight;
   let vh=pc.clientHeight-$('.pc>.run').offsetHeight-vt.offsetHeight;
   if(innerHeight>=1000) vh=vh*1.4/2.4;
-  const sw=Math.max(0,vh-(FIT_EX||78))*990/610+26, c3=wide()?Math.max(320,Math.min(460,innerWidth*.19)):0;
+  /* les largeurs mesurées dans le poste sont à l'échelle de l'affichage : on les ramène à celle de la page */
+  const z=uiz(); tb*=z; ti*=z;
+  const sw=(Math.max(0,vh-(FIT_EX||78))*990/610+26)*z, c3=wide()?Math.max(320,Math.min(460,innerWidth*.19)):0;
   /* onglets des vues sans pictogrammes quand leur largeur dépasserait celle du synoptique */
   const nb=sw<ti; P.classList.toggle('vtc',nb); if(!nb) tb=ti;
   const fam=Math.round(Math.max(360,Math.min(W*.5,760,W-Math.max(sw,tb,560)-c3)));

@@ -210,9 +210,9 @@ function demoMission(){
   const inf=curInfo(scn,c,s);
   const hc=scn.kind==='histo';
   let b=hc&&d.done.length?'':'<p class="dintro">'+D.intro+'</p>';
-  if(hc&&d.cur) b+=ecBox('<b>'+d.cur.t+'.</b> '+d.cur.why,'En cours')+chainHtml(c);
+  if(hc&&d.cur) b+=ecBox('<b>'+d.cur.t+'.</b> '+d.cur.why,'En cours',1)+chainHtml(c);
   if(d.done.length) b+='<ul class="dsteps">'+d.done.slice(-4).map(t=>'<li class="done">'+t+'</li>').join('')+'</ul>';
-  if(d.cur){ if(!hc) b+=ecBox('<b>'+d.cur.t+'.</b> '+d.cur.why,'En cours'); }
+  if(d.cur){ if(!hc) b+=ecBox('<b>'+d.cur.t+'.</b> '+d.cur.why,'En cours',1); }
   else if(st) b+='<div class="dwait">'+(st.ctl?'<b>'+st.t+'</b> : le pilote surveille et corrige au besoin.':(scn.kind==='alea'||scn.kind==='histo')&&c.fired==null?'Fonctionnement normal : '+(scn.kind==='histo'?'l\'accident':'l\'aléa')+' va survenir.':'Prochaine action : <b>'+st.t+'</b>')+'</div>';
   else b+='<div class="dwait">Toutes les actions sont faites : on laisse la tranche se stabiliser jusqu\'au débriefing.</div>';
   if(inf!=null) b+='<div class="info" id="mis-info">'+inf+'</div>';
