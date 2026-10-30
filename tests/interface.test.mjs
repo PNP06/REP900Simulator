@@ -79,7 +79,10 @@ for (const [w, h] of [[1280, 720], [1440, 900], [1920, 1080]]) {
     setVue('synop'); setFam('core');
     const sels = new Set(); for (const D of Object.values(DM)) for (const st of D.steps) for (const a of [].concat(st.a || [])) if (a && a.sel && a.sel !== '#mis-info') sels.add(a.sel);
     for (const sc of SCN) for (const st of sc.steps || []) for (const q of st.f || []) if (!/header\.top|#band$|#mis-info/.test(q)) sels.add(q);
+    // les commandes propres à TMI n'existent à l'écran que pendant ce scénario
+    document.body.classList.add('tmi');
     o.unreach = [...sels].filter(q => { const e = document.querySelector(q); if (!e) return true; reveal(e); e.scrollIntoView({ block: 'center' }); return !e.closest('header.top') && !inView(e); });
+    document.body.classList.remove('tmi');
     launch('libre'); document.querySelector('#brief').hidden = true; act('reaMode', 'dil'); act('reaQ', '10'); act('reaV', '0.3'); act('reaStart'); updateUI(); updateRun();
     o.run = /Dilution/.test(document.querySelector('#runList').textContent) && /Dil\./.test(document.querySelector('#z-cb').textContent);
     setVue('synop'); updateUI();
@@ -262,6 +265,9 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
     for (let i = 0; i < 300 / DT; i++) { step(s); evalAlarms(s); tick(s, c); }
     updateUI();
     o.soupape = s.porvStuck && s.porvOpen && s.Ppzr < 150;
+    renderMission(true); const mb = q('#mis-body').textContent;
+    o.chaine = /Chaîne des événements/.test(mb) && /turbopompes alimentaires/.test(mb) && /bloquée ouverte/.test(mb) && /indique « fermée »/.test(mb);
+    o.visite = ['tmichaine', 'tmivoir', 'tmiapres'].every(k => TOUR.some(ch => ch.inset === k && ch.th === 'surete'));
     o.masque = q('#b-sat').textContent === '—' && /1979/.test(q('#s-sat').textContent);
     act('porvIsol'); act('asgV');
     for (let i = 0; i < 600 / DT; i++) { step(s); evalAlarms(s); tick(s, c); }
@@ -275,6 +281,8 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
   check(`${w}px : TMI : commandes propres affichées dans le scénario`, r.visible);
   check(`${w}px : TMI : la soupape reste bloquée ouverte et le primaire se dépressurise`, r.soupape);
   check(`${w}px : TMI : marge à la saturation masquée en salle de 1979`, r.masque);
+  check(`${w}px : TMI : chaîne des événements et de leurs conséquences affichée en direct`, r.chaine);
+  check(`${w}px : TMI : trois chapitres dans le thème Sûreté de la visite`, r.visite);
   check(`${w}px : TMI : isolement de la soupape`, r.isole);
   check(`${w}px : TMI : débriefing comparé à 1979`, r.debrief);
   check(`${w}px : TMI : retour au pilotage libre sans trace du scénario`, r.retour);

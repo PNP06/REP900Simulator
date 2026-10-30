@@ -455,8 +455,8 @@ function renderMission(force){
     foot='<button class="btn" id="mEnd">Terminer et débriefer</button>';
   } else if(scn.kind==='histo'){
     body=c.fired==null?'<p>Tranche à pleine puissance, régulations en automatique. Il est 4 h du matin.</p>'
-     :'<p><b>Accident en cours.</b> Comprenez ce qui se passe à partir des instruments, puis mettez le cœur en sécurité.</p>'+(scn.info?'<div class="info" id="mis-info">'+scn.info(s,c)+'</div>':'')+(c.hintLv?'<div class="hintb">'+[...(scn.hints||[]),scn.hint].slice(0,c.hintLv).map((t,i)=>'<b>'+['Symptôme','Système en cause','Action'][i]+' :</b> '+t).join('<br>')+'</div>':'');
-    foot=(c.fired!=null&&(c.hintLv||0)<3?'<button class="btn" id="mHint">'+['Indice : symptôme','Indice : système','Indice : action (−1 étoile)'][c.hintLv||0]+'</button>':'')+'<button class="btn" id="mEnd">Terminer et débriefer</button>';
+     :'<p><b>Accident en cours.</b> Comprenez ce qui se passe à partir des instruments, puis mettez le cœur en sécurité.</p>'+(scn.info?'<div class="info" id="mis-info">'+scn.info(s,c)+'</div>':'')+(c.chainOff?'':chainHtml(c))+(c.hintLv?'<div class="hintb">'+[...(scn.hints||[]),scn.hint].slice(0,c.hintLv).map((t,i)=>'<b>'+['Symptôme','Système en cause','Action'][i]+' :</b> '+t).join('<br>')+'</div>':'');
+    foot=(c.fired!=null&&(c.hintLv||0)<3?'<button class="btn" id="mHint">'+['Indice : symptôme','Indice : système','Indice : action (−1 étoile)'][c.hintLv||0]+'</button>':'')+(c.fired!=null?'<button class="btn" id="mChain">'+(c.chainOff?'Montrer la chaîne':'Masquer la chaîne')+'</button>':'')+'<button class="btn" id="mEnd">Terminer et débriefer</button>';
   } else if(scn.kind==='alea'){
     if(c.fired==null) body=(isDeb()&&scn.e&&!scn.mystery?ecBox(scn.e):'')+'<p>Fonctionnement normal. Surveillez la tranche : un aléa va survenir.</p>';
     else body='<p><b>Aléa en cours.</b> Identifiez-le, mettez la tranche en sécurité puis stabilisez.</p><p>Méthode : dans le journal, repérez la <b>première</b> alarme apparue, souvent la cause ; dans le bandeau, regardez quels paramètres varient (en gras, avec une flèche) et vers quel seuil ils vont ; puis cherchez quel équipement l\'explique.</p>'+(c.hintLv?'<div class="hintb">'+[...(scn.hints||[]),scn.hint].slice(0,c.hintLv).map((t,i)=>'<b>'+['Symptôme','Système en cause','Action'][i]+' :</b> '+t).join('<br>')+'</div>':'');
@@ -479,6 +479,7 @@ function renderMission(force){
   on('tLvl',()=>lvlSet(isDeb()?'exp':'deb'));
   on('mEnd',()=>finish());
   on('mHint',()=>{ c.hintLv=(c.hintLv||0)+1; c.hint=c.hintLv>=3; renderMission(true); });
+  on('mChain',()=>{ c.chainOff=!c.chainOff; renderMission(true); });
 }
 
 /* ================= Corrections commentées (pilotage automatique) ================= */
@@ -614,18 +615,37 @@ const DM={
   {w:s=>-s.rho.tot>=3100,t:"Arrêter l'appoint",why:"La marge d'arrêt dépasse 3 000 pcm : le réacteur restera arrêté.",a:[DA.btn('reaStop')]},
   {t:'Vérifier la stabilisation',why:"Le GCT-c tient 70 bar dans les GV, Tmoy se stabilise vers 286 °C : c'est l'arrêt à chaud.",a:[DA.look('#rd-tm')]}]}
 };
+/* TMI : instruments de 1979, un opérateur qui connaît le piège */
+DM.tmi={speed:2,intro:"L'accident de Three Mile Island rejoué sur notre tranche, avec les instruments de 1979. Regardez comment un opérateur qui connaît le piège s'en sort. Chaque événement et sa conséquence s'ajoutent à la chaîne, sous ce texte.",steps:[
+  {w:fd(3),t:"Constater la perte de l'eau alimentaire",why:"Les deux pompes alimentaires viennent de s'arrêter. Le niveau des générateurs de vapeur chute : la vapeur part toujours vers la turbine, mais plus rien ne rentre.",a:[DA.look('#rd-lg'),DA.ack()]},
+  {w:s=>s.asg,t:"Vérifier que l'ASG débite",why:"Les pompes de secours ASG ont démarré, mais le débit reste nul : leurs vannes sont fermées. On les ouvre tout de suite. À TMI, il a fallu 8 minutes pour s'en apercevoir.",a:[DA.btn('asgV')]},
+  {w:s=>s.porvStuck&&s.tripped&&s.Ppzr<145,t:"Lire la pression et le niveau du pressuriseur",why:"Après l'arrêt automatique, la pression devrait se stabiliser. Elle continue de baisser, alors que le niveau du pressuriseur remonte. Pression qui baisse et niveau qui monte : de la vapeur s'échappe par le haut du pressuriseur.",a:[DA.look('#rd-pp'),DA.look('#rd-lp')]},
+  {w:s=>s.Tdech>90,t:"Regarder la ligne de décharge",why:"Le voyant de la soupape SEBIM dit « fermée ». Mais la ligne derrière elle est très chaude et le réservoir de décharge se remplit : la soupape est restée ouverte. Le voyant montre l'ordre envoyé, pas la position réelle.",a:[DA.look('#c-tdech'),DA.look('#c-rdp')]},
+  {t:"Fermer la vanne d'isolement de la soupape",why:"Cette vanne motorisée, montée en série avec la soupape, ferme la brèche. C'est le geste qui a manqué pendant 2 heures 22 à TMI.",a:[DA.btn('porvIsol')]},
+  {t:"Laisser l'injection de sécurité à plein débit",why:"Le pressuriseur paraît plein, mais c'est la vapeur dans le circuit qui pousse l'eau vers le haut. Il faut au contraire remplir le circuit : on ne touche pas à l'IS. À TMI, l'équipe l'a réduite au bout de 4 minutes 30.",a:[DA.look('.seg[data-key="isThr"]')]},
+  {t:"Garder les pompes primaires",why:"Elles brassent l'eau et la vapeur, et ce mélange refroidit encore le cœur. On ne les arrête pas, même si elles vibrent.",a:[DA.look('#l-p1')]},
+  {w:s=>s.porvIsol&&s.satMargin>10,t:"La situation est sous contrôle",why:"La brèche est fermée et l'IS remplit le circuit : la pression remonte et l'eau reste loin de l'ébullition. Le cœur est resté sous l'eau du début à la fin.",a:[DA.look('#rd-pp')]}]};
 const DEMO_IDS=Object.keys(DM);
+/* voix des corrections commentées (synthèse vocale du navigateur, en français) */
+const canSpeak=()=>typeof speechSynthesis!=='undefined'&&typeof SpeechSynthesisUtterance!=='undefined';
+function say(t){ if(!A.voice||!canSpeak()||!t) return; try{ const u=new SpeechSynthesisUtterance(String(t).replace(/<[^>]+>/g,'').replace(/[«»]/g,'')); u.lang='fr-FR'; u.rate=1.05;
+  const v=speechSynthesis.getVoices().find(x=>/^fr/i.test(x.lang)); if(v) u.voice=v; speechSynthesis.speak(u); }catch(e){} }
+function hush(){ if(canSpeak()) try{ speechSynthesis.cancel(); }catch(e){} }
+const speaking=()=>canSpeak()&&A.voice&&(speechSynthesis.speaking||speechSynthesis.pending);
+/* un nouveau maillon de la chaîne TMI : la correction le lit à voix haute */
+function onChain(it){ if(A.demo){ A.demo.v++; say(it.e+' '+it.q); } }
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 function demoStart(id,fast){
   launch(id); $('#brief').hidden=true;
   const sc=A.scn, c=A.ctx;
   A.demo={id,i:0,busy:false,k:{},done:[],cur:null,fast:!!fast,lastCtl:-1e9,v:1,rv:0};
-  if(sc.kind==='alea') c.fireAt=A.s.t+15;
+  if(sc.kind==='alea'||sc.kind==='histo') c.fireAt=A.s.t+15;
   document.body.classList.add('demo'); A.demoHold=false;
   setSpeed(DM[id].speed||sc.speed||1); A.paused=!!fast; syncAll(); renderMission(true);
+  const vp=store('voice'); A.voice=!fast&&canSpeak()&&(vp!=null?!!vp:id==='tmi'); hush(); say(DM[id].intro);
   logEv(A.s,'auto','Correction commentée — pilotage automatique');
 }
-function demoStop(){ A.demo=null; A.demoHold=false; document.body.classList.remove('demo'); $('#dptr').hidden=true; $$('.dhl').forEach(e=>e.classList.remove('dhl')); }
+function demoStop(){ hush(); A.demo=null; A.demoHold=false; document.body.classList.remove('demo'); $('#dptr').hidden=true; $$('.dhl').forEach(e=>e.classList.remove('dhl')); }
 function demoTick(){
   const d=A.demo; if(!d||d.busy||A.done) return;
   const s=A.s,c=A.ctx, st=DM[d.id].steps[d.i]; if(!st) return;
@@ -640,8 +660,8 @@ function demoDo(acts,t,why,adv){
   const d=A.demo; d.busy=true; d.cur={t,why,tm:A.s.t}; d.v++;
   const fin=()=>{ if(A.demo!==d) return; if(!d.fast) $('#dptr').hidden=true; if(adv){ d.done.push(t); d.i++; d.k={}; } else d.done.push(t); d.cur=null; d.busy=false; A.demoHold=false; d.v++; renderMission(true); };
   if(d.fast){ acts.forEach(a=>demoExec(a)); fin(); return; }
-  A.demoHold=true; renderMission(true);
-  (async()=>{ await wait(700); for(const a of acts){ if(A.demo!==d) return; await demoAct(a); } await wait(500); fin(); })();
+  A.demoHold=true; renderMission(true); say(t+'. '+why);
+  (async()=>{ await wait(700); for(const a of acts){ if(A.demo!==d) return; await demoAct(a); } await wait(500); while(A.demo===d&&speaking()) await wait(250); fin(); })();
 }
 function demoExec(a){ const el=$(a.sel); if(!el) return; if(a.k==='click'){ for(let i=0;i<(a.n||1);i++) el.click(); } else if(a.k==='range'){ el.value=a.v; el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); } }
 async function demoAct(a){
@@ -662,16 +682,20 @@ function demoMission(){
   const d=A.demo, s=A.s, c=A.ctx, scn=A.scn, D=DM[d.id], st=D.steps[d.i];
   T('mis-tag','Correction'); T('mis-title',scn.title+' — correction commentée');
   const inf=curInfo(scn,c,s);
-  let b='<p class="dintro">'+D.intro+'</p>';
+  const hc=scn.kind==='histo';
+  let b=hc&&d.done.length?'':'<p class="dintro">'+D.intro+'</p>';
+  if(hc&&d.cur) b+=ecBox('<b>'+d.cur.t+'.</b> '+d.cur.why,'En cours')+chainHtml(c);
   if(d.done.length) b+='<ul class="dsteps">'+d.done.slice(-4).map(t=>'<li class="done">'+t+'</li>').join('')+'</ul>';
-  if(d.cur) b+=ecBox('<b>'+d.cur.t+'.</b> '+d.cur.why,'En cours');
-  else if(st) b+='<div class="dwait">'+(st.ctl?'<b>'+st.t+'</b> : le pilote surveille et corrige au besoin.':scn.kind==='alea'&&c.fired==null?'Fonctionnement normal : l\'aléa va survenir.':'Prochaine action : <b>'+st.t+'</b>')+'</div>';
+  if(d.cur){ if(!hc) b+=ecBox('<b>'+d.cur.t+'.</b> '+d.cur.why,'En cours'); }
+  else if(st) b+='<div class="dwait">'+(st.ctl?'<b>'+st.t+'</b> : le pilote surveille et corrige au besoin.':(scn.kind==='alea'||scn.kind==='histo')&&c.fired==null?'Fonctionnement normal : '+(scn.kind==='histo'?'l\'accident':'l\'aléa')+' va survenir.':'Prochaine action : <b>'+st.t+'</b>')+'</div>';
   else b+='<div class="dwait">Toutes les actions sont faites : on laisse la tranche se stabiliser jusqu\'au débriefing.</div>';
   if(inf!=null) b+='<div class="info" id="mis-info">'+inf+'</div>';
+  if(hc&&!d.cur) b+=chainHtml(c);
   $('#mis-body').innerHTML=b; glossDom($('#mis-body'));
-  $('#mis-foot').innerHTML='<button class="btn sm" id="dRetry"><span class="lg2">Essayer moi-même</span><span class="sh2">Essayer</span></button><button class="btn sm" id="dQuit">Quitter</button>';
+  $('#mis-foot').innerHTML=(canSpeak()?'<button class="btn sm'+(A.voice?' on':'')+'" id="dVoice" aria-pressed="'+!!A.voice+'">'+(A.voice?'Voix : oui':'Voix : non')+'</button>':'')+'<button class="btn sm" id="dRetry"><span class="lg2">Essayer moi-même</span><span class="sh2">Essayer</span></button><button class="btn sm" id="dQuit">Quitter</button>';
   $('#dRetry').onclick=()=>{ const id=d.id; demoStop(); launch(id); };
   $('#dQuit').onclick=()=>{ demoStop(); openMenu(); };
+  const dv=$('#dVoice'); if(dv) dv.onclick=()=>{ A.voice=!A.voice; store('voice',A.voice); if(!A.voice) hush(); else if(d.cur) say(d.cur.t+'. '+d.cur.why); d.v++; renderMission(true); };
 }
 
 /* ================= Débriefing ================= */
@@ -731,7 +755,7 @@ function openMenu(){
   const best=store('best')||{}, done=store('done')||{};
   const card=x=>'<button class="sc" data-scn="'+x.id+'"><span class="t">'+x.title+'</span><span class="d">'+x.desc+'</span><span class="m"><span>'+(x.kind==='lecon'?'Leçon · '+(x.speed>=60?'longue (×300)':'15 à 25 min'):x.diff?'Difficulté '+'●'.repeat(x.diff)+'○'.repeat(3-x.diff):'Sans évaluation')+'</span>'+(done[x.id]?'<span class="done-tag">✓ terminé</span>':'')+(best[x.id]!=null?'<span class="stars">'+'★'.repeat(best[x.id])+'☆'.repeat(3-best[x.id])+'</span>':'')+'</span></button>';
   const grp=(t,f)=>'<div class="sec">'+t+'</div><div class="cards">'+SCN.filter(f).map(card).join('')+'</div>';
-  $('#menuCards').innerHTML=(A.s&&!A.done?'<div class="row" style="margin-bottom:6px"><button class="btn pri" id="resume">Reprendre le quart en cours</button></div>':'')+'<div class="sec">Apprendre</div><div class="cards"><button class="sc tourc" data-tourgo="0"><span class="t">Découvrir la centrale <span class="reco">Pour commencer</span></span><span class="d">Visite illustrée, sans manipulation : fission, réaction en chaîne, circuits, pilotage, électricité, xénon, sûreté, Fukushima.</span><span class="m"><span>'+TOUR.length+' chapitres en '+THEMES.length+' thèmes · 50 à 60 min</span>'+(done.tour?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'+SCN.filter(x=>x.kind==='tuto').map(card).join('')+'</div>'+grp('Comprendre — leçons guidées',x=>x.kind==='lecon')+grp("S'entraîner",x=>x.kind==='exo')+grp('Gérer un aléa',x=>x.kind==='alea')+grp('Accidents historiques',x=>x.kind==='histo')+'<div class="sec">Corrections commentées</div><p class="note" style="margin:0 0 8px">Le pilote automatique joue l\'exercice ou l\'aléa devant vous, clique au bon endroit et explique chaque action.</p><div class="cards">'+DEMO_IDS.map(id=>{ const x=byId(id); return '<button class="sc dmc" data-demo="'+id+'"><span class="t">▶ '+x.title+'</span><span class="d">'+(x.kind==='exo'?'Exercice':'Aléa')+' corrigé pas à pas</span></button>'; }).join('')+'</div>'+grp('Pilotage libre',x=>x.kind==='libre');
+  $('#menuCards').innerHTML=(A.s&&!A.done?'<div class="row" style="margin-bottom:6px"><button class="btn pri" id="resume">Reprendre le quart en cours</button></div>':'')+'<div class="sec">Apprendre</div><div class="cards"><button class="sc tourc" data-tourgo="0"><span class="t">Découvrir la centrale <span class="reco">Pour commencer</span></span><span class="d">Visite illustrée, sans manipulation : fission, réaction en chaîne, circuits, pilotage, électricité, xénon, sûreté, Three Mile Island, Fukushima.</span><span class="m"><span>'+TOUR.length+' chapitres en '+THEMES.length+' thèmes · 50 à 60 min</span>'+(done.tour?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'+SCN.filter(x=>x.kind==='tuto').map(card).join('')+'</div>'+grp('Comprendre — leçons guidées',x=>x.kind==='lecon')+grp("S'entraîner",x=>x.kind==='exo')+grp('Gérer un aléa',x=>x.kind==='alea')+grp('Accidents historiques',x=>x.kind==='histo')+'<div class="sec">Corrections commentées</div><p class="note" style="margin:0 0 8px">Le pilote automatique joue l\'exercice ou l\'aléa devant vous, clique au bon endroit et explique chaque action, à voix haute si vous activez la voix.</p><div class="cards">'+DEMO_IDS.map(id=>{ const x=byId(id); return '<button class="sc dmc" data-demo="'+id+'"><span class="t">▶ '+x.title+'</span><span class="d">'+(x.kind==='exo'?'Exercice corrigé':x.kind==='histo'?'Accident historique commenté':'Aléa corrigé')+' pas à pas'+(id==='tmi'?', avec la voix':'')+'</span></button>'; }).join('')+'</div>'+grp('Pilotage libre',x=>x.kind==='libre');
   $('#menu').hidden=false; $('#debrief').hidden=true; $('#brief').hidden=true;
   const r=$('#resume'); if(r) r.onclick=()=>{ $('#menu').hidden=true; A.paused=false; syncAll(); };
 }

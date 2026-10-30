@@ -432,7 +432,7 @@ const SCN=[
  brief:"<p>Le 28 mars 1979 à 4 h du matin, la tranche 2 de Three Mile Island (Pennsylvanie) perd son eau alimentaire. Une soupape de décharge du pressuriseur s'ouvre puis reste bloquée ouverte, alors que son voyant indique « fermée ». En moins de trois heures, environ la moitié du cœur fond.</p><p>Le scénario rejoue ces pannes sur notre REP 900, à pleine puissance. Il y a des différences avec la centrale américaine : nos GV gardent plus d'eau, et la pression n'irait pas assez haut pour ouvrir seule une soupape. Celle-ci s'ouvre donc de force au pic de pression.</p><p>Vous êtes l'opérateur. Aucune indication sur la nature de l'accident : à vous de comprendre ce qui se passe, avec les instruments choisis ci-dessous. Accélérez une fois la situation comprise : l'accident se joue sur deux à trois heures.</p>",
  hints:["La pression baisse alors que le niveau du pressuriseur monte, et la ligne de décharge du pressuriseur est chaude.","C'est en tête du pressuriseur : une soupape peut être ouverte alors que son voyant indique « fermée »."],
  hint:"Fermez la vanne d'isolement de la soupape (carte Pressuriseur), laissez l'injection de sécurité à plein débit et gardez les pompes primaires.",
- fire:(s,c)=>{ s.tmi=true; s.tpa=[false,false]; s.asgV=false; c.k.pk=s.Ppzr; },
+ fire:(s,c)=>{ s.tmi=true; s.tpa=[false,false]; s.asgV=false; c.k.pk=s.Ppzr; c.k.p0=s.Ppzr; c.k.chain=[]; },
  update(s,c){ if(c.fired==null) return; const k=c.k;
   /* la soupape s'ouvre au pic de pression qui suit l'AAR, puis reste bloquée : l'ordre retombe, la soupape non */
   if(!s.porvStuck){ k.pk=Math.max(k.pk,s.Ppzr); if(s.tripped&&s.Ppzr<k.pk-0.3){ s.porvStuck=true; s.porvOpen=true; logEv(s,'alarm','Alarme : Soupape pressu SEBIM ouverte'); logEv(s,'auto','Soupape pressu SEBIM : ordre de fermeture envoyé'); } }
@@ -443,7 +443,8 @@ const SCN=[
   if(k.uncT==null&&s.unc>0) k.uncT=s.t;
   k.maxUnc=Math.max(k.maxUnc||0,s.unc);
   if(k.dmgT==null&&s.coreDmg>=3) k.dmgT=s.t;
-  if(s.porvIsol&&s.satMargin>3&&s.unc===0){ if(k.safeT==null) k.safeT=s.t; } else k.safeT=null; },
+  if(s.porvIsol&&s.satMargin>3&&s.unc===0){ if(k.safeT==null) k.safeT=s.t; } else k.safeT=null;
+  tmiChain(s,c); },
  end:(s,c)=>c.fired!=null&&((c.k.safeT!=null&&s.t-c.k.safeT>600)||(c.k.dmgT!=null&&s.t-c.k.dmgT>600)||s.t-c.fired>4*3600),
  info:(s,c)=>c.fired==null?null:'Depuis le début de l\'accident : '+dur(s.t-c.fired),
  evaluate(s,c){ const f=c.fired, T=x=>x==null?'non fait':dur(x-f), k=c.k;
@@ -459,7 +460,7 @@ const SCN=[
    :k.satT!=null?['Petite brèche maîtrisée','Le primaire a bouilli, mais le cœur est resté refroidi.']
    :['Arrêt propre','La fuite a été arrêtée avant que le primaire ne bouille.'];
   const rows=[['Primaire à saturation',T(k.satT),'6 min'],['Soupape isolée',T(c.acts.porvIsol),'2 h 22'],['Injection de sécurité réduite',T(k.isCut),'4 min 30'],['Vannes ASG ouvertes',T(c.acts.asgV),'8 min'],['Disque du réservoir de décharge rompu',T(k.burstT),'15 min'],['Pompes primaires arrêtées',T(k.pmpCut),'1 h 14'],['Cœur dénoyé',T(k.uncT),'vers 2 h']];
-  return '<h3>État final : '+fin[0]+'</h3><p>'+fin[1]+'</p><h3>Vous et l\'équipe de 1979</h3><table class="kv"><tr><td></td><td class="v">Vous</td><td class="v">TMI</td></tr>'+rows.map(r=>'<tr><td>'+r[0]+'</td><td class="v">'+r[1]+'</td><td class="v">'+r[2]+'</td></tr>').join('')+'</table>'
+  return '<h3>État final : '+fin[0]+'</h3><p>'+fin[1]+'</p>'+chainHtml(c,true)+'<h3>Vous et l\'équipe de 1979</h3><table class="kv"><tr><td></td><td class="v">Vous</td><td class="v">TMI</td></tr>'+rows.map(r=>'<tr><td>'+r[0]+'</td><td class="v">'+r[1]+'</td><td class="v">'+r[2]+'</td></tr>').join('')+'</table>'
    +'<h3>Pourquoi l\'équipe de 1979 n\'a pas trouvé</h3><ul><li><b>Un voyant qui ment</b> : la lampe de la soupape montrait l\'ordre « fermer », pas la position réelle.</li><li><b>Un niveau trompeur</b> : la vapeur formée dans la cuve poussait l\'eau dans le pressuriseur. Son niveau montait pendant que le circuit se vidait.</li><li><b>Une règle apprise à contresens</b> : « ne jamais laisser le pressuriseur devenir plein ». Réduire l\'injection était le bon réflexe pour un autre accident.</li><li><b>L\'information utile manquait</b> : pas de marge à la saturation ni de niveau cuve, plus de cent alarmes en quelques minutes, une imprimante d\'alarmes en retard de plusieurs heures.</li><li><b>Le retour d\'expérience n\'est pas arrivé</b> : la même soupape s\'était bloquée à Davis-Besse en 1977.</li><li><b>Les pompes primaires arrêtées</b> parce qu\'elles vibraient : elles brassaient un mélange eau-vapeur qui refroidissait encore le cœur.</li></ul>'
    +'<h3>Ce qui a changé après</h3><p>Voyants de position réelle des vannes, indicateur de marge à la saturation, panneaux de sûreté, simulateurs pleine échelle. En France : l\'<b>approche par états</b> (on conduit sur l\'état physique de la tranche, sans avoir à deviner l\'événement) et un ingénieur sûreté en salle de commande.</p>'; },
  expected:"Signature à reconnaître : pression qui baisse <b>et</b> niveau pressuriseur qui monte, température haute sur la ligne de décharge, réservoir de décharge qui se remplit. C'est une brèche en tête du pressuriseur, même si le voyant de la soupape dit « fermée ». Il faut fermer la vanne d'isolement de la soupape, laisser l'injection de sécurité à plein débit (un pressuriseur plein n'est pas un danger quand le primaire bout), ouvrir les vannes ASG pour réalimenter les GV, et garder les pompes primaires tant qu'elles tournent : le mélange eau-vapeur refroidit encore le cœur.",
@@ -468,6 +469,31 @@ const SCN=[
 {id:'libre',kind:'libre',title:'Pilotage libre à 100 %',desc:'Tranche à pleine puissance, sans objectif imposé.',diff:0,speed:1,init:P100},
 {id:'libre0',kind:'libre',title:'Pilotage libre à l\'arrêt à chaud',desc:'Réacteur sous-critique, à vous de démarrer.',diff:0,speed:5,init:{P:0,critR:170,R:0,G:'cal',SD:225,coupled:false,xe:0,modeR:'man',modeG:'man'}},
 ];
+/* ================= TMI : chaîne des événements et de leurs conséquences ================= */
+/* chaque maillon s'affiche au moment où il se produit : ce qui arrive, puis ce que ça entraîne */
+const TMI_CHAIN=[
+ {id:'tpa',w:()=>true,e:"Les deux turbopompes alimentaires (TPA) s'arrêtent.",q:"Plus aucune eau n'entre dans les générateurs de vapeur, alors que la vapeur continue de partir : le niveau des GV chute vite."},
+ {id:'asg',w:s=>s.asg&&!s.asgV,e:"Les pompes de secours ASG démarrent automatiquement…",q:"…mais leurs vannes sont restées fermées après un essai : aucune eau n'arrive. Les GV continuent de se vider, ils ne refroidissent presque plus le primaire."},
+ {id:'chaud',w:(s,c,k)=>s.Ppzr>k.p0+2,e:"Les GV n'évacuent plus la chaleur du primaire.",q:"L'eau du primaire chauffe et se dilate : la pression du pressuriseur monte."},
+ {id:'aar',w:s=>s.tripped,e:s=>"Arrêt automatique du réacteur"+(s.tripCause?" ("+s.tripCause+")":"")+".",q:"Les grappes chutent, la fission s'arrête. Reste la puissance résiduelle, quelques % de la puissance, qu'il faut toujours évacuer."},
+ {id:'porv',w:s=>s.porvStuck,e:"Au pic de pression, la soupape SEBIM en tête du pressuriseur s'ouvre. L'ordre de fermeture part, mais elle reste bloquée ouverte.",q:s=>"Une brèche est ouverte en haut du primaire : la vapeur file vers le réservoir de décharge et la pression baisse."+(s.era79?" En salle de 1979, le voyant de la soupape indique « fermée » : il montre l'ordre envoyé, pas la position réelle.":"")},
+ {id:'is',w:s=>s.is,e:"La pression passe sous le seuil d'injection de sécurité.",q:"L'IS envoie de l'eau borée dans le primaire : c'est elle qui compense la fuite et garde le cœur sous l'eau."},
+ {id:'asgok',w:(s,c)=>c.acts.asgV!=null,e:"Vannes ASG ouvertes.",q:"Les GV sont réalimentés et évacuent de nouveau la chaleur. À TMI, il a fallu 8 minutes pour s'en apercevoir."},
+ {id:'sat',w:s=>s.sat,e:"La pression a tant baissé que l'eau du primaire atteint sa température d'ébullition : le primaire bout.",q:"Les bulles prennent de la place et poussent l'eau dans le pressuriseur : son niveau monte alors que le circuit se vide. C'est le piège de TMI."},
+ {id:'iscut',w:(s,c,k)=>k.isCut!=null,e:"Débit d'injection de sécurité réduit, comme à TMI pour ne pas « remplir » le pressuriseur.",q:"Il entre moins d'eau qu'il n'en sort par la soupape : le circuit se vide plus vite."},
+ {id:'rdp',w:s=>s.rdpBurst,e:"Le réservoir de décharge du pressuriseur est plein : son disque de rupture cède.",q:"L'eau du primaire se déverse dans l'enceinte : pression et activité de l'enceinte montent."},
+ {id:'vib',w:s=>s.vib>0.3,e:"Les pompes primaires vibrent.",q:"Elles brassent un mélange d'eau et de vapeur. Ce mélange refroidit encore le cœur : il faut les garder."},
+ {id:'pmp',w:(s,c,k)=>k.pmpCut!=null,e:"Pompes primaires arrêtées.",q:"L'eau et la vapeur se séparent : la vapeur s'accumule en haut de la cuve et le haut du cœur commence à se découvrir."},
+ {id:'isol',w:(s,c)=>c.acts.porvIsol!=null,e:"Vanne d'isolement de la soupape fermée.",q:"La brèche est fermée : l'IS remplit le circuit et la pression remonte. À TMI, ce geste n'est venu qu'au bout de 2 h 22."},
+ {id:'unc',w:(s,c,k)=>k.uncT!=null,e:"Le cœur est dénoyé.",q:"Sans eau autour, les gaines dépassent 1 000 °C, s'oxydent et produisent de l'hydrogène."},
+ {id:'fus',w:(s,c,k)=>k.dmgT!=null,e:"Une partie du combustible fond.",q:"C'est l'état final de TMI-2 : près de la moitié du cœur a fondu, mais la cuve et l'enceinte ont tenu."}];
+const chTxt=(x,s)=>typeof x==='function'?x(s):x;
+function tmiChain(s,c){ const k=c.k; if(!k.chain) k.chain=[];
+  for(const L of TMI_CHAIN){ if(k.chain.some(x=>x.id===L.id)) continue; let ok=false; try{ ok=L.w(s,c,k); }catch(e){}
+   if(ok){ const it={id:L.id,t:s.t,e:chTxt(L.e,s),q:chTxt(L.q,s)}; k.chain.push(it); c.dirty=true; if(typeof onChain==='function') onChain(it); } } }
+function chainHtml(c,full){ const L=(c.k.chain||[]); if(!L.length) return '';
+  return '<div class="chain"><div class="chh">Chaîne des événements</div><ol>'+L.slice().reverse().slice(0,full?99:4).map((x,i)=>'<li'+(i===0?' class="new"':'')+'><span class="cht">'+dur(x.t-c.fired)+'</span><b>'+x.e+'</b><span class="chq">'+x.q+'</span></li>').join('')+'</ol></div>'; }
+
 /* ================= Accompagnement des leçons ================= */
 const f0=v=>fmt(v,0), f1=v=>fmt(v,1), f2=v=>fmt(v,2);
 const TdTxt=s=>Number.isFinite(s.Td)&&s.Td<99999?f0(s.Td)+' s':'infini';
