@@ -1,5 +1,5 @@
 /* Alimentations électriques de la tranche : sources, tableaux 6,6 kV, diesels, batteries.
-   Modèle simplifié à deux voies (sources publiques : IRSN, ASN, cours EDF). Chaque tableau est sous tension ou non ;
+   Modèle simplifié à deux voies (sources publiques : IRSN, avis de synthèse RP4 900 MWe de 2020 et Repères n° 48 ; ASN). Chaque tableau est sous tension ou non ;
    les organes de physique.js demandent leur tableau avant de fonctionner.
    - Le transformateur de soutirage (TS) n'est alimenté que si l'alternateur tourne (couplé ou îloté) ;
      sur un 900 MWe, un déclenchement turbine fait basculer les auxiliaires sur le transformateur auxiliaire (TA, réseau 225 kV).

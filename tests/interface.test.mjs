@@ -54,6 +54,13 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
   await pg.evaluate(() => openTour(0));
   const nT = await pg.evaluate(() => TOUR.length); for (let i = 0; i < nT; i++) { await pg.evaluate(i => tourGo(i), i); await pg.waitForTimeout(120); }
   check(`${w}px : visite en 8 thèmes`, await pg.evaluate(() => new Set(TOUR.map(c => c.th)).size === 8));
+  await pg.evaluate(() => { document.querySelector('#about').hidden = false; document.querySelector('#about [data-lim]').click(); });
+  check(`${w}px : « Limites et méthode » s'ouvre depuis À propos`, await pg.evaluate(() => !document.querySelector('#limov').hidden && document.querySelectorAll('#limov .limt tbody tr').length >= 10));
+  const limW = await pg.evaluate(() => document.querySelector('#limov').scrollWidth);
+  check(`${w}px : « Limites et méthode » sans défilement horizontal`, limW <= w, `${limW}px`);
+  await pg.evaluate(() => document.querySelector('#limov [data-src]').click());
+  check(`${w}px : Sources s'ouvre depuis Limites et méthode, en 6 thèmes`, await pg.evaluate(() => document.querySelector('#limov').hidden && !document.querySelector('#srcov').hidden && document.querySelectorAll('#srcov table.srct').length === 6));
+  await pg.evaluate(() => { document.querySelector('#limClose').click(); document.querySelector('#srcClose').click(); document.querySelector('#about').hidden = true; });
   await pg.evaluate(() => { document.querySelector('#srcov').hidden = false; });
   await pg.evaluate(() => { closeTour(); openFB('new'); });
   const sw = await pg.evaluate(() => document.documentElement.scrollWidth);
