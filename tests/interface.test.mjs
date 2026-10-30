@@ -377,6 +377,21 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
     renderMission(true); o.reste = !document.querySelector('#mis-body details.ecd').open; o.memo = store('ecFerme') === true;
     document.querySelector('#mis-body details.ecd').open = true; document.querySelector('#mis-body details.ecd').dispatchEvent(new Event('toggle')); return o; });
   check('« En clair » repliable : ouvert par défaut, reste replié d\'une étape à l\'autre', ec.open0 && ec.reste && ec.memo, JSON.stringify(ec));
+  // visite : parcours « L'essentiel », À retenir, Essayer, progression mémorisée et Reprendre
+  const vz = await pg.evaluate(() => { store('tourVu', []); store('tourLast', null); openMenu(); document.querySelector('[data-path="essentiel"]').click();
+    const o = { debut: document.querySelector('#tk').textContent === "L'essentiel · 1 / 12" };
+    document.querySelector('#tvNext').click(); document.querySelector('#tvNext').click(); o.ch = document.querySelector('#tt').textContent;
+    o.retenir = !!document.querySelector('#ttx .retenir'); o.essai = document.querySelector('#ttx [data-essai]')?.dataset.essai;
+    o.manque = TOUR.filter(c => !RETENIR[c.id]).map(c => c.id); o.essaisValides = Object.values(ESSAI).every(id => SCN.some(x => x.id === id));
+    o.essIds = ESSENTIEL.every(id => TOUR.some(c => c.id === id));
+    for (let k = 0; k < 20 && document.querySelector('#tvNext').textContent !== 'Terminer'; k++) document.querySelector('#tvNext').click();
+    o.fin = document.querySelector('#tt').textContent; document.querySelector('#tvNext').click(); o.fait = (store('done') || {}).essentiel === 1;
+    o.vus = (store('tourVu') || []).length; openMenu(); const rp = [...document.querySelectorAll('#menuCards .tourc')].find(b => /Reprendre/.test(b.textContent));
+    o.reprendre = !!rp; if (rp) { rp.click(); o.reprise = document.querySelector('#tt').textContent; closeTour(); }
+    return o; });
+  check('Visite : parcours « L\'essentiel » de 12 chapitres, de la centrale à la salle de commande', vz.debut && vz.ch === 'La réaction en chaîne' && vz.fin === 'La salle de commande' && vz.fait && vz.essIds, JSON.stringify(vz));
+  check('Visite : chaque chapitre a son « À retenir », chaque « Essayer » mène à une séance existante', vz.retenir && vz.essai === 'l-cin' && !vz.manque.length && vz.essaisValides, JSON.stringify(vz.manque));
+  check('Visite : chapitres lus mémorisés, « Reprendre » rouvre le dernier chapitre', vz.vus === 12 && vz.reprendre && vz.reprise === 'La salle de commande', JSON.stringify(vz));
   check('1520 × 810 : aucune erreur JavaScript', !errs.length, errs.join(' | '));
   await pg.close();
 }

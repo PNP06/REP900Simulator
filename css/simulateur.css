@@ -1135,3 +1135,11 @@ details.eclair.ecd>summary{cursor:pointer;list-style:none;display:inline}
 details.eclair.ecd>summary::-webkit-details-marker{display:none}
 details.eclair.ecd:not([open])>summary::after{content:" : afficher l'explication simple ▾";font:500 12px var(--f-body,inherit);color:var(--mute);letter-spacing:0;text-transform:none}
 details.eclair.ecd:not([open]){padding-block:4px}
+
+/* ===== Visite : à retenir, essayer ===== */
+.retenir{margin:14px 0 0;padding:9px 12px;border-radius:8px;border:1px solid color-mix(in srgb,var(--ok) 40%,var(--line));border-left:4px solid var(--ok);background:color-mix(in srgb,var(--ok) 7%,var(--panel));font-size:14px;line-height:1.5}
+.retenir b{display:block;font:700 11.5px var(--f-disp);letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--ok) 75%,var(--fg));margin-bottom:2px}
+.essai{margin:10px 0 0}
+.essai .btn{display:inline-flex;align-items:center;gap:8px;text-align:left;white-space:normal}
+.essai .pic{flex:none;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#tvPath{white-space:nowrap}

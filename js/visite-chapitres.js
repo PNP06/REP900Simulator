@@ -74,9 +74,73 @@ Object.assign(NEWCH,{
  tmiapres:{t:'Après TMI : ce qui a changé',inset:'tmiapres',h:`<p>À TMI, l'enceinte de confinement a tenu : les rejets ont été faibles et aucun mort n'est attribué à l'accident. Mais le réacteur est détruit, et l'accident montre que le danger ne vient pas seulement des grosses ruptures étudiées à la conception : une <b>petite brèche mal comprise</b> peut suffire à faire fondre un cœur.</p><p>Les leçons portent surtout sur l'<b>homme dans la salle de commande</b> :</p><ul><li>montrer la <b>position réelle</b> des vannes, et pas seulement l'ordre envoyé ;</li><li>afficher la <b>marge à la saturation</b>, qui dit directement si l'eau du primaire bout ;</li><li>regrouper les paramètres de sûreté et trier les alarmes ;</li><li>former les équipes sur <b>simulateur pleine échelle</b>, accidents compris ;</li><li>une règle claire pour les <b>pompes primaires</b> en cas de petite brèche : les arrêter <b>tôt, sur un critère</b> (marge à la saturation perdue, ou pression primaire basse avec l'injection de sécurité en service), tant que le circuit contient encore beaucoup d'eau. Arrêtées tard, comme à TMI, quand le circuit est déjà à moitié vapeur, elles laissent l'eau et la vapeur se séparer d'un coup et le haut du cœur se découvre. Aux États-Unis, c'est la lettre générique 85-12 de la NRC (1985).</li></ul><p>En France, EDF conduit désormais les accidents avec l'<b>approche par états</b> : on ne cherche plus d'abord quel événement s'est produit, on agit sur l'état physique mesuré de la tranche (inventaire en eau, refroidissement, sous-saturation). Un <b>ingénieur sûreté</b> surveille la tranche en parallèle de l'équipe de conduite.</p>`+INSIM(`l'accident est rejoué dans la rubrique <b>Accidents historiques</b> : « Three Mile Island, à votre place », avec les instruments de 1979 ou ceux d'aujourd'hui. La <b>correction commentée</b> le joue devant vous, avec la voix.`)}
 });
 
+/* Le site en un coup d'œil : où trouver quoi, et par où commencer */
+NEWCH.site={t:"Le site en un coup d'œil",h:`<p>Ce simulateur se parcourt de trois façons, du plus simple au plus actif :</p><ul><li><b>Découvrir</b> : cette visite, sans rien manipuler. Le parcours <b>L'essentiel en 15 minutes</b> en garde douze chapitres ; la visite complète compte une heure environ. Votre progression est mémorisée : « Reprendre » vous ramène au dernier chapitre lu.</li><li><b>Comprendre</b> : la <b>prise en main du poste</b>, le <b>tutoriel de prise de quart</b>, puis les <b>leçons guidées</b> (cinétique, contre-réactions, ΔI, xénon, pressuriseur, GV, protections, électricité, divergence). Chaque étape dit quoi regarder et quoi faire.</li><li><b>S'entraîner</b> : des <b>exercices</b> notés en étoiles, des <b>aléas</b> à diagnostiquer, l'accident de <b>Three Mile Island</b> rejoué à votre place, et le <b>pilotage libre</b>. Les <b>corrections commentées</b> jouent un exercice ou un aléa devant vous, avec la raison de chaque geste.</li></ul><p>Sur le poste de pilotage : le <b>bandeau</b> du haut résume les grandeurs principales (un clic ouvre la carte liée), la zone de gauche montre les <b>vues</b> (synoptique, courbes, ΔI, domaine P-T, électricité…), la colonne de droite regroupe les <b>commandes</b> par familles. Le bouton <b>?</b> d'une carte explique ce qu'elle montre ; les mots soulignés en pointillé renvoient au <b>lexique</b>.</p><p>Le menu donne aussi les <b>Sources</b>, la page <b>Limites et méthode</b> (ce que le modèle représente ou non) et le formulaire de <b>retours</b>.</p>`};
+
+/* Ce qu'il faut retenir de chaque chapitre (encadré en fin de chapitre) */
+const RETENIR={
+ centrale:"Le cœur chauffe l'eau du primaire, qui fait bouillir l'eau du secondaire dans les générateurs de vapeur ; la vapeur fait tourner la turbine. Trois circuits séparés, l'eau radioactive ne sort pas du primaire.",
+ site:"Pour commencer : L'essentiel en 15 minutes, puis la prise en main du poste et le tutoriel.",
+ fission:"Une fission libère de l'énergie (surtout en chaleur) et 2 à 3 neutrons, qui peuvent en provoquer d'autres.",
+ chaine:"Le facteur k compare deux générations de neutrons : k = 1, la puissance est stable ; k > 1, elle monte ; k < 1, elle baisse.",
+ pcm:"La réactivité mesure l'écart à la criticité, en pcm (1 pcm = 0,001 %). Quelques dizaines de pcm suffisent à faire varier nettement la puissance.",
+ retardes:"Environ 0,6 % des neutrons naissent avec retard : ils imposent un rythme lent qui rend le réacteur pilotable, tant que la réactivité reste bien en dessous de cette fraction.",
+ combustible:"Pastilles d'oxyde d'uranium enrichi à environ 3,5 %, empilées dans des gaines en alliage de zirconium : la gaine est la première barrière.",
+ moderateur:"L'eau ralentit les neutrons pour qu'ils provoquent des fissions. Moins dense quand elle chauffe, elle ralentit moins bien : c'est une contre-réaction qui stabilise.",
+ stabilite:"Effet Doppler et effet modérateur freinent toute hausse de puissance : un REP se stabilise de lui-même.",
+ xeanim:"Le xénon 135 naît surtout de la décroissance de l'iode 135 (6,6 h) et disparaît en absorbant des neutrons ou en décroissant (9,1 h).",
+ xenon:"Après une baisse de puissance ou un arrêt, le xénon monte pendant plusieurs heures (pic vers 8 à 10 h après un arrêt) : il faut le compenser par le bore ou les grappes.",
+ primaire:"L'eau du primaire tourne en circuit fermé à 155 bar ; elle entre dans la cuve vers 286 °C et en sort vers 323 °C à pleine puissance.",
+ pressu:"Le pressuriseur tient la pression : chaufferettes pour la monter, aspersion pour la baisser, et une bulle de vapeur qui amortit les variations de volume.",
+ chaussette:"Pression et température doivent rester dans le domaine autorisé : assez de pression pour ne pas bouillir, pas trop à froid pour ne pas fragiliser la cuve.",
+ gv:"Les GV transmettent la chaleur du primaire au secondaire sans mélanger les eaux ; leur niveau se tient en équilibrant l'eau qui entre et la vapeur qui sort.",
+ turbine:"La turbine transforme la vapeur en rotation ; l'alternateur, couplé au réseau, tourne à vitesse fixe et produit environ 900 MWe.",
+ condenseur:"Le condenseur refroidit la vapeur sortie de la turbine avec l'eau de la source froide : sans lui, pas de rendement ni de contournement GCT-c.",
+ agir:"Deux moyens d'action : les grappes, rapides, et le bore dissous dans l'eau, lent mais réparti dans tout le cœur.",
+ groupes:"Grappes d'arrêt (en haut, prêtes à tomber), groupe R pour la température, groupes GCP pour la puissance.",
+ modeg:"En mode G, les grappes GCP suivent la charge turbine et le groupe R corrige la température moyenne sur sa référence.",
+ rband:"Le groupe R doit rester dans sa bande de manœuvre : en dessous, la réserve d'arrêt diminue ; au-dessus, il ne peut plus compenser une hausse de température.",
+ dianim:"Le ΔI dit si la puissance est plutôt en haut ou en bas du cœur ; on le garde près de sa référence pour ne pas créer de points chauds.",
+ params:"Puissance, Tmoy et son écart, groupe R, ΔI, pression et niveau pressuriseur, niveau GV : un coup d'œil régulier sur ces grandeurs suffit en marche normale.",
+ elsrc:"La centrale consomme une partie de ce qu'elle produit : ses auxiliaires sont alimentés par le transformateur de soutirage (TS) ou, à défaut, par le réseau 225 kV via le transformateur auxiliaire (TA).",
+ elsecu:"Les tableaux secourus portent les matériels de sûreté, en deux voies indépendantes ; chacune peut être reprise par son diesel.",
+ elilot:"Sur perte du réseau, l'îlotage garde la tranche sur ses propres auxiliaires ; s'il échoue, le réacteur s'arrête et le TA prend le relais.",
+ eldg:"Sans TS ni TA, chaque diesel démarre et réalimente sa voie secourue en une dizaine de secondes.",
+ elcn:"Pompes primaires arrêtées, l'eau circule toute seule : chaude et légère dans le cœur, froide et lourde dans les GV. Il faut des GV alimentés.",
+ elbat:"Sans aucune tension alternative, les batteries tiennent le contrôle-commande pendant une durée limitée, de l'ordre de l'heure, et la turbopompe ASG alimente les GV avec leur propre vapeur.",
+ barrieres:"Trois barrières (gaine, circuit primaire, enceinte) et des protections qui arrêtent automatiquement le réacteur avant qu'une limite soit atteinte.",
+ residuelle:"Après l'arrêt, le cœur produit encore de la chaleur : environ 6 % juste après, 1 % au bout de quelques heures. Il faut l'évacuer sans interruption.",
+ tmi:"À TMI, une soupape restée ouverte et une injection de sécurité réduite à tort ont vidé le circuit : le cœur s'est découvert et a fondu en partie.",
+ tmivoir:"Un voyant qui affichait l'ordre et non la position, un niveau pressuriseur trompeur : en cas de doute, croire les mesures physiques.",
+ tmidiff:"Nos REP 900 ont des GV qui gardent plus d'eau et une pression d'ouverture des soupapes plus haute : le scénario est transposé, pas copié.",
+ tmiapres:"Après TMI : position réelle des vannes, marge à la saturation affichée, approche par états, et arrêt des pompes primaires tôt, sur un critère, en cas de petite brèche.",
+ fuku:"À Fukushima, le séisme puis le tsunami ont privé les réacteurs de toute source électrique et de source froide pendant des jours.",
+ fukufr:"En France, le « noyau dur » ajoute des moyens protégés contre des agressions extrêmes : un diesel d'ultime secours par réacteur et une source d'eau ultime.",
+ etats:"La tranche passe par des états standards, de l'arrêt pour rechargement à la production, chacun avec ses règles et ses protections.",
+ comptage:"Pendant l'approche de la criticité, on suit le comptage des neutrons et son inverse 1/M, qui tend vers zéro quand on s'en approche.",
+ diverg:"Diverger, c'est approcher la criticité pas à pas, en surveillant le comptage et le temps de doublement.",
+ couplage:"Coupler, c'est raccorder l'alternateur au réseau quand tension, fréquence et phase concordent ; la vapeur passe alors du GCT-c à la turbine.",
+ montee:"La montée en puissance se fait par paliers, à vitesse limitée, en surveillant Tmoy, le ΔI et le niveau des GV.",
+ leviers:"La turbine décide de la charge ; le réacteur suit grâce au mode G et aux contre-réactions ; le bore corrige lentement.",
+ freq:"Le programme de charge fixe la puissance demandée ; le réglage de fréquence la module de quelques % pour aider le réseau.",
+ suivi:"En suivi de charge, la puissance change plusieurs fois par jour : le xénon et le ΔI demandent d'anticiper.",
+ repli:"Replier, c'est baisser la charge puis découpler, en gardant Tmoy, le niveau des GV et le ΔI sous contrôle.",
+ imprevu:"Après un arrêt imprévu : vérifier que les grappes sont tombées, que la chaleur résiduelle part, puis chercher la cause.",
+ regles:"Agir lentement, une action à la fois, vérifier l'effet attendu, et ne jamais laisser un écart inexpliqué.",
+ method:"Observer, comprendre, agir, vérifier : la première alarme est souvent la cause ; les suivantes en sont les conséquences.",
+ salle:"La salle de commande regroupe tout ce qu'il faut pour surveiller et piloter la tranche, de jour comme de nuit."
+};
+/* séance du simulateur où mettre le chapitre en pratique (bouton « Essayer ») */
+const ESSAI={centrale:'ihm',fission:'l-cin',chaine:'l-cin',pcm:'l-cin',retardes:'l-cin',moderateur:'l-fb',stabilite:'l-fb',xeanim:'l-xe',xenon:'l-xe',
+ primaire:'tuto',pressu:'l-pzr',chaussette:'arret',gv:'l-gv',turbine:'montee',condenseur:'l-gv',agir:'l-cin',groupes:'drop',modeg:'l-fb',rband:'suivi',dianim:'l-di',params:'tuto',
+ elsrc:'l-elec',elsecu:'lhb',elilot:'ilot',eldg:'essaidg',elcn:'mdte',elbat:'h3',barrieres:'l-prot',residuelle:'gmpp',tmi:'tmi',tmivoir:'tmi',tmidiff:'tmi',tmiapres:'tmi',fuku:'h3',fukufr:'h3',
+ etats:'libre0',comptage:'l-div',diverg:'div',couplage:'montee',montee:'montee',leviers:'suivi',freq:'suivi',suivi:'suivi',repli:'arret',imprevu:'myst',regles:'libre',method:'myst'};
+/* parcours « L'essentiel en 15 minutes » */
+const ESSENTIEL=['centrale','site','chaine','retardes','stabilite','agir','primaire','gv','barrieres','residuelle','tmivoir','salle'];
+
 /* Thèmes de la visite, dans l'ordre : chaque chapitre est désigné par son identifiant (id des chapitres de base, clé de NEWCH sinon). */
 const THEMES=[
- ['centrale','La centrale',['centrale']],
+ ['centrale','La centrale',['centrale','site']],
  ['physique','Physique du cœur',['fission','chaine','pcm','retardes','combustible','moderateur','stabilite','xeanim','xenon']],
  ['circuits','Circuits',['primaire','pressu','chaussette','gv','turbine','condenseur']],
  ['pilotage','Pilotage',['agir','groupes','modeg','rband','dianim','params']],
