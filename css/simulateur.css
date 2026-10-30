@@ -652,7 +652,7 @@ body.bandfocus .band .rd:not(.mb){display:block}
 #tinset:has(.ptab),#tinset:has(.mcharts){align-items:stretch}
 .tstage:has(.ptab),.tstage:has(.mcharts){aspect-ratio:auto;align-self:stretch}
 
-#srcov{z-index:82}
+#srcov,#limov{z-index:82}
 .srcw{overflow-x:auto;margin-top:10px}
 .srct{width:100%;border-collapse:collapse;font-size:13.5px}
 .srct th{text-align:left;font:600 12px var(--f-disp);letter-spacing:.08em;text-transform:uppercase;color:var(--mute);padding:6px 8px;border-bottom:2px solid var(--line-2)}
@@ -661,7 +661,10 @@ body.bandfocus .band .rd:not(.mb){display:block}
 .srct a{color:var(--accent);font-weight:600;text-decoration:none}.srct a:hover{text-decoration:underline}
 .srct small{display:block;color:var(--mute);margin-top:2px}
 .srcl{margin:4px 0 10px;padding-left:20px}
-@media (max-width:640px){.srct td:first-child{width:auto}.srct,.srct tbody,.srct tr,.srct td{display:block}.srct thead{display:none}.srct td{border:0;padding:2px 0}.srct tr{border-bottom:1px solid var(--line);padding:8px 0}}
+.brief button.lnk{all:unset;color:var(--accent);font-weight:600;cursor:pointer}.brief button.lnk:hover,.brief button.lnk:focus-visible{text-decoration:underline}
+.liml{margin:4px 0 6px;padding-left:20px;line-height:1.55}.liml li{margin:3px 0}
+.limt td:first-child{width:16%;font-weight:600}.srct td:nth-child(3){color:var(--mute)}
+@media (max-width:640px){.srct td:first-child,.limt td:first-child{width:auto}.srct,.srct tbody,.srct tr,.srct td{display:block}.srct thead{display:none}.srct td{border:0;padding:2px 0}.srct tr{border-bottom:1px solid var(--line);padding:8px 0}.srct:not(.limt) td:nth-child(3)::before{content:"Dans le simulateur : ";font-weight:600}.limt td:nth-child(3)::before{content:"Valeurs : ";font-weight:600}}
 
 /* En clair (débutant) */
 .eclair{margin:2px 0 10px;padding:9px 12px 9px 12px;border-radius:8px;background:color-mix(in srgb,var(--warn) 9%,var(--bg));border:1px solid color-mix(in srgb,var(--warn) 38%,var(--line));border-left:4px solid var(--warn);font-size:14px;line-height:1.5;color:var(--fg)}

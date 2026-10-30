@@ -12,6 +12,12 @@ Simulateur pédagogique d'un REP **générique**. Aucun document interne d'entre
 
 Le simulateur repose sur des sources publiques, listées dans la rubrique « Sources » du menu : IRSN, *Éléments de sûreté nucléaire – Les réacteurs à eau sous pression* (2020) ; ASN, rapport annuel 2019, chapitre « Les centrales nucléaires d'EDF » ; ANCCLI, fiche thématique n° 5 ; DOE Fundamentals Handbook *Nuclear Physics and Reactor Theory* ; NRC, *Reactor Concepts Manual* ; AIEA, Training Course Series n° 65 ; IAPWS-IF97 ; ouvrages d'enseignement de neutronique.
 
+Depuis le 30 octobre 2026, la page Sources est classée par thème (réacteurs et parc 900 MWe, physique du cœur, critères de sûreté, alimentations électriques et Fukushima, accidents historiques, simulateurs pédagogiques) et indique, pour chaque source, les valeurs du simulateur qu'elle étaye. Elle cite aussi l'IRSN (chapitre 28 des *Éléments de sûreté nucléaire*, avis de synthèse RP4 900 MWe, *Repères* n° 48, dossiers TMI de 2009 et 2019), le DOE-HDBK-1019 volume 2, le 10 CFR 50.46, la NRC (fiche et NUREG/KM-0001 sur TMI), Keepin (1965) et Way et Wigner (1948). Aucun document non public n'est cité.
+
+## Limites et méthode
+
+La fenêtre « Limites et méthode » (menu d'accueil, À propos, Sources) détaille les choix de conception, les hypothèses de calcul avec leurs valeurs, ce que le modèle ne représente pas et la manière dont il est vérifié.
+
 ## Contenu
 
 - **Visite guidée de la centrale** : 37 chapitres illustrés, rangés en 7 thèmes et animés, sans manipulation (fission, réaction en chaîne, neutrons retardés, combustible, modérateur, circuits, mode G, xénon, sûreté, puissance résiduelle), dont les trois familles de grappes et un thème « Manœuvres » sur les principes de conduite : états de la tranche, comptage des neutrons et 1/M, divergence, couplage, montée en puissance, variations de charge et réglage de fréquence, repli, arrêts imprévus, règles d'or.
