@@ -43,6 +43,10 @@ function synSVG(){
   +'<g class="comp" data-sy="are"><rect class="hl" x="572" y="522" width="76" height="40" rx="16"/>'+pump(588,540,'sy-tpa0','A')+pump(632,540,'sy-tpa1','B')+'<text x="610" y="516" text-anchor="middle" class="tiny" id="sy-apd"></text></g>'
   +'<g class="comp" data-sy="pump"><rect class="hl" x="300" y="506" width="76" height="46" rx="14"/>'+pump(316,520,'sy-gm0')+pump(338,520,'sy-gm1')+pump(360,520,'sy-gm2')+'<text x="338" y="548" text-anchor="middle" class="tiny" id="sy-gmt">GMPP 1 · 2 · 3</text></g>'
   +'<g class="comp" data-sy="rcv"><rect class="hl" x="166" y="560" width="124" height="44" rx="6"/><rect x="172" y="566" width="112" height="32" rx="5" class="eq"/><text x="228" y="587" text-anchor="middle" class="nm">RCV</text></g>'
+  +'<g class="comp elz" data-syv="elec" role="button" tabindex="0" aria-label="Alimentations électriques : ouvrir la vue Électrique"><rect class="hl" x="806" y="398" width="182" height="208" rx="8"/>'
+   +'<text x="812" y="416" class="nm">Électricité</text><text x="984" y="416" text-anchor="end" class="tiny lnk">Vue ›</text>'
+   +[['elr',424,'Réseaux 400 · 225 kV'],['elt',474,'Normaux · LHA · LHB'],['eld',524,'Diesels A · B']].map(([id,y,lb])=>'<g class="stg" id="sy-'+id+'"><rect x="810" y="'+y+'" width="176" height="44" rx="5"/><text x="817" y="'+(y+15)+'" class="tl">'+lb+'</text><text x="817" y="'+(y+36)+'" class="tv" id="sv-'+id+'" data-w="162">—</text></g>').join('')
+   +'<text x="812" y="590" class="tiny" id="sy-elb">Batteries</text></g>'
   +SYT.map(tg).join('')+'</svg>';
 }
 function buildSyn(){ const w=$('#synw'); if(w&&!w.firstElementChild) w.innerHTML=synSVG(); }
@@ -86,6 +90,18 @@ function updSyn(s){
   const np=s.pumps.filter(Boolean).length; s.pumps.forEach((on,i)=>$('#sy-gm'+i).classList.toggle('off',!on)); T('sy-gmt','GMPP '+np+'/3'); $('#sy-gmt').classList.toggle('al',np<3);
   sLine('chg',s.Qc>0.05); sLine('dech',s.Qld>0.05);
   sTag('rcv',fmt(s.Qc,1)+' · '+(s.Qld>0?fmt(s.Qld,1)+' m³/h':'isolée'),s.Qc>28?'warn':s.chgMode==='man'||s.Qld===0?'warn':'');
+  if(s.el){ const e=s.el, av=e.av, sr=e.src, ab={ts:'TS',ta:'TA',dg:'DG',dus:'DUS'}, b=x=>sr[x]?ab[sr[x]]:'✕';
+    sTag('elr',s.grid&&e.r225?'disponibles':s.grid?'225 kV perdu':e.r225?'400 kV perdu':'perdus',!s.grid&&!e.r225?'crit':!s.grid||!e.r225?'warn':'');
+    sTag('elt',b('LG')+' · '+b('LHA')+' · '+b('LHB'),!sr.LHA||!sr.LHB?'crit':!sr.LG?'crit':sr.LHA==='dg'||sr.LHB==='dg'||sr.LG==='ta'?'warn':'');
+    const dst=k=>({pret:'prêt',demarrage:'démarre',service:'marche',defaut:'défaut'}[e.dg[k].st]);
+    sTag('eld',e.dg.A.st==='pret'&&e.dg.B.st==='pret'?'prêts':dst('A')+' · '+dst('B'),e.dg.A.st==='defaut'||e.dg.B.st==='defaut'?'crit':e.dg.A.st!=='pret'||e.dg.B.st!=='pret'?'warn':'');
+    const bc=sr.LHA||sr.LHB; T('sy-elb','Batteries '+(bc?'en charge':'en décharge · '+fmt(e.bat*100,0)+' %')); $('#sy-elb').classList.toggle('al',!bc);
+    /* organes privés de tension */
+    if(!av.is) sTag('is','sans tension','crit');
+    if(!av.chg) sTag('rcv','sans tension','crit');
+    if(av.heat<1) sTag('hs',av.heat?'secourues · '+fmt(s.hEff*1440,0)+' kW':'sans tension',av.heat?'warn':'crit');
+    if(!av.cond) sTag('gctc','sans condenseur','warn');
+    if(s.asg&&av.asg<1) sTag('asg','TPS seule '+fmt(s.Wasg*100,1)+' %','crit'); }
   $('#sy-coreR').style.opacity=(0.22+0.73*clamp(s.Qcore,0,1)).toFixed(2);
   $$('#synw .comp').forEach(g=>g.classList.toggle('on',g.dataset.sy===SY.pal));
   if(SY.pal) palUpd();
@@ -144,10 +160,11 @@ function palUpd(force){
 document.addEventListener('click',e=>{
   if(e.target.closest('[data-palx]')){ palClose(); return; }
   const pf=e.target.closest('[data-palfam]'); if(pf){ const c=pf.dataset.palfam; palClose(); openCard(SYC[c].card); return; }
+  const z=e.target.closest('#synw [data-syv]'); if(z){ palClose(); openCard(z.dataset.syv); return; }
   const g=e.target.closest('#synw [data-sy]'); if(g&&!e.target.closest('#synpal')){ if(SY.pal===g.dataset.sy) palClose(); else palOpen(g.dataset.sy,e); return; }
   if(SY.pal&&!e.target.closest('#synpal')&&e.target.closest('#synw')) palClose();
 });
-document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.closest&&e.target.closest('#synw .stg')){ e.preventDefault(); const g=e.target.closest('.stg'), r=g.getBoundingClientRect(); palOpen(g.dataset.sy,{clientX:r.left,clientY:r.bottom}); } if(e.key==='Escape'&&SY.pal) palClose(); });
+document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.closest&&e.target.closest('#synw [data-syv]')){ e.preventDefault(); openCard(e.target.closest('[data-syv]').dataset.syv); return; } if((e.key==='Enter'||e.key===' ')&&e.target.closest&&e.target.closest('#synw .stg')){ e.preventDefault(); const g=e.target.closest('.stg'), r=g.getBoundingClientRect(); palOpen(g.dataset.sy,{clientX:r.left,clientY:r.bottom}); } if(e.key==='Escape'&&SY.pal) palClose(); });
 /* curseurs de la palette : pilotent le curseur de la carte, qui garde toute la logique */
 document.addEventListener('input',e=>{ const r=e.target.closest('[data-rng]'); if(!r) return; const src=$(r.dataset.rng); src.value=r.value; src.dispatchEvent(new Event('input',{bubbles:true})); const o=document.querySelector('[data-rngo="'+r.dataset.rng+'"]'); if(o) o.textContent=$(r.dataset.rng+'O').textContent; });
 document.addEventListener('change',e=>{ const r=e.target.closest('[data-rng]'); if(!r) return; $(r.dataset.rng).dispatchEvent(new Event('change',{bubbles:true})); });
