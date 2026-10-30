@@ -330,28 +330,7 @@ function updateUI(){
   const st=s.is?'IS':s.tripped?'AAR':s.ilot?'Îlotage':s.coupled?'Puissance':(s.n>1e-7?'Critique':'Sous-crit.');
   T('b-state',st); lamp('b-lamp',s.is||s.tripped?'r':s.ilot||s.limitNow?'a':'g');
   updateBand(s);
-  /* synoptique */
-  T('m-pn',(s.n<0.001?fmt(s.n*100,3):fmt(s.n*100,1))+' %');
-  T('m-tavg','Tmoy '+fmt(s.Tavg,1)+' °C');
-  document.getElementById('m-core').setAttribute('opacity',String(clamp(0.18+0.75*Math.min(1,s.Qcore),0.18,0.95)));
-  const rod=(id,p)=>{ const h=6+70*(1-p/225); document.getElementById(id).setAttribute('height',h.toFixed(1)); };
-  rod('m-rSD',s.rods.SD.p); rod('m-rG',s.rods.G.p); rod('m-rR',s.rods.R.p);
-  T('m-pp',fmt(s.Ppzr,1)+' bar'); T('m-lp','Niv. '+fmt(s.Lpzr,0)+' %');
-  T('m-hs','Asp. '+fmt(s.spray*100,0)+' %');
-  const pz=clamp(s.Lpzr,0,100)/100*54; const pf=document.getElementById('m-pzf'); pf.setAttribute('y',(26+54-pz).toFixed(1)); pf.setAttribute('height',pz.toFixed(1));
-  T('m-th','Tch '+fmt(s.Thot,1)); T('m-tc','Tfr '+fmt(s.Tcold,1));
-  const np=s.pumps.filter(Boolean).length; T('m-pumpt','GMPP '+np+'/3');
-  document.getElementById('m-pump').setAttribute('class','pump '+(np===3?'on':'off'));
-  const sg=clamp(s.Lsg,0,100)/100*156; const sf=document.getElementById('m-sgf'); sf.setAttribute('y',(43+156-sg).toFixed(1)); sf.setAttribute('height',sg.toFixed(1));
-  T('m-psg',fmt(s.Psg,1)+' bar'); T('m-lsg','Niv. '+fmt(s.Lsg,0)+' %');
-  document.getElementById('m-asg').style.fill=s.asg?'var(--warn)':'var(--dim)';
-  T('m-mwe',s.coupled?fmt(s.Qt*K.MWE,0)+' MWe':(s.turbTripped?'Déclenchée':'Découplée'));
-  document.getElementById('m-brk').setAttribute('class','brk'+(s.coupled&&!s.ilot?' on':''));
-  T('m-grid',s.grid?'Réseau':'Réseau ✕'); document.getElementById('m-grid').style.fill=s.grid?'var(--mute)':'var(--crit)';
-  document.getElementById('m-gctv').setAttribute('class','valve'+(s.gct>0.02?' open':''));
-  T('m-gct','GCT-c '+fmt(s.gct/0.85*100,0)+' %');
-  T('m-feed','ARE '+fmt(s.Wf*100,0)+' %'+(s.Wasg>0.005?' · ASG '+fmt(s.Wasg*100,0)+' %':''));
-  document.getElementById('m-tpa').setAttribute('class','pump '+(s.tpa[0]&&s.tpa[1]?'on':(s.tpa[0]||s.tpa[1]?'':'off')));
+  updSyn(s);
   /* instrumentation */
   H('i-sr',s.srInhib?'<span style="color:var(--dim)">HT coupée</span>':fmt(s.n*1e10,0)+' c/s');
   H('i-ir',sci(Math.max(s.n*1e-3,1e-11))+' A');
@@ -685,7 +664,7 @@ $('#menuCards').addEventListener('click',e=>{ const dm=e.target.closest('[data-d
 /* ================= Aide des cartes ================= */
 const HELP={
  synop:{t:'Synoptique',l:'tuto',h:`<h3>En bref</h3><p>C'est le plan de la centrale, en direct. Deux circuits d'eau ne se mélangent jamais : le <b>primaire</b>, qui traverse le cœur et sort à plus de 300 °C, et le <b>secondaire</b>, qui reçoit sa chaleur dans les générateurs de vapeur et fait tourner la turbine. Une comparaison utile : le primaire est le radiateur, le secondaire la casserole posée dessus.</p>
-<h3>Ce que vous voyez</h3><ul><li><b>Cuve</b> : le cœur (sa couleur s'intensifie avec la puissance) et trois barres blanches, les groupes d'arrêt, les GCP et le groupe R. Plus une barre est longue, plus le groupe est inséré.</li><li><b>Branche chaude</b> en orange (Tch, sortie du cœur) et <b>branche froide</b> en bleu (Tfr, retour vers le cœur). Les trois boucles réelles sont regroupées en une.</li><li><b>Pressuriseur</b> : pression, niveau, aspersion. <b>GV</b> : niveau et pression vapeur.</li><li><b>Turbine</b> et alternateur ; le petit carré vert est le disjoncteur (vert = couplé au réseau).</li><li><b>GCT-c</b> : la vanne qui envoie la vapeur au condenseur sans passer par la turbine. <b>ARE</b> : l'eau alimentaire (en vert) qui retourne aux GV.</li></ul>
+<h3>Ce que vous voyez</h3><p>Les équipements sont dessinés en gris : la couleur est réservée aux circuits (atténués) et aux états anormaux, pour qu'un écart saute aux yeux. Chaque valeur est dans une <b>étiquette</b> de même forme ; elle passe en <b>ambre</b> en cas d'écart ou de mode manuel, en <b>rouge</b> près d'un seuil de protection ou quand une sauvegarde est en service. Un pointillé qui défile dans une tuyauterie indique un débit ; une ligne en tirets est à l'arrêt.</p><ul><li><b>Cuve</b> : le cœur (sa couleur s'intensifie avec la puissance) et les barres des groupes S (arrêt), G1, G2, N1, N2 (GCP) et R, avec leur position en pas dessous. Plus une barre est longue, plus le groupe est inséré.</li><li><b>Branche chaude</b> (Tch, sortie du cœur) et <b>branche froide</b> (Tfr, retour vers le cœur), avec les trois pompes primaires <b>GMPP</b> (rouges si arrêtées). Les trois boucles réelles sont regroupées en une.</li><li><b>Pressuriseur</b> : pression, niveau et sa référence, chaufferettes et aspersion ; les soupapes <b>SEBIM</b> passent en rouge si elles s'ouvrent.</li><li><b>Bore et RCV</b> : concentration, appoint REA en cours, débits de charge et de décharge ; <b>IS</b> : injection de sécurité, ligne rouge pleine en service.</li><li><b>GV</b> : niveau, pression vapeur, bilan eau entrante / vapeur sortante ; <b>ARE</b> avec ses deux turbopompes A et B, et l'<b>ASG</b> (alimentation de secours), ligne rouge pleine en service.</li><li><b>Turbine</b> et alternateur ; le petit carré est le disjoncteur (vert = couplé au réseau). <b>GCT-c</b> : la vanne qui envoie la vapeur au condenseur sans passer par la turbine ; <b>GCT-a</b> : rejet à l'atmosphère, en rouge s'il s'ouvre.</li></ul><p><b>Cliquez un équipement ou une étiquette</b> : ses actions rapides s'ouvrent sur place (les mêmes commandes que dans les familles), avec un lien vers toute la famille.</p>
 <h3>Pourquoi c'est important</h3><p>Toute la conduite consiste à équilibrer ce que produit le cœur et ce que consomme le secondaire. Si la turbine prend plus de vapeur que le cœur ne fournit, le primaire se refroidit ; dans le cas inverse, il chauffe. Le synoptique permet de voir où se situe le déséquilibre.</p>
 <h3>Ordres de grandeur</h3><ul><li>Échauffement de l'eau dans le cœur : environ 37 °C à pleine puissance (286 → 323 °C).</li><li>Débit primaire : ~ 22 000 m³/h par boucle, soit environ 18 m³ par seconde pour les trois boucles : une piscine olympique toutes les 2 à 3 minutes.</li><li>Rendement : 2 785 MW de chaleur pour ~ 905 MW électriques.</li></ul>`},
  instr:{t:'Instrumentation neutronique',l:'l-cin',h:`<h3>En bref</h3><p>On ne mesure pas directement la puissance d'un réacteur : on compte les neutrons qui s'échappent de la cuve. Entre le réacteur arrêté et la pleine puissance, ce flux varie d'un facteur mille milliards. Aucun détecteur ne couvre une telle plage, d'où trois familles qui se relaient, comme les calibres d'un multimètre.</p>

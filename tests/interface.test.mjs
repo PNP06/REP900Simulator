@@ -81,7 +81,17 @@ for (const [w, h] of [[1280, 720], [1440, 900], [1920, 1080]]) {
     o.unreach = [...sels].filter(q => { const e = document.querySelector(q); if (!e) return true; reveal(e); e.scrollIntoView({ block: 'center' }); return !e.closest('header.top') && !inView(e); });
     launch('libre'); document.querySelector('#brief').hidden = true; act('reaMode', 'dil'); act('reaQ', '10'); act('reaV', '0.3'); act('reaStart'); updateUI(); updateRun();
     o.run = /Dilution/.test(document.querySelector('#runList').textContent) && /Dil\./.test(document.querySelector('#z-cb').textContent);
+    setVue('synop'); updateUI();
+    o.pal = Object.keys(SYC).filter(c => { const g = document.querySelector('#synw [data-sy="' + c + '"]'); g.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 300, clientY: 300 })); const p = document.querySelector('#synpal'); return !p || !p.textContent.includes(SYC[c].t) || !inView(p); });
+    palOpen('pzr'); document.querySelector('#synpal .seg[data-key="heatMode"] button[data-v="on"]').click(); o.palAct = A.s.heatMode === 'on' && document.querySelector('.card[data-c="pzr"] .seg[data-key="heatMode"] button[data-v="on"]').classList.contains('on');
+    palOpen('turb'); const rg = document.querySelector('#synpal [data-rng="#ltSet"]'); rg.value = 42; rg.dispatchEvent(new Event('input', { bubbles: true })); o.palRng = Math.round(A.s.LtSet * 100) === 42 && document.querySelector('#ltSet').value === '42';
+    document.querySelector('#synpal [data-palfam]').click(); o.palFam = !document.querySelector('#synpal') && inView(document.querySelector('.card[data-c="turb"]'));
+    A.s.asg = true; A.s.sebim = true; A.s.pumps[1] = false; updateUI();
+    o.synSt = document.querySelector('#sy-asg').classList.contains('crit') && document.querySelector('#sp-asg').classList.contains('alarm') && document.querySelector('#sv-vseb').classList.contains('alarm') && document.querySelector('#sy-gm1').classList.contains('off');
     return o; });
+  check(`${w}×${h} : synoptique, chaque équipement ouvre ses actions rapides`, r.pal.length === 0, r.pal.join(', '));
+  check(`${w}×${h} : actions rapides : bouton et curseur agissent comme dans les cartes, lien vers la famille`, r.palAct && r.palRng && r.palFam);
+  check(`${w}×${h} : synoptique : ASG, SEBIM et pompe arrêtée signalés en rouge`, r.synSt);
   r.bandClick = [];
   for (const [id, k] of await pg.evaluate(() => Object.entries(BAND_CARD))) { await pg.click('#rd-' + id); await pg.waitForTimeout(700); if (!await pg.evaluate(k => inView(document.querySelector('.card[data-c="' + k + '"]')), k)) r.bandClick.push(id); }
   await pg.evaluate(() => { launch('l-gv'); document.querySelector('#brief').hidden = true; A.paused = true; setFam('core'); enterStep(4); }); await pg.waitForTimeout(800);
