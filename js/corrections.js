@@ -147,7 +147,7 @@ DM.tmi={speed:2,intro:"L'accident de Three Mile Island rejoué sur notre tranche
   {w:s=>s.Tdech>90,t:"Croire les mesures plutôt que le voyant",why:"Le voyant dit « fermée ». Mais la ligne de décharge est chaude et le réservoir de décharge se remplit : la soupape est ouverte.",a:[DA.look('#c-tdech'),DA.look('#c-rdp')]},
   {t:"Fermer la vanne d'isolement",why:"Montée en série avec la soupape, elle coupe la fuite. À TMI, ce geste a attendu 2 heures 22.",a:[DA.btn('porvIsol')]},
   {t:"Ne pas toucher à l'injection de sécurité",why:"Un pressuriseur haut ne prouve pas que le circuit est plein quand il y a de la vapeur dans la cuve. Réduire l'IS a été l'erreur de TMI, dès 4 minutes 30.",a:[DA.look('.seg[data-key="isThr"]')]},
-  {t:"Laisser tourner les pompes primaires",why:"Elles tournent et le cœur est refroidi : on ne les arrête pas. À TMI, leur arrêt tardif a laissé la vapeur se séparer de l'eau et découvrir le cœur.",a:[DA.look('#l-p1')]},
+  {t:"Laisser tourner les pompes primaires",why:"Elles tournent et le cœur est refroidi : on ne les arrête pas maintenant. À TMI, leur arrêt tardif, circuit déjà à moitié vapeur, a laissé la vapeur se séparer de l'eau et découvrir le cœur. Les procédures d'après TMI les arrêtent tôt, sur un critère, tant que le circuit est encore plein d'eau.",a:[DA.look('#l-p1')]},
   {w:s=>s.porvIsol&&s.satMargin>10,t:"Situation stabilisée",why:"La pression remonte, l'eau est revenue loin de l'ébullition et le cœur n'a jamais été découvert. Il reste à refroidir la tranche normalement.",a:[DA.look('#rd-pp')]}]};
 /* maillons de la chaîne que la correction lit à voix haute : les autres sont déjà dits par les étapes */
 const CHAIN_SAY=new Set(['chaud','aar','is','sat','iscut','rdp','vib','pmp','unc','fus']);

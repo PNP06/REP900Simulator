@@ -339,6 +339,11 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
   inside = inside && await pg.evaluate(() => document.querySelector('#fb').contains(document.activeElement));
   await pg.evaluate(() => closeFB()); await pg.waitForTimeout(150);
   check('Fenêtre de retours : focus à l\'intérieur, Tab y reste, retour au bouton d\'origine', inside && await pg.evaluate(() => document.activeElement && document.activeElement.id === 'pauseBtn'));
+  // TMI : le critère pompes primaires sanctionne l'arrêt tardif (circuit très vidé), pas l'arrêt précoce sur critère
+  const pc = await pg.evaluate(() => { const sc = SCN.find(x => x.id === 'tmi'), s = makeState(P100);
+    const note = k => sc.evaluate(s, { fired: 0, acts: {}, k: Object.assign({ maxUnc: 0 }, k) }).find(r => /Pompes primaires/.test(r.t)).ok;
+    return [note({}), note({ pmpCut: 600, pmpCutA: 0.1 }), note({ pmpCut: 4440, pmpCutA: 0.5 })]; });
+  check('TMI : pompes gardées ou arrêtées tôt = réussi, arrêtées tard circuit vidé = raté', pc[0] && pc[1] && !pc[2], JSON.stringify(pc));
   // batteries épuisées : instruments grisés, commandes refusées, actions locales possibles
   const cc = await pg.evaluate(() => { launch('libre'); document.querySelector('#goBtn').click(); A.paused = true; const s = A.s;
     s.el.dg.A.fail = s.el.dg.B.fail = true; s.grid = false; s.el.r225 = false; s.ilot = true; s.el.ilotRate = true;

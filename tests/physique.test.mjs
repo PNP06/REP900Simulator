@@ -75,6 +75,8 @@ check('Psat(273 °C) ≈ 57,5 bar', near(psat(273), 57.5, 1.5), psat(273).toFixe
   check('TMI : soupape isolée à 1 min → ni saturation ni dégât', iso.satT == null && iso.s.Vv === 0 && iso.s.coreDmg === 0, `P=${iso.s.Ppzr.toFixed(0)} bar`);
   const is = tmi([[480, s => { s.asgV = true; }], [4440, s => { s.pumps[0] = s.pumps[1] = false; }], [6060, s => { s.pumps[2] = false; }]]);
   check('TMI : IS laissée en service → cœur jamais découvert, même GMPP arrêtées', is.minH > 0 && is.s.coreDmg === 0, `niveau mini ${is.minH.toFixed(1)} m`);
+  const tot = tmi([[420, s => { s.pumps = [false, false, false]; }], [480, s => { s.asgV = true; }]]);
+  check('TMI : GMPP arrêtées tôt (7 min, circuit encore plein d\'eau), IS en service → cœur jamais découvert', tot.satT < 420 && tot.minH > 0 && tot.s.coreDmg === 0, `niveau mini ${tot.minH.toFixed(1)} m`);
   const pp = tmi([[270, s => { s.isThr = 0.1; }], [480, s => { s.asgV = true; }]]);
   check('TMI : GMPP maintenues → cœur refroidi 4 h malgré l\'IS réduite', pp.maxUncPompes === 0 && pp.s.coreDmg === 0, `taux de vide ${(pp.s.alpha * 100).toFixed(0)} %`);
   check('TMI : vannes ASG consignées → pas de débit ASG, puis débit à leur ouverture', h.W5 < 1e-3 && h.W15 > 0.02, `${h.W5.toFixed(3)} puis ${h.W15.toFixed(3)}`);
