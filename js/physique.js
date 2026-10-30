@@ -167,11 +167,13 @@ function step(s){
     let dR=0;
     if(s.rodWd) dR=0.8*dt;
     else if(s.modeR==='auto'&&s.coupled){
-      const e=(s.Tavg-s.Tref)+clamp(3*(s.n-s.Lt),-1.5,1.5), ae=Math.abs(e);
+      /* îlotage : la puissance s'effondre loin sous la charge (grappes trop enfoncées pendant le transitoire) ; l'écart de puissance anticipé (tendance sur 30 s, puissance résiduelle comprise) fait ressortir R avant que Tmoy ne plonge */
+      const pv=s.ilot?s.n*(1+clamp(s.rate*30,-1,0))+s.Qdh-s.Lt:0;
+      const e=(s.Tavg-s.Tref)+clamp(3*(s.n-s.Lt),-1.5,1.5)+clamp(100*Math.min(0,pv+0.005),-3,0), ae=Math.abs(e);
       if(ae>0.83) s.rAuto=true; else if(ae<0.3) s.rAuto=false;
       if(s.rAuto){ const sp=clamp((ae-0.5)*25,8,72)/60; dR=(e>0?-sp:sp)*dt;
         /* anticipation par l'écart de puissance : ne pas insérer si le réacteur produit déjà moins que la turbine, ni extraire s'il produit nettement plus */
-        if((dR<0&&s.n<s.Lt-0.01)||(dR>0&&s.n>s.Lt+0.05)) dR=0; }
+        if((dR<0&&(s.n<s.Lt-0.01||pv<0))||(dR>0&&s.n>s.Lt+0.05)) dR=0; }
       R.R.tg=R.R.p;
     } else dR=clamp(R.R.tg-R.R.p,-0.8*dt,0.8*dt);
     if(dR>0&&block&&!s.rodWd){ dR=0; R.R.tg=R.R.p; }
@@ -218,7 +220,8 @@ function step(s){
   const Qt=s.coupled?s.Lt*clamp((s.Psg-35)/15,0,1):0; s.Qt=Qt;
   const aux=s.Psg>10?0.005:0;
   /* GCT-c : il faut le condenseur, donc les tableaux normaux */
-  const gd=!av.cond?0:s.coupled?clamp(0.10*(s.Tavg-s.Tref-1.5),0,0.85):clamp(0.5*(s.Psg-70.1),0,0.85);
+  /* en îlotage, le GCT-c s'ouvre plus tôt et plus franchement : il absorbe la vapeur que la turbine ne prend plus */
+  const gd=!av.cond?0:s.coupled?(s.ilot?clamp(0.3*(s.Tavg-s.Tref-0.5),0,0.85):clamp(0.10*(s.Tavg-s.Tref-1.5),0,0.85)):clamp(0.5*(s.Psg-70.1),0,0.85);
   s.gct+=(gd-s.gct)/2*dt;
   const qa=clamp((s.Psg-78)*0.06,0,0.3)+s.gctaMan*0.3*clamp(s.Psg/70,0,1.2); s.qa=qa;
   const qv=s.Psg>85?clamp((s.Psg-85)*0.4,0,1.2):0; s.qv=qv;

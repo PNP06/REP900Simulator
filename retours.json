@@ -1,4 +1,27 @@
 {
-  "maj": "2026-10-29",
-  "retours": []
+  "maj": "2026-10-30",
+  "retours": [
+    {
+      "n": 1,
+      "date": "2026-10-27",
+      "niveau": "incohérence",
+      "partie": "Aléas",
+      "titre": "Îlotage : Tmoy reste environ 5 °C sous Tref",
+      "description": "Après la perte du réseau, la tranche s'îlote bien, mais quelques minutes plus tard Tmoy se retrouve environ 5 °C sous Tref et n'y revient pas.",
+      "statut": "résolu",
+      "reponse": "Deux causes. Pendant le transitoire, les grappes R s'enfonçaient trop et ne ressortaient qu'une fois Tmoy déjà tombée : en îlotage, la régulation compare maintenant la puissance du réacteur à celle de la turbine et le GCT-c s'ouvre plus tôt, Tmoy reste à moins de 1 °C de Tref. Ensuite, le xénon s'accumule après la chute de puissance et R arrive en butée haute : c'est physique, l'opérateur doit diluer par petits volumes. L'aléa, ses indices et sa correction commentée le montrent désormais.",
+      "date_reponse": "2026-10-30"
+    },
+    {
+      "n": 2,
+      "date": "2026-10-30",
+      "niveau": "amélioration",
+      "partie": "Aléas",
+      "titre": "Three Mile Island : mode « Revivre » la nuit de 1979",
+      "description": "En plus de « À votre place » et de la correction commentée, un récit guidé de l'accident tel qu'il s'est déroulé, heure par heure, avec une vue intérieure de la cuve et du pressuriseur (ce que les opérateurs ne voyaient pas) à côté de ce qu'affichait la salle de commande.",
+      "statut": "ouvert",
+      "reponse": "Idée retenue, gardée pour plus tard.",
+      "date_reponse": "2026-10-30"
+    }
+  ]
 }
