@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 
-const js = readFileSync(fileURLToPath(new URL('../js/physique.js', import.meta.url)), 'utf8');
+const src = f => readFileSync(fileURLToPath(new URL('../js/' + f, import.meta.url)), 'utf8');
+const js = src('electrique.js') + '\n' + src('physique.js');
 const ctx = { console, Math, Infinity, NaN, Number, Set, Object, Array };
 vm.createContext(ctx);
 vm.runInContext("const clamp=(x,a,b)=>x<a?a:x>b?b:x;const fmt=(x,d=1)=>x.toFixed(d);const A={ctx:null};\n" + js +
@@ -83,6 +84,33 @@ check('Psat(273 °C) ≈ 57,5 bar', near(psat(273), 57.5, 1.5), psat(273).toFixe
   const lI=2.87e-5,lX=2.09e-5,sg=7.5e-5,gI=0.0639,gX=0.00237; let I=1,X=1,mx=1,tm=0;
   for (let t=0;t<=48*3600;t+=60){ I+=lI*(0-I)*60; X+=((lX+sg)*(gI*I)/(gI+gX)-lX*X)*60; if(X>mx){mx=X;tm=t/3600;} }
   check('Pic xénon après arrêt entre 7 et 11 h', tm > 7 && tm < 11, tm.toFixed(1) + ' h, ' + (-2700*mx).toFixed(0) + ' pcm'); }
+
+/* ---- Alimentations électriques (js/electrique.js) ---- */
+{ const s = makeState(P100); run(s, 5);
+  check('Élec : à 100 %, tableaux normaux et secourus sur le TS', s.el.src.LG === 'ts' && s.el.src.LHA === 'ts' && s.el.src.LHB === 'ts');
+  trip(s, 'test', 'op'); run(s, 5);
+  check('Élec : après AAR, basculement sur le TA, GMPP toujours en service', s.el.src.LG === 'ta' && s.el.src.LHA === 'ta' && s.pumps.every(Boolean), s.el.src.LG); }
+
+{ const s = makeState(P100); run(s, 5); s.grid = false; s.ilot = true; run(s, 120);
+  check('Élec : îlotage réussi, auxiliaires sur le TS, rien ne s\'arrête', s.coupled && s.el.src.LG === 'ts' && s.pumps.every(Boolean) && !s.tripped); }
+
+/* manque de tension externe : 400 et 225 kV perdus, îlotage raté */
+const mdte = (failA, failB, dur) => { const s = makeState(P100); run(s, 5); s.el.dg.A.fail = failA; s.el.dg.B.fail = failB;
+  s.grid = false; s.el.r225 = false; s.ilot = true; s.el.ilotRate = true; const t0 = s.t; let tA = null, fmin = 9, fmax = 0;
+  while (s.t - t0 < dur) { step(s); if (tA == null && s.el.src.LHA) tA = s.t - t0; if (s.t - t0 > 300) { fmin = Math.min(fmin, s.flow); fmax = Math.max(fmax, s.flow); } }
+  return { s, tA, fmin, fmax }; };
+{ const { s, tA, fmin, fmax } = mdte(false, false, 1800);
+  check('MDTE : AAR (îlotage raté), GMPP et TPA arrêtées', s.tripped && /turbine|Sous-tension/.test(s.aars[0].cause) && !s.pumps.some(Boolean) && !s.tpa.some(Boolean), s.aars[0].cause);
+  check('MDTE : le diesel A reprend LHA en moins de 15 s', tA != null && tA < 15, tA && tA.toFixed(1) + ' s');
+  check('MDTE : IS, charge RCV et ASG réalimentées par les diesels', s.el.av.is === 1 && s.el.av.chg === 1 && s.el.av.asg === 1);
+  check('MDTE : circulation naturelle entre 2 et 6 % du débit nominal', fmin > 0.02 && fmax < 0.06, `${(fmin*100).toFixed(1)}–${(fmax*100).toFixed(1)} %`);
+  check('MDTE : 30 min après, primaire refroidi par les GV, cœur intact', s.Tavg < 300 && s.coreDmg === 0 && s.satMargin > 10, `Tmoy=${s.Tavg.toFixed(1)} °C, marge ${s.satMargin.toFixed(0)} °C`); }
+{ const { s } = mdte(true, false, 600);
+  check('MDTE + échec du diesel A : LHA hors tension, LHB sur diesel B', s.el.dg.A.st === 'defaut' && !s.el.src.LHA && s.el.src.LHB === 'dg' && s.el.av.is === 1); }
+{ const { s } = mdte(true, true, 1800);
+  check('H3 : plus aucun tableau secouru, LLS en service, batteries en décharge', !s.el.src.LHA && !s.el.src.LHB && s.el.lls && s.el.bat < 0.6 && s.el.bat > 0.4, `batteries ${(s.el.bat*100).toFixed(0)} %`);
+  check('H3 : la turbopompe ASG tient le niveau des GV', s.el.av.asg === 1 && s.Wasg > 0.005 && s.Lsg > 30, `niveau GV ${s.Lsg.toFixed(0)} %`);
+  check('H3 : pas d\'IS ni de charge RCV possibles', s.el.av.is === 0 && s.el.av.chg === 0 && s.Qc < 0.5); }
 
 console.log(fails ? `\n${fails} test(s) en échec` : '\nTous les tests passent');
 process.exit(fails ? 1 : 0);
