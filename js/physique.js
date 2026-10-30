@@ -44,6 +44,7 @@ function makeState(o){
     Vv:0,alpha:0,sat:false,vib:0,hCuve:0,unc:0,Tg:0,TgMax:0,zr:1,H2:0,fondu:0,coreDmg:0,Ttc:0,
     mRdp:0,Prdp:1.2,Lrdp:60,Tdech:45,rdpBurst:false,mEnc:0,Penc:1.0,
     lnPrev:0,rate:0,Td:Infinity,ax:0,limits:new Set(),limitNow:false,
+    el:typeof makeElec==='function'?makeElec():null,
     log:[],hist:[],histNext:0,alarms:{}};
   const G=o.G==='cal'?calG(coupled?P:0):o.G;
   s.rods.G={p:G,tg:G};
@@ -134,6 +135,7 @@ function startIS(s,src){
 }
 function protCause(s){
   const np=s.pumps.filter(Boolean).length;
+  if(s.el&&!s.el.av.lg) return 'Sous-tension des tableaux GMPP (manque de tension)';
   if(s.n>1.09) return 'Haut flux neutronique (seuil haut 109 %)';
   if(!s.lowBlk && s.n>0.25) return 'Haut flux neutronique (seuil bas 25 %)';
   if(!s.srInhib && s.n*1e10>1e5) return 'Haut flux gamme source (10⁵ c/s)';
@@ -149,6 +151,8 @@ function protCause(s){
 
 function step(s){
   const dt=DT;
+  if(s.el) elecStep(s,dt);
+  const av=s.el?s.el.av:{heat:1,chg:1,is:1,asg:1,cond:true};
   /* turbine */
   if(s.coupled){
     const tgt=s.ilot?0.05:s.LtSet, rate=s.ilot?2/60:s.ramp/6000;
@@ -193,7 +197,8 @@ function step(s){
   const Q=(1-DHS)*n+dh; s.Qcore=Q; s.Qdh=dh;
   /* primaire */
   const np=s.pumps.filter(Boolean).length;
-  let ft=[0.04,0.38,0.72,1][np];
+  /* sans pompe, circulation naturelle : le débit croît comme la racine cubique de la puissance à évacuer (≈ 4 % à 1 % PN) */
+  let ft=np?[0,0.38,0.72,1][np]:clamp(0.04*Math.cbrt(Math.max(Q,1e-4)/0.01),0.015,0.08);
   /* primaire diphasique : les GMPP cavitent dans le mélange eau-vapeur, la vapeur bloque la circulation naturelle */
   s.vib=np>0&&s.sat?clamp(s.alpha*4,0,1):0;
   if(np>0) ft*=1-0.5*s.vib; else ft*=1-clamp(s.alpha/0.15,0,1);
@@ -201,7 +206,7 @@ function step(s){
   const dTc=Math.min(90,37*Q/s.flow);
   s.Thot=s.Tavg+dTc/2; s.Tcold=s.Tavg-dTc/2;
   const Qsg=K.UA*Math.pow(s.flow,0.8)*(s.Tavg-s.Ts); s.Qsg=Qsg;
-  const QisH=s.is?clamp((172-s.Ppzr)*1.5,0,120)*s.isThr:0;
+  const QisH=s.is?clamp((172-s.Ppzr)*1.5,0,120)*s.isThr*av.is:0;
   /* soupape de tête du pressuriseur : ouverture réelle (une soupape bloquée reste ouverte quel que soit l'ordre) */
   const vOpen=s.sebim||(s.porvOpen&&!s.porvIsol);
   /* primaire saturé, soupape ouverte : le fluide qui s'échappe emporte de la chaleur */
@@ -212,7 +217,8 @@ function step(s){
   s.Psg=psat(s.Ts);
   const Qt=s.coupled?s.Lt*clamp((s.Psg-35)/15,0,1):0; s.Qt=Qt;
   const aux=s.Psg>10?0.005:0;
-  const gd=s.coupled?clamp(0.10*(s.Tavg-s.Tref-1.5),0,0.85):clamp(0.5*(s.Psg-70.1),0,0.85);
+  /* GCT-c : il faut le condenseur, donc les tableaux normaux */
+  const gd=!av.cond?0:s.coupled?clamp(0.10*(s.Tavg-s.Tref-1.5),0,0.85):clamp(0.5*(s.Psg-70.1),0,0.85);
   s.gct+=(gd-s.gct)/2*dt;
   const qa=clamp((s.Psg-78)*0.06,0,0.3)+s.gctaMan*0.3*clamp(s.Psg/70,0,1.2); s.qa=qa;
   const qv=s.Psg>85?clamp((s.Psg-85)*0.4,0,1.2):0; s.qv=qv;
@@ -226,7 +232,7 @@ function step(s){
   } else dem=s.areMan;
   dem=clamp(dem,0,capE);
   s.Wf+=(dem-s.Wf)/3*dt; if(s.Wf<0) s.Wf=0;
-  const ad=s.asg&&s.asgV?clamp(0.03+0.02*(45-s.Lsg),0,0.10):0;
+  const ad=s.asg&&s.asgV?clamp(0.03+0.02*(45-s.Lsg),0,0.10)*av.asg:0;
   s.Wasg+=(ad-s.Wasg)/5*dt;
   s.Ts+=2.32*(Qsg-Wst*0.81-s.Wf*0.19-s.Wasg*0.66)*dt;
   s.Linv=clamp(s.Linv+0.8*(s.Wf+s.Wasg-Wst)*dt,-20,115);
@@ -237,10 +243,11 @@ function step(s){
   s.Lref=20+41*clamp((s.Tavg-286)/18.5,0,1);
   if(s.Lpzr<14) s.ldIsolAuto=true; else if(s.Lpzr>20) s.ldIsolAuto=false;
   const ldIso=s.ldIsolAuto||s.ldIsolMan||s.is;
-  const Qld=ldIso?0:13.6; s.Qld=Qld;
+  /* sans pompe de charge, la décharge s'isole aussi */
+  const Qld=ldIso||!av.chg?0:13.6; s.Qld=Qld;
   let cd;
   if(s.chgMode==='auto'){ const e=s.Lref-s.Lpzr; s.Ic=clamp(s.Ic+0.02*e*dt,-10,20); cd=Qld+4*e+s.Ic; } else cd=s.chgMan;
-  cd=clamp(cd,0,34);
+  cd=clamp(cd,0,34*av.chg);
   s.Qc+=(cd-s.Qc)/8*dt;
   let Ql=0; if(s.leakQ>0 && !(s.leakType==='letdown'&&ldIso)) Ql=s.leakQ*Math.sqrt(Math.max(s.Ppzr,1)/155);
   s.Qleak=Ql; s.Qis=QisH;
@@ -264,6 +271,7 @@ function step(s){
   if(e<-1.7) s.backup=true; else if(e>-0.9) s.backup=false;
   let hd=s.heatMode==='auto'?0.15*prop+(s.backup?0.85:0):(s.heatMode==='on'?1:0);
   if(s.Lpzr<14) hd=0;
+  hd*=av.heat;
   s.hEff+=(hd-s.hEff)/20*dt; s.hDem=hd;
   let sp=s.sprayMode==='auto'?clamp((e-0.7)/1.6,0,1):s.sprayMan;
   if(s.sprayStuck) sp=1; if(s.sprayIsol) sp=0;
