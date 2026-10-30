@@ -61,6 +61,48 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
   check(`${w}px : aucune erreur JavaScript`, errs.length === 0, errs.slice(0, 2).join(' | '));
   await ctx.close();
 }
+// Poste de pilotage sur ordinateur : tout tient dans l'écran, vues et familles, bandeau cliquable, cibles des leçons et des corrections atteignables.
+for (const [w, h] of [[1280, 720], [1440, 900], [1920, 1080]]) {
+  const pg = await browser.newPage({ viewport: { width: w, height: h } }); const errs = []; pg.on('pageerror', e => errs.push(e.message));
+  await pg.goto(url); await pg.evaluate(() => { store('about', 1); document.querySelector('#about').hidden = true; launch('libre'); document.querySelector('#goBtn').click(); });
+  await pg.waitForTimeout(400);
+  const r = await pg.evaluate(() => {
+    const vis = s => { const e = document.querySelector(s); return !!e && inView(e); }, o = {};
+    o.noScroll = document.documentElement.scrollHeight <= innerHeight + 1 && document.documentElement.scrollWidth <= innerWidth;
+    o.band = vis('#band');
+    o.speeds = [...document.querySelectorAll('.spdseg button')].every(b => inView(b));
+    o.blk = vis('#runAl') && vis('#runList') && vis('#runAuto');
+    o.mission = vis('#mission'); o.synop = vis('.card[data-c="synop"]');
+    o.views = [...document.querySelectorAll('#vtabs button')].filter(b => b.getClientRects().length).every(b => { b.click(); const c = document.querySelector('.card[data-c="' + b.dataset.vue + '"]'); return inView(c); });
+    o.fams = [...document.querySelectorAll('#ftabs button')].every(b => { b.click(); const cs = FAMS[b.dataset.fam].c.map(k => document.querySelector('.card[data-c="' + k + '"]')); const others = [...document.querySelectorAll('#famb>.card')].filter(c => !cs.includes(c)); return inView(cs[0]) && others.every(c => !c.getClientRects().length); });
+    setVue('synop'); setFam('core');
+    const sels = new Set(); for (const D of Object.values(DM)) for (const st of D.steps) for (const a of [].concat(st.a || [])) if (a && a.sel && a.sel !== '#mis-info') sels.add(a.sel);
+    for (const sc of SCN) for (const st of sc.steps || []) for (const q of st.f || []) if (!/header\.top|#band$|#mis-info/.test(q)) sels.add(q);
+    o.unreach = [...sels].filter(q => { const e = document.querySelector(q); if (!e) return true; reveal(e); e.scrollIntoView({ block: 'center' }); return !e.closest('header.top') && !inView(e); });
+    launch('libre'); document.querySelector('#brief').hidden = true; act('reaMode', 'dil'); act('reaQ', '10'); act('reaV', '0.3'); act('reaStart'); updateUI(); updateRun();
+    o.run = /Dilution/.test(document.querySelector('#runList').textContent) && /Dil\./.test(document.querySelector('#z-cb').textContent);
+    return o; });
+  r.bandClick = [];
+  for (const [id, k] of await pg.evaluate(() => Object.entries(BAND_CARD))) { await pg.click('#rd-' + id); await pg.waitForTimeout(700); if (!await pg.evaluate(k => inView(document.querySelector('.card[data-c="' + k + '"]')), k)) r.bandClick.push(id); }
+  await pg.evaluate(() => { launch('l-gv'); document.querySelector('#brief').hidden = true; A.paused = true; setFam('core'); enterStep(4); }); await pg.waitForTimeout(800);
+  r.lesson = await pg.evaluate(() => inView(document.querySelector('[data-c="are"]')) && document.querySelector('.seg[data-key="areMode"]').classList.contains('focus') && inView(document.querySelector('.seg[data-key="areMode"]')));
+  check(`${w}×${h} : tout tient dans l'écran, sans défiler`, r.noScroll);
+  check(`${w}×${h} : bandeau, vitesses ×1 à ×300, bloc alarmes/actions/automatismes, consigne et synoptique visibles`, r.band && r.speeds && r.blk && r.mission && r.synop, JSON.stringify(r));
+  check(`${w}×${h} : chaque onglet de vue montre sa carte`, r.views);
+  check(`${w}×${h} : chaque famille de commandes montre ses cartes, et seulement elles`, r.fams);
+  check(`${w}×${h} : chaque case du bandeau ouvre sa carte`, r.bandClick.length === 0, r.bandClick.join(', '));
+  check(`${w}×${h} : toutes les cibles des leçons et des corrections commentées sont atteignables`, r.unreach.length === 0, r.unreach.join(' | '));
+  check(`${w}×${h} : une étape de leçon ouvre la carte dont elle parle`, r.lesson);
+  check(`${w}×${h} : appoint en cours affiché dans « Mes actions » et dans la case Bore`, r.run);
+  check(`${w}×${h} : aucune erreur JavaScript`, errs.length === 0, errs.slice(0, 2).join(' | '));
+  await pg.close();
+}
+{ const pg = await browser.newPage({ viewport: { width: 390, height: 844 } }); const errs = []; pg.on('pageerror', e => errs.push(e.message));
+  await pg.goto(url); await pg.evaluate(() => { store('about', 1); document.querySelector('#about').hidden = true; launch('libre'); document.querySelector('#goBtn').click(); });
+  const r = await pg.evaluate(() => Object.entries(BAND_CARD).filter(([id, k]) => { const c = document.querySelector('#rd-' + id); if (!c.getClientRects().length) return false; c.click(); return document.body.dataset.tab !== tabOf(document.querySelector('.card[data-c="' + k + '"]')); }).map(([id]) => id));
+  check('Téléphone : une case du bandeau ouvre l\'onglet de sa carte', r.length === 0, r.join(', '));
+  check('Téléphone : aucune erreur JavaScript', errs.length === 0, errs.slice(0, 2).join(' | '));
+  await pg.close(); }
 { const pg = await browser.newPage(); const errs = []; pg.on('pageerror', e => errs.push(e.message));
   await pg.goto(url); await pg.evaluate(() => { store('about', 1); document.querySelector('#about').hidden = true; });
   for (const [id, ok, at] of await pg.evaluate(LESSONS)) check('Leçon ' + id + ' jouable de bout en bout', ok, at);

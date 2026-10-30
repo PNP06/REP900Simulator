@@ -32,9 +32,7 @@
 <div class="alb" id="alb" hidden><span class="lamp" id="alb-l"></span><span class="alb-n" id="alb-n"></span><span class="alb-t" id="alb-t"></span><button class="ib" id="alb-see">Voir</button><button class="ib" id="alb-ack">Acquitter</button></div></div>
 </header>
 
-<main class="wrap">
-
-  <div class="layout">
+<main class="wrap poste" id="poste">
     <section class="card mission" id="mission">
       <div class="mis-h">
         <i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 21V4h12l-2.5 4 2.5 4H5"/></svg></i><span class="tag" id="mis-tag">—</span>
@@ -45,11 +43,18 @@
       <div class="mis-body" id="mis-body"></div>
     </section>
 
-<div class="zones">
-    <div class="zone" data-z="info">
-      <div class="zh"><b>Surveiller</b><span>état de la tranche</span></div>
-      <section class="panel" data-p="synop">
-<div class="card" data-c="synop">
+  <div class="pc">
+<div class="card run" data-c="run" data-t="alarm">
+        <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg></i>En cours<button class="qm" data-help="run" aria-label="Aide : en cours">?</button></h2>
+        <div class="blk">
+          <div class="bal"><h3>Alarmes actives <span class="bn z" id="runN">0</span><button class="btn sm amber" id="runAck" hidden>Acquitter</button><button class="btn sm lk" id="runTab">Tableau ›</button></h3><div id="runAl" class="runa"></div></div>
+          <div class="bme"><h3>Mes actions</h3><div id="runList" class="runl"></div></div>
+          <div class="bau"><h3>Automatismes<button class="qm" data-help="run" aria-label="Aide : en cours">?</button></h3><div id="runAuto" class="runl"></div></div>
+        </div>
+        <div class="blog"><h3>Dernières entrées du journal</h3><div id="runLog" class="log runlog"></div></div>
+      </div>
+  <div class="views" id="views">
+<div class="card" data-c="synop" data-t="synop">
         <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="6" height="11" rx="3"/><rect x="14" y="4" width="7" height="14" rx="3"/><path d="M9 10h5M9 15h5"/></svg></i>Synoptique<button class="qm" data-help="synop" aria-label="Aide : Synoptique — circuits primaire et secondaire">?</button></h2>
         <svg class="mimic" viewBox="0 0 380 258" role="img" aria-label="Synoptique de la tranche">
           <path class="ln hot" d="M80 100 H150 V190 H172"/>
@@ -102,20 +107,20 @@
           <text x="276" y="252" id="m-feed">—</text>
         </svg>
       </div>
-<div class="card" data-c="crv">
+<div class="card" data-c="crv" data-t="synop">
         <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 8-9"/><path d="M3 21h18"/></svg></i>Courbes clés<div class="seg mseg" data-key="mwin"><button data-v="300">5 min</button><button data-v="1800">30 min</button><button data-v="7200">2 h</button></div></h2>
         <div id="mcharts"></div>
       </div>
-<div class="card" data-c="di">
+<div class="card" data-c="di" data-t="synop">
         <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M12 6H6M12 10H3M12 14h7M12 18h4"/></svg></i>Diagramme de pilotage ΔI<button class="qm" data-help="di" aria-label="Aide : Diagramme de pilotage ΔI">?</button></h2>
         <canvas class="dic" id="c-di" role="img" aria-label="Diagramme de pilotage ΔI : puissance en fonction du ΔI, domaine autorisé et point actuel"></canvas>
       </div>
-<div class="card" data-c="pt">
+<div class="card" data-c="pt" data-t="synop">
         <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 20V5"/><path d="M5 20h15"/><path d="M8 17c1-5 2-8 5-9 3-1 5 1 6 4"/></svg></i>Chaussette P-T<div class="seg mseg" data-key="ptz"><button data-v="0">Complet</button><button data-v="1">Zoom</button></div><button class="qm" data-help="pt" aria-label="Aide : domaine P-T">?</button></h2>
         <canvas class="ptc" id="c-pt" role="img" aria-label="Diagramme pression-température du circuit primaire et point actuel ; l'état est résumé sous le graphique" aria-describedby="pt-st"></canvas>
         <div class="note ptst" id="pt-st">—</div>
       </div>
-<div class="card" data-c="instr">
+<div class="card" data-c="instr" data-t="synop">
           <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4-6"/><path d="M4 21h16"/></svg></i>Instrumentation neutronique<button class="qm" data-help="instr" aria-label="Aide : Instrumentation neutronique">?</button></h2>
           <table class="kv">
             <tr><td>Gamme source (GS)</td><td class="v" id="i-sr">—</td></tr>
@@ -127,7 +132,7 @@
             <tr><td>Puissance résiduelle</td><td class="v" id="i-dh">—</td></tr>
           </table>
         </div>
-<div class="card" data-c="react">
+<div class="card" data-c="react" data-t="synop">
           <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9.5" ry="3.8"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(120 12 12)"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></i>Bilan de réactivité (pcm)<button class="qm" data-help="react" aria-label="Aide : Bilan de réactivité (pcm)">?</button></h2>
           <table class="kv" id="rtab">
             <tr><td>Grappes</td><td class="v"><span class="rbar"><i id="rb-rods"></i></span><span id="r-rods">—</span></td></tr>
@@ -139,21 +144,45 @@
             <tr class="tot"><td>Total ρ</td><td class="v" id="r-tot">—</td></tr>
           </table>
         </div>
-      </section>
-      <section class="panel" data-p="trend">
-<div class="card" data-c="trend">
+<div class="card" data-c="trend" data-t="trend">
         <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 8-9"/><path d="M3 21h18"/></svg></i>Tendances<button class="qm" data-help="trend" aria-label="Aide : Tendances">?</button></h2>
         <div class="row" style="margin-bottom:10px"><span class="lbl">Fenêtre</span><div class="seg" data-key="win"><button data-v="300">5 min</button><button data-v="1800">30 min</button><button data-v="7200">2 h</button><button data-v="28800">8 h</button></div></div>
         <div class="chips" id="chips"></div>
         <div id="charts"></div>
       </div>
-      </section>
-    </div>
-    <div class="zone" data-z="act">
-      <div class="zh"><b>Agir</b><span>commandes</span></div>
-      <section class="panel" data-p="cmd">
-        <div class="ccols"><div class="ccol">
-<div class="card" data-c="rods">
+  </div>
+  <div class="col3" id="col3">
+<div class="card" data-c="alarm" data-t="alarm">
+        <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg></i>Tableau d'alarmes<button class="qm" data-help="alarm" aria-label="Aide : alarmes">?</button><button class="btn sm amber" id="ackBtn">Acquitter</button></h2>
+        <div class="ann" id="ann"></div>
+      </div>
+<div class="card" data-c="log" data-t="alarm">
+        <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg></i>Journal de quart</h2>
+        <div class="log" id="log"></div>
+      </div>
+  </div>
+  <nav class="vtabs" id="vtabs" aria-label="Vues">
+    <button data-vue="synop"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="6" height="11" rx="3"/><rect x="14" y="4" width="7" height="14" rx="3"/><path d="M9 10h5M9 15h5"/></svg><span>Synoptique</span></button>
+    <button data-vue="crv"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-6 4 3 8-9"/><path d="M3 21h18"/></svg><span>Courbes</span></button>
+    <button data-vue="di"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><path d="M12 6H6M12 10H3M12 14h7M12 18h4"/></svg><span>ΔI</span></button>
+    <button data-vue="pt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V5"/><path d="M5 20h15"/><path d="M8 17c1-5 2-8 5-9 3-1 5 1 6 4"/></svg><span>P-T</span></button>
+    <button data-vue="react"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="9.5" ry="3.8"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(120 12 12)"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg><span>Réactivité</span></button>
+    <button data-vue="instr"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4-6"/><path d="M4 21h16"/></svg><span>Neutronique</span></button>
+    <button data-vue="trend"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-6 4 3 8-9"/><path d="M3 21h18"/></svg><span>Tendances</span></button>
+    <button data-vue="alarm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg><span>Alarmes</span></button>
+    <button data-vue="log"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg><span>Journal</span></button>
+  </nav>
+  </div>
+
+  <div class="fam" id="fam">
+  <nav class="ftabs" id="ftabs" aria-label="Familles de commandes">
+    <button data-fam="core"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v12M12 3v8M18 3v15M4 21h16"/></svg><span>Réactivité</span></button>
+    <button data-fam="prim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2.5" width="8" height="19" rx="4"/><path d="M8 13h8"/></svg><span>Primaire</span></button>
+    <button data-fam="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span>Secondaire</span></button>
+    <button data-fam="saf"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg><span>Sûreté</span></button>
+  </nav>
+  <div class="famb" id="famb">
+<div class="card" data-c="rods" data-t="cmd">
           <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3v12M12 3v8M18 3v16"/><path d="M3 21h18"/></svg></i>Grappes de commande<button class="qm" data-help="rods" aria-label="Aide : Grappes de commande">?</button></h2>
           <div class="banks">
             <div class="bank" data-bank="SD"><div class="k">Arrêt SA-SB-SC</div><div class="v num" id="c-sd">—</div><div class="bar"><i id="cb-sd"></i></div></div>
@@ -174,7 +203,7 @@
           </div>
           <div class="note"><span id="c-rodmsg" style="color:var(--warn)"></span></div>
         </div>
-<div class="card" data-c="bore">
+<div class="card" data-c="bore" data-t="cmd">
           <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/></svg></i>Bore — RCV / REA<button class="qm" data-help="bore" aria-label="Aide : Bore — RCV / REA">?</button></h2>
           <div class="ro">
             <div><div class="k">Concentration</div><div class="v" id="c-cb">—</div></div>
@@ -190,7 +219,7 @@
             <button class="btn amber" data-act="reaIsol" id="c-reaiso">Isoler l'appoint REA</button>
           </div>
         </div>
-<div class="card" data-c="pzr">
+<div class="card" data-c="pzr" data-t="cmd">
           <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="8" y="2.5" width="8" height="19" rx="4"/><path d="M8 13h8"/><path d="M11 16.5h2"/></svg></i>Pressuriseur — RCV<button class="qm" data-help="pzr" aria-label="Aide : Pressuriseur — RCV">?</button></h2>
           <div class="ro">
             <div><div class="k">Pression</div><div class="v" id="c-pp">—</div></div>
@@ -210,8 +239,7 @@
           <div class="row"><span class="lbl" style="width:80px">Charge</span><div class="seg" data-key="chgMode"><button data-v="auto">Auto</button><button data-v="man">Manuel</button></div><button class="btn sm amber" data-act="ldIsol" id="c-ldi">Isoler décharge</button></div>
           <div class="sl"><span class="lbl">Charge man.</span><input type="range" id="chgMan" min="0" max="34" step="0.5" value="13.6" aria-label="Débit de charge manuel"><output id="chgManO" class="num">13,6</output></div>
         </div>
-        </div><div class="ccol">
-<div class="card" data-c="turb">
+<div class="card" data-c="turb" data-t="cmd">
           <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 8l11-4v16L3 16z"/><path d="M14 12h4"/><circle cx="20" cy="12" r="1.6"/></svg></i>Turbine — GCT<button class="qm" data-help="turb" aria-label="Aide : Turbine — GCT">?</button></h2>
           <div class="ro">
             <div><div class="k">Turbine</div><div class="v" id="c-tst">—</div></div>
@@ -234,7 +262,7 @@
           </div>
           <div class="sl"><span class="lbl">GCT-a man.</span><input type="range" id="gcta" min="0" max="100" step="5" value="0" aria-label="Ouverture manuelle GCT-a"><output id="gctaO" class="num">0 %</output></div>
         </div>
-<div class="card" data-c="are">
+<div class="card" data-c="are" data-t="cmd">
           <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9c3-3 6 3 9 0s6 3 9 0M3 15c3-3 6 3 9 0s6 3 9 0"/></svg></i>Eau alimentaire — ARE / ASG<button class="qm" data-help="are" aria-label="Aide : Eau alimentaire — ARE / ASG">?</button></h2>
           <div class="ro">
             <div><div class="k">Niveau GV</div><div class="v" id="c-lsg">—</div></div>
@@ -247,7 +275,7 @@
           <div class="sl"><span class="lbl">Débit man.</span><input type="range" id="areMan" min="0" max="120" step="1" value="100" aria-label="Débit ARE manuel"><output id="areManO" class="num">100 %</output></div>
           <div class="row" style="margin-top:8px"><span class="lamp" id="l-asg"></span><span>ASG</span><span class="num" id="c-wasg" style="color:var(--mute)">—</span><button class="btn sm" data-act="asg" id="c-asgb">Démarrer ASG</button></div>
         </div>
-<div class="card danger" data-c="prot">
+<div class="card danger" data-c="prot" data-t="cmd">
           <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></i>Protection et sauvegarde<button class="qm" data-help="prot" aria-label="Aide : Protection et sauvegarde">?</button></h2>
           <div class="row"><span class="lpair"><span class="lamp" id="l-p1"></span><span>GMPP 1</span></span><span class="lpair"><span class="lamp" id="l-p2"></span><span>GMPP 2</span></span><span class="lpair"><span class="lamp" id="l-p3"></span><span>GMPP 3</span></span></div>
           <div class="row"><span class="lpair"><span class="lamp" id="l-is"></span><span>Injection de sécurité</span></span><span class="lpair"><span class="lamp" id="l-sr"></span><span id="c-srst">Gamme source</span></span><span class="lpair"><span class="lamp" id="l-lb"></span><span id="c-lbst">Seuil bas 25 %</span></span></div>
@@ -263,31 +291,7 @@
           </div>
           <div class="note" id="c-trip">—</div>
         </div>
-        </div></div>
-      </section>
-    </div>
-    <div class="zone" data-z="suivi">
-      <div class="zh"><b>Suivre</b><span>en cours, alarmes, journal</span></div>
-      <section class="panel" data-p="alarm">
-<div class="card" data-c="run">
-        <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg></i>En cours<button class="qm" data-help="run" aria-label="Aide : en cours">?</button></h2>
-        <div id="runList" class="runl"></div>
-        <h3>Alarmes actives</h3>
-        <div id="runAl" class="runa"></div>
-        <h3>Dernières entrées du journal</h3>
-        <div id="runLog" class="log runlog"></div>
-      </div>
-<div class="card" data-c="alarm">
-        <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg></i>Tableau d'alarmes<button class="qm" data-help="alarm" aria-label="Aide : alarmes">?</button><button class="btn sm amber" id="ackBtn">Acquitter</button></h2>
-        <div class="ann" id="ann"></div>
-      </div>
-<div class="card" data-c="log">
-        <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg></i>Journal de quart</h2>
-        <div class="log" id="log"></div>
-      </div>
-      </section>
-    </div>
-    </div>
+  </div>
   </div>
 </main>
 
