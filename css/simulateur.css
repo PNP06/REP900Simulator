@@ -783,7 +783,7 @@ body.demo #ptr{display:none!important}
   header.top .alb{grid-column:3;grid-row:1;margin:0;min-height:32px;padding-block:3px}
   header.top .hdr-r{grid-column:4;grid-row:1}
   header.top #band{grid-column:1/-1;grid-row:2;margin-top:6px}
-  .poste{max-width:none;display:grid;grid-template-columns:minmax(0,1fr) clamp(360px,27vw,480px);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"c m" "c f";gap:8px;height:calc(100vh - var(--hdrH));min-height:520px;padding:8px 12px 10px}
+  .poste{max-width:none;display:grid;grid-template-columns:minmax(0,1fr) var(--famW,clamp(360px,27vw,480px));grid-template-rows:auto minmax(0,1fr);grid-template-areas:"c m" "c f";gap:8px;height:calc(100vh - var(--hdrH));min-height:520px;padding:8px 12px 10px}
   .mission{grid-area:m;position:relative;top:auto;z-index:auto;box-shadow:none}
   .mission .mis-body{max-height:min(30vh,400px)}
   .fold{display:none}
@@ -792,7 +792,7 @@ body.demo #ptr{display:none!important}
   .pc>.run{grid-area:blk;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:0;background:var(--panel)}
   .run>h2,.run>.blog{display:none}
   .blk{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.25fr) minmax(0,1fr)}
-  .blk>div{padding:6px 10px 8px;min-width:0;border-left:1px solid var(--line);max-height:clamp(80px,13vh,150px);overflow:auto;overscroll-behavior:contain}
+  .blk>div{padding:6px 10px 8px;min-width:0;border-left:1px solid var(--line);height:clamp(76px,8vh,120px);overflow:auto;overscroll-behavior:contain}
   .blk>div:first-child{border-left:0}
   .blk h3{margin:0 0 5px;font-size:12px;min-height:24px}
   .blk .runa{display:flex;flex-wrap:wrap;gap:4px}
@@ -810,7 +810,7 @@ body.demo #ptr{display:none!important}
   .views>.card[data-c]>h2:first-child,.col3>.card[data-c]>h2:first-child{margin:-10px -12px 8px;border-radius:0;flex:none}
   .views>.card[data-c="synop"]{flex-grow:1.4}
   .views #mcharts{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:4px}
-  .views .chart.mini{flex:1 1 0;min-height:0;display:flex;flex-direction:column;margin:0}
+  .views .chart.mini{flex:1 1 0;min-height:76px;display:flex;flex-direction:column;margin:0}
   .views .chart.mini canvas{flex:1 1 0;min-height:56px;height:auto}
   .views .dic{flex:1 1 0;min-height:120px;height:auto}
   .views .ptc{flex:1 1 0;min-height:140px;height:auto}
@@ -837,13 +837,17 @@ body.demo #ptr{display:none!important}
   .famb>.card{display:none;flex:none}
   .famb>.card.fon{display:block}
   .famb .ro{grid-template-columns:repeat(auto-fit,minmax(88px,1fr))}
+  /* colonne de droite large : les cartes d'une famille côte à côte */
+  .fam{container-type:inline-size}
+  @container (min-width:700px){.famb{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start;align-content:start}}
 }
+@media (min-width:1080px){ .vtc .vtabs svg{display:none} .vtc .vtabs button{padding-inline:8px} }
 @media (min-width:1080px) and (max-width:1399px){
   .vtabs svg{display:none}
   .vtabs button{padding-inline:7px;font-size:12px}
 }
 @media (min-width:1700px){
-  .pc{grid-template-columns:minmax(0,1fr) clamp(320px,19vw,460px);grid-template-areas:"blk col3" "view col3" "tabs col3"}
+  .pc{grid-template-columns:minmax(0,1fr) var(--c3W,clamp(320px,19vw,460px));grid-template-areas:"blk col3" "view col3" "tabs col3"}
   .col3,body.c3v .col3{grid-area:col3;display:flex;border-left:1px solid var(--line)}
   body.c3v .views{display:flex}
   .col3>.card{display:flex;flex-direction:column}

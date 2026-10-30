@@ -250,6 +250,27 @@ function applyVues(){
   $$('#vtabs button').forEach(b=>b.classList.toggle('on',vs.includes(b.dataset.vue)));
   setTimeout(()=>{ drawCharts(); drawDI(); drawPT(); },30);
 }
+/* largeur du centre : le synoptique est limité par la hauteur, donc le centre prend juste sa largeur (ou celle des onglets des vues)
+   et le reste va à la colonne de droite (consigne, commandes). Recalculé au redimensionnement seulement, pour que rien ne bouge en cours de partie. */
+let FIT_EX=0;
+function fitPoste(){
+  const P=$('#poste'), r=document.documentElement.style;
+  if(!desk()){ r.removeProperty('--famW'); return; }
+  const pc=$('.pc'), cs=getComputedStyle(P), W=P.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-parseFloat(cs.columnGap||8);
+  const vt=$('#vtabs'), bs=[...vt.children].filter(b=>b.offsetWidth), ic=P.classList.contains('vtc')?0:bs.reduce((a,b)=>{ const i=b.querySelector('svg'); const w=i?i.getBoundingClientRect().width:0; return a+(w?w+6:0); },0);
+  let tb=bs.reduce((a,b)=>a+b.offsetWidth+2,14)-ic, ti=tb+(ic||bs.length*21);
+  const sc=$('#views>.card[data-c="synop"]'), sy=$('#synw');
+  if(sc.offsetHeight&&sy.clientHeight) FIT_EX=sc.offsetHeight-sy.clientHeight;
+  let vh=pc.clientHeight-$('.pc>.run').offsetHeight-vt.offsetHeight;
+  if(innerHeight>=1000) vh=vh*1.4/2.4;
+  const sw=Math.max(0,vh-(FIT_EX||78))*990/610+26, c3=wide()?Math.max(320,Math.min(460,innerWidth*.19)):0;
+  /* onglets des vues sans pictogrammes quand leur largeur dépasserait celle du synoptique */
+  const nb=sw<ti&&innerWidth>=1400; P.classList.toggle('vtc',nb); if(!nb) tb=ti;
+  const fam=Math.round(Math.max(360,Math.min(W*.5,760,W-Math.max(sw,tb,560)-c3)));
+  r.setProperty('--famW',fam+'px');
+  /* très grand écran : ce qui reste après la colonne de droite élargit la 3e colonne (tableau d'alarmes, journal) */
+  if(c3) r.setProperty('--c3W',Math.round(c3+Math.max(0,Math.min(700-c3,W-fam-c3-Math.max(sw,tb,560))))+'px'); else r.removeProperty('--c3W');
+}
 function setFam(f){ A.fams=[].concat(f); $$('#famb>.card').forEach(c=>c.classList.toggle('fon',A.fams.includes(FAM_OF[c.dataset.c]))); $$('#ftabs button').forEach(b=>b.classList.toggle('on',A.fams.includes(b.dataset.fam))); }
 /* place d'une carte : vue, famille ou onglet mobile */
 const cardOf=e=>e&&e.closest('.card[data-c]');

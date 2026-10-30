@@ -73,6 +73,7 @@ for (const [w, h] of [[1280, 720], [1440, 900], [1920, 1080]]) {
     o.speeds = [...document.querySelectorAll('.spdseg button')].every(b => inView(b));
     o.blk = vis('#runAl') && vis('#runList') && vis('#runAuto');
     o.mission = vis('#mission'); o.synop = vis('.card[data-c="synop"]');
+    { const sv = document.querySelector('#synw svg'), b = sv.getBoundingClientRect(), vb = sv.viewBox.baseVal; o.fill = Math.min(b.width / vb.width, b.height / vb.height) * vb.width / b.width; o.famW = document.querySelector('.fam').offsetWidth; }
     o.views = [...document.querySelectorAll('#vtabs button')].filter(b => b.getClientRects().length).every(b => { b.click(); const c = document.querySelector('.card[data-c="' + b.dataset.vue + '"]'); return inView(c); });
     o.fams = [...document.querySelectorAll('#ftabs button')].every(b => { b.click(); const cs = FAMS[b.dataset.fam].c.map(k => document.querySelector('.card[data-c="' + k + '"]')); const others = [...document.querySelectorAll('#famb>.card')].filter(c => !cs.includes(c)); return inView(cs[0]) && others.every(c => !c.getClientRects().length); });
     setVue('synop'); setFam('core');
@@ -89,6 +90,7 @@ for (const [w, h] of [[1280, 720], [1440, 900], [1920, 1080]]) {
     A.s.asg = true; A.s.sebim = true; A.s.pumps[1] = false; updateUI();
     o.synSt = document.querySelector('#sy-asg').classList.contains('crit') && document.querySelector('#sp-asg').classList.contains('alarm') && document.querySelector('#sv-vseb').classList.contains('alarm') && document.querySelector('#sy-gm1').classList.contains('off');
     return o; });
+  check(`${w}×${h} : synoptique sans grandes marges vides, la place restante va à la colonne de droite`, r.fill >= 0.85 && r.famW >= 360, `remplissage ${Math.round(r.fill * 100)} %, colonne ${r.famW}px`);
   check(`${w}×${h} : synoptique, chaque équipement ouvre ses actions rapides`, r.pal.length === 0, r.pal.join(', '));
   check(`${w}×${h} : actions rapides : bouton et curseur agissent comme dans les cartes, lien vers la famille`, r.palAct && r.palRng && r.palFam);
   check(`${w}×${h} : synoptique : ASG, SEBIM et pompe arrêtée signalés en rouge`, r.synSt);
