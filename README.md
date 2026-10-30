@@ -62,15 +62,23 @@ Thème clair et sombre (automatique selon le système, ou au choix). Site statiq
 - `index.html` : structure de la page (cartes, fenêtres, formulaire de retours) ;
 - `css/simulateur.css` : styles, thèmes clair et sombre ;
 - `js/outils.js` : utilitaires communs (formats, stockage local) ;
+- `js/electrique.js` : alimentations électriques (sources, tableaux, diesels, batteries) et `dispo()` ;
 - `js/physique.js` : modèle physique (cinétique, thermohydraulique, régulations, protections), testé seul ;
-- `js/scenarios.js` : alarmes, scénarios, accompagnement des leçons, explications « En clair » ;
-- `js/interface.js` : application, actions opérateur, affichage, mission, corrections, débriefing, menu, aide, bandeau ;
+- `js/scenarios.js` : alarmes et scénarios (leçons, exercices, aléas, TMI) ;
+- `js/lecons.js` : accompagnement des leçons, explications « En clair », niveau d'explication ;
+- `js/interface.js` : application, actions opérateur, synchronisation, mission, débriefing, menu ;
+- `js/corrections.js` : corrections commentées (pilote automatique, voix) ;
+- `js/aide.js` : aide « ? » des cartes et lexique ;
+- `js/bandeau.js` : bandeau du haut ;
 - `js/sons.js` : bruitages et avertisseurs ;
-- `js/visite.js` : repères d'attention, visite guidée, domaine P-T ;
+- `js/visite-chapitres.js` : textes des chapitres de la visite et ordre des thèmes ;
+- `js/visite.js` : repères d'attention, moteur, schémas et animations de la visite ;
+- `js/domaine-pt.js` : domaine pression-température (« chaussette ») ;
+- `js/synoptique.js`, `js/vue-electrique.js` : synoptique cliquable et vue Électrique ;
 - `js/panneaux.js` : retours, thème, fenêtre « Pourquoi l'AAR ? », carte « En cours », tendances ;
 - `js/demarrage.js` : boucle de simulation et démarrage (en dernier).
 
-Ce sont des scripts classiques partagés : un fichier ne peut appeler, au chargement, que ce qui est défini dans les fichiers précédents. Les scores et préférences sont conservés localement dans le navigateur.
+Ce sont des scripts classiques partagés : un fichier ne peut appeler, au chargement, que ce qui est défini dans les fichiers précédents. Les scores et préférences sont conservés localement dans le navigateur. Les règles du projet et les recettes pour le faire évoluer sont dans [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ## Tests
 

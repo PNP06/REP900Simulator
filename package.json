@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/physique.test.mjs && node tests/interface.test.mjs"
+    "test": "node tests/physique.test.mjs && node tests/interface.test.mjs",
+    "instantane": "node tests/instantane.mjs"
   },
   "devDependencies": {
     "playwright": "1.48.2"

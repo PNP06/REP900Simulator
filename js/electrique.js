@@ -83,3 +83,16 @@ function elecStep(s,dt){
   if(e.bat<=0&&!e.batVide){ e.batVide=true; elecLog(s,'Batteries épuisées : contrôle-commande perdu'); }
   if(e.bat>0.05) e.batVide=false;
 }
+
+/* Un équipement est-il alimenté ? Même réponse pour la commande opérateur et pour le moteur (sans modèle électrique : toujours oui). */
+function dispo(s,eq){
+  const av=s.el&&s.el.av; if(!av) return true;
+  switch(eq){
+    case 'gmpp': case 'tpa': case 'apd': case 'cond': return !!av.lg;
+    case 'chg': return av.chg>0;
+    case 'is': return av.is>0;
+    case 'asg': return av.asg>0;
+    case 'heat': return av.heat>0;
+  }
+  return true;
+}
