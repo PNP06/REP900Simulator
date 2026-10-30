@@ -49,6 +49,36 @@ check('Psat(273 °C) ≈ 57,5 bar', near(psat(273), 57.5, 1.5), psat(273).toFixe
   for (let i = 0; i < 300 / DT && !s.tripped; i++) { step(s); pmax = Math.max(pmax, s.n); }
   check('Retrait incontrôlé à puissance nulle : AAR par le seuil bas (25 %) non bloqué', s.tripped && /seuil bas/.test(s.tripCause) && pmax < 0.6, s.tripCause + ', max ' + (pmax * 100).toFixed(0) + ' %'); }
 
+{ // Scénario TMI transposé : soupape de tête du pressuriseur bloquée ouverte après une perte totale d'eau alimentaire
+  const tmi = (acts, sec = 4 * 3600) => {
+    const s = makeState(P100); run(s, 20); s.tpa = [false, false]; s.asgV = false;
+    const t0 = s.t, o = { satT: null, burstT: null, minH: 9, maxUncPompes: 0 }; let i = 0;
+    acts = [[30, s => { s.porvOpen = true; }], ...acts];
+    while (s.t - t0 < sec) { const t = s.t - t0; while (i < acts.length && t >= acts[i][0]) acts[i++][1](s);
+      step(s); if (o.satT == null && s.sat) o.satT = t; if (o.burstT == null && s.rdpBurst) o.burstT = t;
+      if (s.pumps.some(Boolean)) o.maxUncPompes = Math.max(o.maxUncPompes, s.unc);
+      if (Math.abs(t - 300) < DT / 2) o.W5 = s.Wasg;
+      if (Math.abs(t - 900) < DT / 2) { o.L15 = s.Lpzr; o.V15 = s.Vv; o.W15 = s.Wasg; o.T15 = s.Tdech; }
+      o.minH = Math.min(o.minH, s.hCuve); }
+    o.s = s; return o; };
+  const histo = [[270, s => { s.isThr = 0.1; }], [480, s => { s.asgV = true; }], [4440, s => { s.pumps[0] = s.pumps[1] = false; }],
+    [6060, s => { s.pumps[2] = false; }], [8520, s => { s.porvIsol = true; }], [12000, s => { s.isThr = 1; }]];
+  const h = tmi(histo);
+  check('TMI : le primaire atteint la saturation entre 3 et 10 min', h.satT > 180 && h.satT < 600, (h.satT / 60).toFixed(1) + ' min');
+  check('TMI : à 15 min, pressuriseur presque plein alors que le circuit a perdu de l\'eau', h.L15 > 95 && h.V15 > 20, `Lpzr=${h.L15.toFixed(0)} % vide=${h.V15.toFixed(0)} m³`);
+  check('TMI : ligne de décharge chaude (> 120 °C) avec voyant de commande fermé', h.T15 > 120, h.T15.toFixed(0) + ' °C');
+  check('TMI : disque du réservoir de décharge rompu entre 10 et 45 min', h.burstT > 600 && h.burstT < 2700, (h.burstT / 60).toFixed(0) + ' min');
+  check('TMI : cœur refroidi tant que les GMPP tournent', h.maxUncPompes === 0);
+  check('TMI : cœur découvert après l\'arrêt des GMPP, fusion partielle', h.minH < -1 && h.s.coreDmg === 3 && h.s.fondu > 0.15 && h.s.fondu < 0.7, `niveau mini ${h.minH.toFixed(1)} m, fondu ${(h.s.fondu * 100).toFixed(0)} %, H2 ${h.s.H2.toFixed(0)} kg`);
+  const iso = tmi([[60, s => { s.porvIsol = true; }], [480, s => { s.asgV = true; }]], 3600);
+  check('TMI : soupape isolée à 1 min → ni saturation ni dégât', iso.satT == null && iso.s.Vv === 0 && iso.s.coreDmg === 0, `P=${iso.s.Ppzr.toFixed(0)} bar`);
+  const is = tmi([[480, s => { s.asgV = true; }], [4440, s => { s.pumps[0] = s.pumps[1] = false; }], [6060, s => { s.pumps[2] = false; }]]);
+  check('TMI : IS laissée en service → cœur jamais découvert, même GMPP arrêtées', is.minH > 0 && is.s.coreDmg === 0, `niveau mini ${is.minH.toFixed(1)} m`);
+  const pp = tmi([[270, s => { s.isThr = 0.1; }], [480, s => { s.asgV = true; }]]);
+  check('TMI : GMPP maintenues → cœur refroidi 4 h malgré l\'IS réduite', pp.maxUncPompes === 0 && pp.s.coreDmg === 0, `taux de vide ${(pp.s.alpha * 100).toFixed(0)} %`);
+  check('TMI : vannes ASG consignées → pas de débit ASG, puis débit à leur ouverture', h.W5 < 1e-3 && h.W15 > 0.02, `${h.W5.toFixed(3)} puis ${h.W15.toFixed(3)}`);
+}
+
 { // pic xénon après arrêt
   const lI=2.87e-5,lX=2.09e-5,sg=7.5e-5,gI=0.0639,gX=0.00237; let I=1,X=1,mx=1,tm=0;
   for (let t=0;t<=48*3600;t+=60){ I+=lI*(0-I)*60; X+=((lX+sg)*(gI*I)/(gI+gX)-lX*X)*60; if(X>mx){mx=X;tm=t/3600;} }
