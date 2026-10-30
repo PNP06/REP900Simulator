@@ -225,8 +225,10 @@ function step(s){
   const dTavg=CP_PRIM*(Q+0.002*np-Qsg-0.001-1.2e-4*QisH-(s.sat?1e-4*s.Qsoup:0))*dt;
   s.Tavg+=dTavg;
   /* soupapes SEBIM ouvertes, pressuriseur plein, primaire à saturation (GV secs par exemple) : la chaleur en trop
-     vaporise de l'eau au lieu de chauffer le primaire, la vapeur chasse l'eau par les soupapes et le primaire se vide */
-  if(s.sebim&&s.Lpzr>=97){ const Tb=tsat(s.Ppzr)-1; if(s.Tavg>Tb){ s.Vv=Math.min(PV0,s.Vv+10*(s.Tavg-Tb)/CP_PRIM); s.Tavg=Tb; } }
+     vaporise de l'eau au lieu de chauffer le primaire, la vapeur chasse l'eau par les soupapes et le primaire se vide.
+     Énergie en trop (Tavg − Tb) / CP_PRIM, en PN·s, soit × 2 785 MJ ; chaleur de vaporisation 0,93 MJ/kg et eau à 0,58 t/m³
+     vers 160 bar : environ 5 m³ d'eau chassée par PN·s. */
+  if(s.sebim&&s.Lpzr>=97){ const Tb=tsat(s.Ppzr)-1; if(s.Tavg>Tb){ s.Vv=Math.min(PV0,s.Vv+5*(s.Tavg-Tb)/CP_PRIM); s.Tavg=Tb; } }
   s.Tf+=((s.Tavg+K.DTF*Q)-s.Tf)/5*dt;
   /* secondaire */
   s.Psg=psat(s.Ts);
