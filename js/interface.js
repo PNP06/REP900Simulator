@@ -196,7 +196,7 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#alb-ack,#runAck')){ ackAll(); return; }
   const vt=e.target.closest('#vtabs button'); if(vt){ setVue(vt.dataset.vue); return; }
   const ftb=e.target.closest('#ftabs button'); if(ftb){ setFam(ftb.dataset.fam); return; }
-  const rd=e.target.closest('#band .rd'); if(rd){ const k=BAND_CARD[rd.id.slice(3)]; if(k) openCard(k); return; }
+  const rd=e.target.closest('#band .rd'); if(rd){ A.uiBand=rd.id.slice(3); const k=BAND_CARD[A.uiBand]; if(k) openCard(k); return; }
   const fb=e.target.closest('.fold'); if(fb){ toggleFold(fb.closest('.card')); return; }
   const h2c=e.target.closest('.card[data-c] > h2'); if(h2c&&!desk()&&!e.target.closest('button,.seg,input,select')){ toggleFold(h2c.parentElement); return; }
   const hq=e.target.closest('[data-help]'); if(hq){ openHelp(hq.dataset.help); return; }
@@ -629,7 +629,7 @@ function finish(){
   if(scn.steps){
     const fin=c.step>=scn.steps.length-1, tu=scn.kind==='tuto';
     if(fin){ const d=store('done')||{}; d[scn.id]=1; store('done',d); }
-    h='<h2>'+(tu?'Tutoriel':'Leçon guidée')+'</h2><div class="t">'+scn.title+(fin?' — terminé':' — interrompu')+'</div><p>Étapes parcourues : '+(c.step+1)+' / '+scn.steps.length+'.</p>'+(tu?'<p>Suite conseillée : les <b>leçons guidées</b> (cinétique, contre-réactions, ΔI, xénon…), puis l\'exercice <b>Divergence</b>.</p>':'<p>Les « ? » de chaque carte résument les notions de cette leçon.</p>');
+    h='<h2>'+(tu?'Tutoriel':'Leçon guidée')+'</h2><div class="t">'+scn.title+(fin?' — terminé':' — interrompu')+'</div><p>Étapes parcourues : '+(c.step+1)+' / '+scn.steps.length+'.</p>'+(tu&&scn.next?scn.next:tu?'<p>Suite conseillée : les <b>leçons guidées</b> (cinétique, contre-réactions, ΔI, xénon…), puis l\'exercice <b>Divergence</b>.</p>':'<p>Les « ? » de chaque carte résument les notions de cette leçon.</p>');
   } else if(scn.kind==='libre'){
     h='<h2>Pilotage libre</h2><div class="t">Bilan du quart</div><p>Durée simulée : '+dur(s.t)+'.</p>';
     if(c.fires&&c.fires.length) h+='<h3>Aléas survenus</h3><ul>'+c.fires.map(f=>'<li>'+hms(f.t)+' — '+f.title+'</li>').join('')+'</ul>';

@@ -837,6 +837,13 @@ body.demo #ptr{display:none!important}
   .famb>.card{display:none;flex:none}
   .famb>.card.fon{display:block}
   .famb .ro{grid-template-columns:repeat(auto-fit,minmax(88px,1fr))}
+  /* échelle de texte du poste : valeurs 13–14 px comme le synoptique, libellés 10–11 px, boutons 12 px */
+  .famb .ro .v{font-size:13px}
+  .famb .bank .v{font-size:15px}
+  .famb .lbl{font-size:11px}
+  .famb .btn{font-size:12.5px}
+  .famb .seg button{font-size:12px;min-height:27px;padding:4px 8px}
+  .famb .card[data-c]>h2:first-child{font-size:13px}
   /* colonne de droite large : les cartes d'une famille côte à côte */
   .fam{container-type:inline-size}
   @container (min-width:700px){.famb{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start;align-content:start}}
@@ -952,8 +959,9 @@ body.demo #ptr{display:none!important}
 .syn2 .shaft{stroke:var(--mute);stroke-width:2}
 .syn2 .shaft.off{stroke-dasharray:4 4;opacity:.6;stroke:var(--crit)}
 .syn2 .brk{fill:var(--panel);stroke:var(--mute);stroke-width:1.2}.syn2 .brk.on{fill:var(--ok);stroke:var(--ok)}
-.syn2 .nm{font:600 12px/1 var(--f-disp);letter-spacing:.12em;fill:var(--mute);text-transform:uppercase}
-.syn2 .tiny{font:500 10px/1 var(--f-disp);letter-spacing:.06em;fill:var(--dim)}
+.syn2 .nm{font:600 13.5px/1 var(--f-disp);letter-spacing:.12em;fill:var(--mute);text-transform:uppercase}
+.syn2 .tiny{font:500 12px/1 var(--f-disp);letter-spacing:.06em;fill:var(--mute)}
+.syn2 .tiny.rl{font-size:10px}
 .syn2 .tiny.num{font-family:var(--f-num);letter-spacing:0;fill:var(--mute)}
 .syn2 .tiny.al,.syn2 .nm.al{fill:var(--crit);font-weight:700}
 .syn2 .ln{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke:var(--line-2)}
@@ -980,8 +988,8 @@ body.demo #ptr{display:none!important}
 .syn2 .comp:hover .hl,.syn2 .comp.on .hl{stroke:var(--accent)}
 .syn2 .stg{cursor:pointer}
 .syn2 .stg rect{fill:var(--panel);stroke:var(--line-2);stroke-width:1}
-.syn2 .stg .tl{font:600 9.5px/1 var(--f-disp);letter-spacing:.09em;text-transform:uppercase;fill:var(--mute)}
-.syn2 .stg .tv{font:500 14px/1 var(--f-num);fill:var(--fg)}
+.syn2 .stg .tl{font:600 12.5px/1 var(--f-disp);letter-spacing:.09em;text-transform:uppercase;fill:var(--mute)}
+.syn2 .stg .tv{font:500 17px/1 var(--f-num);fill:var(--fg)}
 .syn2 .stg.warn rect{fill:color-mix(in srgb,var(--warn) 16%,var(--panel));stroke:var(--warn);stroke-width:1.6}
 .syn2 .stg.warn .tv{fill:var(--warn);font-weight:600}
 .syn2 .stg.crit rect{fill:color-mix(in srgb,var(--crit) 14%,var(--panel));stroke:var(--crit);stroke-width:1.8}

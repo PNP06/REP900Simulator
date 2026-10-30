@@ -47,7 +47,7 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
   await pg.goto(url); await pg.waitForTimeout(300);
   check(`${w}px : fenêtre « À propos » à la première visite`, await pg.evaluate(() => !document.querySelector('#about').hidden));
   await pg.click('#abOk');
-  for (const id of ['tuto', 'div', 'montee', 'tpa', 'libre']) {
+  for (const id of ['ihm', 'tuto', 'div', 'montee', 'tpa', 'libre']) {
     await pg.evaluate(i => launch(i), id); await pg.click('#goBtn');
     await pg.evaluate(() => setSpeed(300)); await pg.waitForTimeout(500); await pg.evaluate(() => finish());
   }
@@ -91,6 +91,21 @@ for (const [w, h] of [[1280, 720], [1440, 900], [1920, 1080]]) {
     o.synSt = document.querySelector('#sy-asg').classList.contains('crit') && document.querySelector('#sp-asg').classList.contains('alarm') && document.querySelector('#sv-vseb').classList.contains('alarm') && document.querySelector('#sy-gm1').classList.contains('off');
     return o; });
   check(`${w}×${h} : synoptique sans grandes marges vides, la place restante va à la colonne de droite`, r.fill >= 0.85 && r.famW >= 360, `remplissage ${Math.round(r.fill * 100)} %, colonne ${r.famW}px`);
+  if (w === 1440) {
+    // Tutoriel de prise en main du poste : chaque étape se valide par le geste demandé, fait dans l'interface.
+    const t = await pg.evaluate(async () => {
+      const wait = ms => new Promise(r => setTimeout(r, ms)), clk = q => document.querySelector(q).dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 300, clientY: 300 }));
+      const okNow = async () => { for (let i = 0; i < 30 && !A.ctx.stepOk; i++) await wait(100); await wait(200); return A.ctx.stepOk; }, nx = async () => { document.querySelector('#tNext').click(); await wait(150); };
+      launch('ihm'); document.querySelector('#goBtn').click(); await wait(200); const bad = [];
+      const gest = [null, () => clk('#rd-pp'), () => clk('#sy-pp'), async () => { clk('#synpal .seg[data-key="heatMode"] button[data-v="on"]'); await wait(300); clk('#synpal .seg[data-key="heatMode"] button[data-v="auto"]'); },
+        () => clk('#synpal [data-palfam]'), () => clk('#ftabs [data-fam="sec"]'), async () => { clk('#vtabs [data-vue="crv"]'); await wait(300); clk('#vtabs [data-vue="synop"]'); },
+        () => { clk('#sy-cb'); for (const [k, v] of [['reaMode', 'bor'], ['reaQ', '5'], ['reaV', '0.1']]) clk('#synpal .seg[data-key="' + k + '"] button[data-v="' + v + '"]'); clk('#synpal [data-act="reaStart"]'); },
+        async () => { await wait(300); ackAll(); }, () => setSpeed(300)];
+      for (let i = 1; i < gest.length; i++) { await nx(); await gest[i](); if (!(await okNow())) bad.push(i + 1 + ' ' + A.scn.steps[A.ctx.step].t); }
+      setSpeed(1); return { bad, n: A.scn.steps.length };
+    });
+    check(`${w}×${h} : tutoriel de prise en main du poste : chaque geste valide son étape`, t.bad.length === 0 && t.n >= 12, t.bad.join(' | '));
+  }
   check(`${w}×${h} : synoptique, chaque équipement ouvre ses actions rapides`, r.pal.length === 0, r.pal.join(', '));
   check(`${w}×${h} : actions rapides : bouton et curseur agissent comme dans les cartes, lien vers la famille`, r.palAct && r.palRng && r.palFam);
   check(`${w}×${h} : synoptique : ASG, SEBIM et pompe arrêtée signalés en rouge`, r.synSt);
