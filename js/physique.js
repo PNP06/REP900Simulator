@@ -214,13 +214,21 @@ function step(s){
   s.flow+=(ft-s.flow)/(ft<s.flow?20:8)*dt;
   const dTc=Math.min(90,37*Q/s.flow);
   s.Thot=s.Tavg+dTc/2; s.Tcold=s.Tavg-dTc/2;
-  const Qsg=K.UA*Math.pow(s.flow,0.8)*(s.Tavg-s.Ts); s.Qsg=Qsg;
+  /* GV qui s'assèchent : Linv = −20 correspond à des GV vides ; en dessous de −5, le faisceau de tubes se dénoie
+     et l'échange baisse jusqu'à zéro. Sans eau, les GV ne refroidissent plus le primaire. */
+  s.gvMouil=clamp((s.Linv+20)/15,0,1);
+  const Qsg=K.UA*Math.pow(s.flow,0.8)*(s.Tavg-s.Ts)*s.gvMouil; s.Qsg=Qsg;
   const QisH=s.is?clamp((172-s.Ppzr)*1.5,0,120)*s.isThr*av.is:0;
   /* soupape de tête du pressuriseur : ouverture réelle (une soupape bloquée reste ouverte quel que soit l'ordre) */
   const vOpen=s.sebim||(s.porvOpen&&!s.porvIsol);
   /* primaire saturé, soupape ouverte : le fluide qui s'échappe emporte de la chaleur */
   const dTavg=CP_PRIM*(Q+0.002*np-Qsg-0.001-1.2e-4*QisH-(s.sat?1e-4*s.Qsoup:0))*dt;
   s.Tavg+=dTavg;
+  /* soupapes SEBIM ouvertes, pressuriseur plein, primaire à saturation (GV secs par exemple) : la chaleur en trop
+     vaporise de l'eau au lieu de chauffer le primaire, la vapeur chasse l'eau par les soupapes et le primaire se vide.
+     Énergie en trop (Tavg − Tb) / CP_PRIM, en PN·s, soit × 2 785 MJ ; chaleur de vaporisation 0,93 MJ/kg et eau à 0,58 t/m³
+     vers 160 bar : environ 5 m³ d'eau chassée par PN·s. */
+  if(s.sebim&&s.Lpzr>=97){ const Tb=tsat(s.Ppzr)-1; if(s.Tavg>Tb){ s.Vv=Math.min(PV0,s.Vv+5*(s.Tavg-Tb)/CP_PRIM); s.Tavg=Tb; } }
   s.Tf+=((s.Tavg+K.DTF*Q)-s.Tf)/5*dt;
   /* secondaire */
   s.Psg=psat(s.Ts);
@@ -310,7 +318,8 @@ function step(s){
   s.Cb+=((Qd*(0-s.Cb)+Qb*(7700-s.Cb)+QisH*(2500-s.Cb))/3600/270)*dt;
   if(s.Cb<0) s.Cb=0;
   /* xénon */
-  const lI=2.87e-5,lX=2.09e-5,sg=7.5e-5,gI=0.0639,gX=0.00237;
+  /* demi-vies publiques : iode 135 6,57 h, xénon 135 9,14 h */
+  const lI=Math.LN2/(6.57*3600),lX=Math.LN2/(9.14*3600),sg=7.5e-5,gI=0.0639,gX=0.00237;
   s.I+=lI*(n-s.I)*dt;
   s.X+=((lX+sg)*(gX*n+gI*s.I)/(gI+gX)-(lX+sg*n)*s.X)*dt;
   /* ΔI */

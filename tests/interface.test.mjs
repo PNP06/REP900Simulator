@@ -339,7 +339,60 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
   inside = inside && await pg.evaluate(() => document.querySelector('#fb').contains(document.activeElement));
   await pg.evaluate(() => closeFB()); await pg.waitForTimeout(150);
   check('Fenêtre de retours : focus à l\'intérieur, Tab y reste, retour au bouton d\'origine', inside && await pg.evaluate(() => document.activeElement && document.activeElement.id === 'pauseBtn'));
+  // TMI : le critère pompes primaires sanctionne l'arrêt tardif (circuit très vidé), pas l'arrêt précoce sur critère
+  const pc = await pg.evaluate(() => { const sc = SCN.find(x => x.id === 'tmi'), s = makeState(P100);
+    const note = k => sc.evaluate(s, { fired: 0, acts: {}, k: Object.assign({ maxUnc: 0 }, k) }).find(r => /Pompes primaires/.test(r.t)).ok;
+    return [note({}), note({ pmpCut: 600, pmpCutA: 0.1 }), note({ pmpCut: 4440, pmpCutA: 0.5 })]; });
+  check('TMI : pompes gardées ou arrêtées tôt = réussi, arrêtées tard circuit vidé = raté', pc[0] && pc[1] && !pc[2], JSON.stringify(pc));
+  // batteries épuisées : instruments grisés, commandes refusées, actions locales possibles
+  const cc = await pg.evaluate(() => { launch('libre'); document.querySelector('#goBtn').click(); A.paused = true; const s = A.s;
+    s.el.dg.A.fail = s.el.dg.B.fail = true; s.grid = false; s.el.r225 = false; s.ilot = true; s.el.ilotRate = true;
+    for (let i = 0; i < 60 / DT; i++) step(s); s.el.bat = 1e-6; for (let i = 0; i < 2 / DT; i++) step(s); updateUI();
+    const apd0 = s.apd; act('apd'); const refus = s.apd === apd0; act('dus');
+    return { gris: document.body.classList.contains('ccperdu'), bar: !document.querySelector('#ccBar').hidden, refus, dus: s.el.dus.st === 'demarrage' }; });
+  check('Batteries épuisées : instruments grisés, bandeau d\'alerte, commandes refusées, DUS encore possible', cc.gris && cc.bar && cc.refus && cc.dus, JSON.stringify(cc));
+  await pg.evaluate(() => { launch('libre'); document.querySelector('#goBtn').click(); A.paused = true; updateUI(); });
+  check('Nouvelle séance après batteries vides : plus rien de grisé', await pg.evaluate(() => !document.body.classList.contains('ccperdu') && document.querySelector('#ccBar').hidden));
   check('Cohérence de l\'interface : aucune erreur JavaScript', errs.length === 0, errs.slice(0, 2).join(' | '));
+  await pg.close();
+}
+{ // écran de portable (1520 × 810) : bandeau lisible, échelle de l'affichage, « En clair » repliable
+  const pg = await browser.newPage({ viewport: { width: 1520, height: 810 } }); const errs = []; pg.on('pageerror', e => errs.push(e.message));
+  await pg.goto(url); await pg.evaluate(() => { store('about', 1); store('zoom', 1); document.querySelector('#about').hidden = true; launch('l-cin'); document.querySelector('#goBtn').click(); A.paused = true; updateUI(); });
+  await pg.waitForTimeout(400);
+  const bd = await pg.evaluate(() => { fitBand(); const cut = [], small = [];
+    document.querySelectorAll('#band .rd .k span').forEach(sp => { const r = document.createRange(); r.selectNodeContents(sp); if (r.getBoundingClientRect().width > sp.getBoundingClientRect().width + 0.05) cut.push(sp.textContent); });
+    document.querySelectorAll('#band .rd .k span, #band .v2, #band small, #band .bchip, #band .pill').forEach(e => { if (e.offsetParent && parseFloat(getComputedStyle(e).fontSize) < 11) small.push(e.textContent); });
+    const v = document.querySelector('#rd-pp .v').getBoundingClientRect(), c = document.querySelector('#sp-pp').getBoundingClientRect();
+    return { cut, small, sous: c.top >= v.bottom - 1, tabs: document.querySelector('#ftabs').offsetHeight, h2: document.querySelector('.famb .card.fon>h2').offsetHeight }; });
+  check('1520 × 810 : libellés du bandeau entiers, textes de 11 px au moins', !bd.cut.length && !bd.small.length, JSON.stringify(bd.cut.concat(bd.small)));
+  check('1520 × 810 : mini-courbe sous la valeur, onglets et titres de cartes moins hauts', bd.sous && bd.tabs <= 34 && bd.h2 <= 30, `onglets ${bd.tabs} px, titre ${bd.h2} px`);
+  const zm = await pg.evaluate(async () => { const fam0 = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--famW'));
+    document.querySelector('#zmP').click(); document.querySelector('#zmP').click(); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const o = { z: A.zoom, lab: document.querySelector('#zmV').textContent, sw: document.documentElement.scrollWidth, sh: document.documentElement.scrollHeight, memo: store('zoom'), fam0 };
+    document.querySelector('#zmV').click(); o.back = A.zoom === 1 && document.querySelector('#zmV').textContent === '100 %'; return o; });
+  check('Échelle de l\'affichage : + agrandit à 120 % sans débordement, mémorisée, 100 % y revient', zm.z === 1.2 && zm.lab === '120 %' && zm.sw <= 1520 && zm.sh <= 810 && zm.memo === 1.2 && zm.back, JSON.stringify(zm));
+  const ec = await pg.evaluate(() => { lvlSet('deb'); launch('l-cin'); document.querySelector('#goBtn').click(); A.paused = true; renderMission(true);
+    const d = document.querySelector('#mis-body details.ecd'); const o = { open0: !!d && d.open }; d.open = false; d.dispatchEvent(new Event('toggle'));
+    renderMission(true); o.reste = !document.querySelector('#mis-body details.ecd').open; o.memo = store('ecFerme') === true;
+    document.querySelector('#mis-body details.ecd').open = true; document.querySelector('#mis-body details.ecd').dispatchEvent(new Event('toggle')); return o; });
+  check('« En clair » repliable : ouvert par défaut, reste replié d\'une étape à l\'autre', ec.open0 && ec.reste && ec.memo, JSON.stringify(ec));
+  // visite : parcours « L'essentiel », À retenir, Essayer, progression mémorisée et Reprendre
+  const vz = await pg.evaluate(() => { store('tourVu', []); store('tourLast', null); openMenu(); document.querySelector('[data-path="essentiel"]').click();
+    const o = { debut: document.querySelector('#tk').textContent === "L'essentiel · 1 / 12" };
+    document.querySelector('#tvNext').click(); document.querySelector('#tvNext').click(); o.ch = document.querySelector('#tt').textContent;
+    o.retenir = !!document.querySelector('#ttx .retenir'); o.essai = document.querySelector('#ttx [data-essai]')?.dataset.essai;
+    o.manque = TOUR.filter(c => !RETENIR[c.id]).map(c => c.id); o.essaisValides = Object.values(ESSAI).every(id => SCN.some(x => x.id === id));
+    o.essIds = ESSENTIEL.every(id => TOUR.some(c => c.id === id));
+    for (let k = 0; k < 20 && document.querySelector('#tvNext').textContent !== 'Terminer'; k++) document.querySelector('#tvNext').click();
+    o.fin = document.querySelector('#tt').textContent; document.querySelector('#tvNext').click(); o.fait = (store('done') || {}).essentiel === 1;
+    o.vus = (store('tourVu') || []).length; openMenu(); const rp = [...document.querySelectorAll('#menuCards .tourc')].find(b => /Reprendre/.test(b.textContent));
+    o.reprendre = !!rp; if (rp) { rp.click(); o.reprise = document.querySelector('#tt').textContent; closeTour(); }
+    return o; });
+  check('Visite : parcours « L\'essentiel » de 12 chapitres, de la centrale à la salle de commande', vz.debut && vz.ch === 'La réaction en chaîne' && vz.fin === 'La salle de commande' && vz.fait && vz.essIds, JSON.stringify(vz));
+  check('Visite : chaque chapitre a son « À retenir », chaque « Essayer » mène à une séance existante', vz.retenir && vz.essai === 'l-cin' && !vz.manque.length && vz.essaisValides, JSON.stringify(vz.manque));
+  check('Visite : chapitres lus mémorisés, « Reprendre » rouvre le dernier chapitre', vz.vus === 12 && vz.reprendre && vz.reprise === 'La salle de commande', JSON.stringify(vz));
+  check('1520 × 810 : aucune erreur JavaScript', !errs.length, errs.join(' | '));
   await pg.close();
 }
 await browser.close();

@@ -161,7 +161,7 @@ for(const [id,arr] of Object.entries(STEPX)){ const sc=SCN.find(x=>x.id===id); i
 const ECLAIR={
  ihm:[
   "Un poste de pilotage se lit comme un journal : les gros titres en haut (le bandeau), ce qui presse juste en dessous (alarmes, actions en cours), puis le détail. Vous n'avez pas à tout regarder en même temps : vous passez du général au particulier.",
-  "Le bandeau, c'est le tableau de bord d'une voiture : vitesse, température, carburant. Un coup d'œil suffit pour savoir si tout va bien. La petite courbe derrière chaque valeur dit si elle bouge, ce qui compte souvent plus que la valeur elle-même.",
+  "Le bandeau, c'est le tableau de bord d'une voiture : vitesse, température, carburant. Un coup d'œil suffit pour savoir si tout va bien. La petite courbe qui accompagne une valeur dit si elle bouge, ce qui compte souvent plus que la valeur elle-même.",
   "Le synoptique est un plan de la centrale qui s'anime : on y voit où l'eau et la vapeur circulent et ce que valent les mesures. Tant que tout est gris, tout est normal ; la couleur attire l'œil seulement là où il se passe quelque chose.",
   "Vous pouvez agir directement sur le plan : cliquer sur un équipement ouvre ses commandes principales, comme un clic droit sur une icône. Ce sont les mêmes boutons que dans les cartes de commandes, juste plus près de ce que vous regardez.",
   "Les actions rapides donnent l'essentiel. Pour tous les réglages, le lien en bas ouvre la carte complète de l'équipement, à droite de l'écran.",
@@ -295,7 +295,9 @@ for(const [id,v] of Object.entries(ECLAIR)){ const sc=SCN.find(x=>x.id===id); if
 const LVL={v:(store('lvl')==='exp')?'exp':'deb'};
 const isDeb=()=>LVL.v==='deb';
 function lvlSet(v){ LVL.v=v; store('lvl',v); if(A.ctx){ A.ctx.dirty=true; renderMission(true); } if(!$('#brief').hidden&&A.scn){ const keep=A.paused; showBrief(); A.paused=keep; } $$('.lvlseg button').forEach(b=>{ b.classList.toggle('on',b.dataset.lvl===v); b.setAttribute('aria-pressed',String(b.dataset.lvl===v)); }); }
-const ecBox=(h,lab)=>'<div class="eclair"><span class="ecl">'+(lab||'En clair')+'</span>'+h+'</div>';
+/* encadré « En clair » : fixe pour les corrections commentées, sinon repliable, replié ou déplié d'une étape à l'autre selon le dernier choix */
+const ecBox=(h,lab,fixe)=>fixe?'<div class="eclair"><span class="ecl">'+lab+'</span>'+h+'</div>':'<details class="eclair ecd"'+(store('ecFerme')?'':' open')+'><summary><span class="ecl">'+(lab||'En clair')+'</span></summary>'+h+'</details>';
+document.addEventListener('toggle',e=>{ if(e.target.matches&&e.target.matches('details.ecd')) store('ecFerme',!e.target.open); },true);
 const planBox=(scn,open)=>scn.plan?'<details class="eclair plan"'+(open?' open':'')+'><summary><span class="ecl">Le plan, en clair</span></summary><ol>'+scn.plan.map(x=>'<li>'+x+'</li>').join('')+'</ol></details>':'';
 const lvlSeg=()=>'<div class="lvlseg" role="group" aria-label="Niveau des explications"><span>Explications :</span><button type="button" data-lvl="deb" class="'+(LVL.v==='deb'?'on':'')+'" aria-pressed="'+(LVL.v==='deb')+'">Débutant</button><button type="button" data-lvl="exp" class="'+(LVL.v==='exp'?'on':'')+'" aria-pressed="'+(LVL.v==='exp')+'">Confirmé</button></div>';
 document.addEventListener('click',e=>{ const b=e.target.closest('.lvlseg button'); if(b) lvlSet(b.dataset.lvl); });

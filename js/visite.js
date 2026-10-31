@@ -161,9 +161,22 @@ const ANIM={
  },
 };
 /* --- moteur de la visite --- */
-const TV={i:0,auto:false,tm:null,t0:0,dur:0};
-function openTour(i){
+const TV={i:0,auto:false,tm:null,t0:0,dur:0,path:null};
+/* chapitres déjà lus (mémorisés par identifiant) et dernier chapitre ouvert */
+const tourVus=()=>new Set((store('tourVu')||[]).map(id=>TOUR.findIndex(c=>c.id===id)).filter(i=>i>=0));
+const tourDernier=()=>{ const i=TOUR.findIndex(c=>c.id===store('tourLast')); return i>0?i:null; };
+const essentiel=()=>ESSENTIEL.map(id=>TOUR.findIndex(c=>c.id===id)).filter(i=>i>=0);
+/* chapitre suivant (dir 1) ou précédent (dir −1), dans le parcours choisi ; null en bout de parcours */
+function tourNext(dir){
+  if(!TV.path){ const j=TV.i+dir; return j>=0&&j<TOUR.length?j:null; }
+  const P=TV.path, k=P.indexOf(TV.i);
+  if(k>=0) return P[k+dir]!=null?P[k+dir]:null;
+  /* hors parcours (thème ou point cliqué) : on rejoint le parcours au plus proche dans le sens demandé */
+  const j=dir>0?P.find(x=>x>TV.i):[...P].reverse().find(x=>x<TV.i); return j==null?null:j;
+}
+function openTour(i,path){
   if(A.s){ TV.wasPaused=A.paused; A.paused=true; syncAll(); }
+  TV.seen=tourVus(); TV.path=path==='essentiel'?essentiel():null; if(TV.path&&i==null) i=TV.path[0];
   $('#menu').hidden=true; $('#tour').hidden=false;
   if(!$('#tplant').firstChild) $('#tplant').innerHTML=PLANT;
   tourGo(i||0);
@@ -173,12 +186,17 @@ function tourGo(i){
   i=clamp(i,0,TOUR.length-1); TV.i=i; const c=TOUR[i];
   cancelAnimationFrame(tourRAF); $('#tinset').innerHTML=''; SFX.page();
   T('tt',c.t);
-  $('#ttx').innerHTML=c.h+(c.last?'<div class="row" style="margin-top:14px"><button class="btn pri" id="tvTuto">Lancer le tutoriel</button><button class="btn" id="tvMenu">Retour au menu</button></div>':''); glossDom($('#ttx')); $('#ttx').scrollTop=0;
+  const ess=ESSAI[c.id]&&!c.last&&typeof byId==='function'&&byId(ESSAI[c.id]);
+  $('#ttx').innerHTML=c.h+(RETENIR[c.id]?'<div class="retenir"><b>À retenir</b> '+RETENIR[c.id]+'</div>':'')
+   +(ess?'<div class="essai"><button class="btn" data-essai="'+ess.id+'">'+pic('pn')+'Essayer dans le simulateur : '+ess.title+'</button></div>':'')+(c.last?'<div class="row" style="margin-top:14px"><button class="btn pri" id="tvTuto">Lancer le tutoriel</button><button class="btn" id="tvMenu">Retour au menu</button></div>':''); glossDom($('#ttx')); $('#ttx').scrollTop=0;
   const pl=$('#plant');
   if(c.inset){ $('#tplant').hidden=true; $('#tinset').hidden=false; if(ANIM[c.inset]) tourCanvas(c.inset); else $('#tinset').innerHTML=INSET[c.inset](); }
   else { $('#tinset').hidden=true; $('#tplant').hidden=false; pl.classList.toggle('dim',!!c.hl); pl.classList.toggle('rodsmove',!!c.rods); $$('#plant > g').forEach(gp=>gp.classList.toggle('hl',!!c.hl&&c.hl.includes(gp.id))); }
   tourThemes(i);
-  $('#tvPrev').disabled=i===0; $('#tvNext').textContent=i===TOUR.length-1?'Terminer':'Suivant';
+  $('#tvPrev').disabled=tourNext(-1)==null; $('#tvNext').textContent=tourNext(1)==null?'Terminer':'Suivant';
+  const tp=$('#tvPath'); if(tp) tp.hidden=!TV.path;
+  if(TV.path){ const k=TV.path.indexOf(i); T('tk',"L'essentiel · "+(k>=0?(k+1)+' / '+TV.path.length:'hors parcours')); }
+  try{ store('tourLast',c.id); }catch(e){}
   const tt=$('#tvTuto'); if(tt) tt.onclick=()=>{ $('#tour').hidden=true; cancelAnimationFrame(tourRAF); launch('tuto'); };
   const tm=$('#tvMenu'); if(tm) tm.onclick=()=>{ $('#tour').hidden=true; cancelAnimationFrame(tourRAF); openMenu(); };
   tourTimer();
@@ -186,10 +204,10 @@ function tourGo(i){
 function tourTimer(){
   clearTimeout(TV.tm); $('#tvAuto').classList.toggle('on',TV.auto); $('#tvAuto').textContent=TV.auto?'Pause lecture':'Lecture auto';
   const bar=$('#tprog i'); bar.style.transition='none'; bar.style.width='0';
-  if(!TV.auto||TV.i>=TOUR.length-1) return;
+  if(!TV.auto||tourNext(1)==null) return;
   const words=$('#ttx').textContent.split(/\s+/).length, d=Math.max(10,words/3.3)*1000;
   requestAnimationFrame(()=>{ bar.style.transition='width '+d+'ms linear'; bar.style.width='100%'; });
-  TV.tm=setTimeout(()=>tourGo(TV.i+1),d);
+  TV.tm=setTimeout(()=>tourGo(tourNext(1)),d);
 }
 
 function wrapTxt(g,txt,x,y,maxW,lh){ const words=txt.split(' '); let line='', yy=y; for(const w of words){ const tst=line?line+' '+w:w; if(g.measureText(tst).width>maxW&&line){ g.fillText(line,x,yy); line=w; yy+=lh; } else line=tst; } if(line) g.fillText(line,x,yy); return yy+lh; }
@@ -628,7 +646,7 @@ Object.assign(ANIM,{
 /* --- navigation par thèmes --- */
 function tourThemes(i){
   const c=TOUR[i], idx=TOUR.map((x,j)=>[x,j]).filter(p=>p[0].th===c.th), pos=idx.findIndex(p=>p[1]===i);
-  const seen=TV.seen||(TV.seen=new Set()); seen.add(i);
+  const seen=TV.seen||(TV.seen=new Set()); if(!seen.has(i)){ seen.add(i); store('tourVu',[...seen].map(j=>TOUR[j].id)); }
   $('#tthemes').innerHTML=THEMES.map(([id,name])=>{ const first=TOUR.findIndex(x=>x.th===id), all=TOUR.map((x,j)=>x.th===id?j:-1).filter(j=>j>=0), done=all.every(j=>seen.has(j)); return '<button class="tth'+(id===c.th?' on':'')+(done?' done':'')+'" data-tv="'+first+'">'+name+'<small>'+all.length+'</small></button>'; }).join('');
   $('#tdots').innerHTML=idx.map(([x,j])=>'<button class="tdot'+(j===i?' on':seen.has(j)?' seen':'')+'" data-tv="'+j+'" aria-label="'+x.t.replace(/"/g,'&quot;')+'" title="'+x.t.replace(/"/g,'&quot;')+'"></button>').join('');
   T('tk',c.k+' · '+(pos+1)+' / '+idx.length+'   —   chapitre '+(i+1)+' sur '+TOUR.length);

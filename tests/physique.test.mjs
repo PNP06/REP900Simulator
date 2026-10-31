@@ -75,6 +75,8 @@ check('Psat(273 °C) ≈ 57,5 bar', near(psat(273), 57.5, 1.5), psat(273).toFixe
   check('TMI : soupape isolée à 1 min → ni saturation ni dégât', iso.satT == null && iso.s.Vv === 0 && iso.s.coreDmg === 0, `P=${iso.s.Ppzr.toFixed(0)} bar`);
   const is = tmi([[480, s => { s.asgV = true; }], [4440, s => { s.pumps[0] = s.pumps[1] = false; }], [6060, s => { s.pumps[2] = false; }]]);
   check('TMI : IS laissée en service → cœur jamais découvert, même GMPP arrêtées', is.minH > 0 && is.s.coreDmg === 0, `niveau mini ${is.minH.toFixed(1)} m`);
+  const tot = tmi([[420, s => { s.pumps = [false, false, false]; }], [480, s => { s.asgV = true; }]]);
+  check('TMI : GMPP arrêtées tôt (7 min, circuit encore plein d\'eau), IS en service → cœur jamais découvert', tot.satT < 420 && tot.minH > 0 && tot.s.coreDmg === 0, `niveau mini ${tot.minH.toFixed(1)} m`);
   const pp = tmi([[270, s => { s.isThr = 0.1; }], [480, s => { s.asgV = true; }]]);
   check('TMI : GMPP maintenues → cœur refroidi 4 h malgré l\'IS réduite', pp.maxUncPompes === 0 && pp.s.coreDmg === 0, `taux de vide ${(pp.s.alpha * 100).toFixed(0)} %`);
   check('TMI : vannes ASG consignées → pas de débit ASG, puis débit à leur ouverture', h.W5 < 1e-3 && h.W15 > 0.02, `${h.W5.toFixed(3)} puis ${h.W15.toFixed(3)}`);
@@ -136,6 +138,17 @@ const mdte = (failA, failB, dur) => { const s = makeState(P100); run(s, 5); s.el
   const s = makeState(P100); run(s, 5); trip(s, 'test', 'op'); const t0 = s.t; let mx = 0, tm = 0, nx = 0;
   while (s.t - t0 < 14 * 3600) { step(s); if (s.t >= nx) { nx = s.t + 60; if (s.X > mx) { mx = s.X; tm = (s.t - t0) / 3600; } } }
   check('Pic xénon du moteur après AAR entre 7 et 11 h, entre −4 500 et −5 500 pcm', tm > 7 && tm < 11 && -2700 * mx < -4500 && -2700 * mx > -5500, tm.toFixed(1) + ' h, ' + (-2700 * mx).toFixed(0) + ' pcm'); }
+
+{ // perte totale de l'eau alimentaire après AAR : les GV s'assèchent et ne refroidissent plus le primaire
+  const s = makeState(P100); run(s, 5); trip(s, 'test', 'op'); const t0 = s.t; let tSec = null;
+  while (s.t - t0 < 5400) { s.areIsol = true; s.asgV = false; step(s); if (tSec == null && s.gvMouil < 0.05) tSec = (s.t - t0) / 60; }
+  check('GV sans eau alimentaire : asséchés entre 40 et 90 min, ils ne refroidissent plus le primaire', tSec != null && tSec > 40 && tSec < 90 && s.Qsg < 1e-3 && s.Tavg > 320,
+    `asséchés à ${tSec && tSec.toFixed(0)} min ; à 1 h 30 Qsg ${(s.Qsg * 100).toFixed(2)} %, Tmoy ${s.Tavg.toFixed(0)} °C`);
+  while (s.t - t0 < 9000) { s.areIsol = true; s.asgV = false; step(s); }
+  check('GV secs, soupapes SEBIM : le primaire reste à saturation au lieu de dépasser 360 °C, et se vide', s.Tavg < 360 && s.Vv > 0, `Tmoy ${s.Tavg.toFixed(0)} °C, vide ${s.Vv.toFixed(0)} m³`); }
+{ // batteries : l'épuisement est bien signalé par le moteur
+  const { s } = mdte(true, true, 60); s.el.bat = 1e-6; run(s, 2);
+  check('Batteries vides : état « contrôle-commande perdu » levé', s.el.batVide === true); }
 
 console.log(fails ? `\n${fails} test(s) en échec` : '\nTous les tests passent');
 process.exit(fails ? 1 : 0);

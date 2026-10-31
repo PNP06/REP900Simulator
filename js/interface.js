@@ -76,6 +76,8 @@ function toast(m){ const t=$('#toast'); t.textContent=m; t.hidden=false; clearTi
 function op(txt){ logEv(A.s,'op',txt); }
 function act(a,v){
   const s=A.s; if(!s) return;
+  /* batteries épuisées : la salle de commande ne répond plus ; seules les actions locales sur les sources restent possibles */
+  if(s.el&&s.el.batVide&&!['aarWhy','dg','dus'].includes(a)) return toast('Batteries épuisées : contrôle-commande perdu, cette commande ne répond pas. Réalimentez un tableau secouru (diesel ou DUS).');
   const R=s.rods;
   switch(a){
   case 'modeR':
@@ -201,7 +203,7 @@ document.addEventListener('click',e=>{
   const ff=e.target.closest('[data-fbf]'); if(ff){ FB.filter=ff.dataset.fbf; fbRender(); return; }
   const fc=e.target.closest('[data-fbc]'); if(fc){ fbComments(+fc.dataset.fbc); return; }
   if(e.target.id==='fb'){ closeFB(); return; }
-  const tg=e.target.closest('[data-tourgo]'); if(tg){ openTour(+tg.dataset.tourgo); return; }
+  const tg=e.target.closest('[data-tourgo]'); if(tg){ openTour(tg.dataset.tourgo===''?null:+tg.dataset.tourgo,tg.dataset.path); return; }
   const tv=e.target.closest('[data-tv]'); if(tv){ TV.auto=false; tourGo(+tv.dataset.tv); return; }
   const pt=e.target.closest('#ptr'); if(pt){ const el=pt._el; if(el){ reveal(el); requestAnimationFrame(()=>el.scrollIntoView({behavior:'smooth',block:'center'})); } return; }
   const gq=e.target.closest('.g'); if(gq){ showGloss(+gq.dataset.g); return; }
@@ -268,6 +270,15 @@ function applyVues(){
 /* largeur du centre : le synoptique est limité par la hauteur, donc le centre prend juste sa largeur (ou celle des onglets des vues)
    et le reste va à la colonne de droite (consigne, commandes). Recalculé au redimensionnement seulement, pour que rien ne bouge en cours de partie. */
 let FIT_EX=0;
+/* taille de l'affichage (bureau) : le bandeau et le poste sont agrandis ou réduits d'un bloc, la mise en page se recalcule */
+const ZOOMS=[0.8,0.9,1,1.1,1.2,1.3,1.4];
+function setZoom(z){
+  z=ZOOMS.reduce((a,b)=>Math.abs(b-z)<Math.abs(a-z)?b:a,1); A.zoom=z; store('zoom',z);
+  document.documentElement.style.setProperty('--uiz',z); const v=$('#zmV'); if(v) v.textContent=Math.round(z*100)+' %';
+  const m=$('#zmM'), p=$('#zmP'); if(m) m.disabled=z<=ZOOMS[0]; if(p) p.disabled=z>=ZOOMS[ZOOMS.length-1];
+  fitPoste(); requestAnimationFrame(()=>{ fitPoste(); fitBand(); drawCharts(); drawDI(); drawPT(); drawBand(); });
+}
+const uiz=()=>desk()?(A.zoom||1):1;
 function fitPoste(){
   const P=$('#poste'), r=document.documentElement.style;
   if(!desk()){ r.removeProperty('--famW'); return; }
@@ -278,7 +289,9 @@ function fitPoste(){
   if(sc.offsetHeight&&sy.clientHeight) FIT_EX=sc.offsetHeight-sy.clientHeight;
   let vh=pc.clientHeight-$('.pc>.run').offsetHeight-vt.offsetHeight;
   if(innerHeight>=1000) vh=vh*1.4/2.4;
-  const sw=Math.max(0,vh-(FIT_EX||78))*990/610+26, c3=wide()?Math.max(320,Math.min(460,innerWidth*.19)):0;
+  /* les largeurs mesurées dans le poste sont à l'échelle de l'affichage : on les ramène à celle de la page */
+  const z=uiz(); tb*=z; ti*=z;
+  const sw=(Math.max(0,vh-(FIT_EX||78))*990/610+26)*z, c3=wide()?Math.max(320,Math.min(460,innerWidth*.19)):0;
   /* onglets des vues sans pictogrammes quand leur largeur dépasserait celle du synoptique */
   const nb=sw<ti; P.classList.toggle('vtc',nb); if(!nb) tb=ti;
   const fam=Math.round(Math.max(360,Math.min(W*.5,760,W-Math.max(sw,tb,560)-c3)));
@@ -368,6 +381,7 @@ const syncSig=s=>[s.modeR,s.modeG,s.rea.mode,s.rea.q,s.rea.vt,s.isThr,s.era79,s.
 function updateUI(){
   const s=A.s; if(!s) return;
   const sg=syncSig(s); if(sg!==A.syncSig){ A.syncSig=sg; syncAll(); }
+  const cc=!!(s.el&&s.el.batVide); if(document.body.classList.contains('ccperdu')!==cc){ document.body.classList.toggle('ccperdu',cc); $('#ccBar').hidden=!cc; }
   trackVar(s);
   T('clock',hms(s.t));
   const st=s.is?'IS':s.tripped?'AAR':s.ilot?'Îlotage':s.coupled?'Puissance':(s.n>1e-7?'Critique':'Sous-crit.');
@@ -542,10 +556,12 @@ function statsHTML(s,c){
 /* ================= Menu ================= */
 function openMenu(){
   A.paused=true; syncAll();
-  const best=store('best')||{}, done=store('done')||{};
+  const best=store('best')||{}, done=store('done')||{}, nVus=tourVus().size, dern=tourDernier();
   const card=x=>'<button class="sc" data-scn="'+x.id+'"><span class="t">'+x.title+'</span><span class="d">'+x.desc+'</span><span class="m"><span>'+(x.kind==='lecon'?'Leçon · '+(x.speed>=60?'longue (×300)':'15 à 25 min'):x.diff?'Difficulté '+'●'.repeat(x.diff)+'○'.repeat(3-x.diff):'Sans évaluation')+'</span>'+(done[x.id]?'<span class="done-tag">✓ terminé</span>':'')+(best[x.id]!=null?'<span class="stars">'+'★'.repeat(best[x.id])+'☆'.repeat(3-best[x.id])+'</span>':'')+'</span></button>';
   const grp=(t,f)=>'<div class="sec">'+t+'</div><div class="cards">'+SCN.filter(f).map(card).join('')+'</div>';
-  $('#menuCards').innerHTML=(A.s&&!A.done?'<div class="row" style="margin-bottom:6px"><button class="btn pri" id="resume">Reprendre le quart en cours</button></div>':'')+'<div class="sec">Apprendre</div><div class="cards"><button class="sc tourc" data-tourgo="0"><span class="t">Découvrir la centrale <span class="reco">Pour commencer</span></span><span class="d">Visite illustrée, sans manipulation : fission, réaction en chaîne, circuits, pilotage, électricité, xénon, sûreté, Three Mile Island, Fukushima.</span><span class="m"><span>'+TOUR.length+' chapitres en '+THEMES.length+' thèmes · 50 à 60 min</span>'+(done.tour?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'+SCN.filter(x=>x.kind==='tuto').map(card).join('')+'</div>'+grp('Comprendre — leçons guidées',x=>x.kind==='lecon')+grp("S'entraîner",x=>x.kind==='exo')+grp('Gérer un aléa',x=>x.kind==='alea')+grp('Accidents historiques',x=>x.kind==='histo')+'<div class="sec">Corrections commentées</div><p class="note" style="margin:0 0 8px">Le pilote automatique joue l\'exercice ou l\'aléa devant vous, clique au bon endroit et explique chaque action, à voix haute si vous activez la voix.</p><div class="cards">'+DEMO_IDS.map(id=>{ const x=byId(id); return '<button class="sc dmc" data-demo="'+id+'"><span class="t">▶ '+x.title+'</span><span class="d">'+(x.kind==='exo'?'Exercice corrigé':x.kind==='histo'?'Accident historique commenté':'Aléa corrigé')+' pas à pas'+(id==='tmi'?', avec la voix':'')+'</span></button>'; }).join('')+'</div>'+grp('Pilotage libre',x=>x.kind==='libre');
+  $('#menuCards').innerHTML=(A.s&&!A.done?'<div class="row" style="margin-bottom:6px"><button class="btn pri" id="resume">Reprendre le quart en cours</button></div>':'')+'<div class="sec">Apprendre</div><div class="cards"><button class="sc tourc" data-tourgo="0"><span class="t">Découvrir la centrale <span class="reco">Pour commencer</span></span><span class="d">Visite illustrée, sans manipulation : fission, réaction en chaîne, circuits, pilotage, électricité, xénon, sûreté, Three Mile Island, Fukushima.</span><span class="m"><span>'+TOUR.length+' chapitres en '+THEMES.length+' thèmes · 50 à 60 min'+(nVus?' · '+nVus+' lus':'')+'</span>'+(done.tour?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'
+   +(dern!=null?'<button class="sc tourc" data-tourgo="'+dern+'"><span class="t">Reprendre la visite</span><span class="d">Au chapitre « '+TOUR[dern].t+' ».</span><span class="m"><span>'+nVus+' chapitres lus sur '+TOUR.length+'</span></span></button>':'')
+   +'<button class="sc tourc" data-tourgo="" data-path="essentiel"><span class="t">L\'essentiel en 15 minutes</span><span class="d">Douze chapitres pour comprendre l\'idée générale : la centrale, la réaction en chaîne, la stabilité, le pilotage, les circuits, la sûreté et la salle de commande.</span><span class="m"><span>'+ESSENTIEL.length+' chapitres · 15 min environ</span>'+(done.essentiel?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'+SCN.filter(x=>x.kind==='tuto').map(card).join('')+'</div>'+grp('Comprendre — leçons guidées',x=>x.kind==='lecon')+grp("S'entraîner",x=>x.kind==='exo')+grp('Gérer un aléa',x=>x.kind==='alea')+grp('Accidents historiques',x=>x.kind==='histo')+'<div class="sec">Corrections commentées</div><p class="note" style="margin:0 0 8px">Le pilote automatique joue l\'exercice ou l\'aléa devant vous, clique au bon endroit et explique chaque action, à voix haute si vous activez la voix.</p><div class="cards">'+DEMO_IDS.map(id=>{ const x=byId(id); return '<button class="sc dmc" data-demo="'+id+'"><span class="t">▶ '+x.title+'</span><span class="d">'+(x.kind==='exo'?'Exercice corrigé':x.kind==='histo'?'Accident historique commenté':'Aléa corrigé')+' pas à pas'+(id==='tmi'?', avec la voix':'')+'</span></button>'; }).join('')+'</div>'+grp('Pilotage libre',x=>x.kind==='libre');
   $('#menu').hidden=false; $('#debrief').hidden=true; $('#brief').hidden=true;
   const r=$('#resume'); if(r) r.onclick=()=>{ $('#menu').hidden=true; A.paused=false; syncAll(); };
 }
