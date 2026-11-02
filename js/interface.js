@@ -201,13 +201,30 @@ twoStep($('#aarBtn'),'AAR manuel','Confirmer l\'AAR',()=>act('aar'));
 twoStep($('#isBtn'),'IS manuelle','Confirmer l\'IS',()=>act('is'));
 
 document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('#band .rd')){ e.preventDefault(); e.target.click(); return; } if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('g')){ e.preventDefault(); showGloss(+e.target.dataset.g); } if(e.key==='Escape'){ if(!$('#gpop').hidden) $('#gpop').hidden=true; else if(!$('#help').hidden) closeHelp(); else if(!$('#limov').hidden) $('#limov').hidden=true; else if(!$('#srcov').hidden) $('#srcov').hidden=true; else if(!$('#about').hidden) $('#about').hidden=true; } });
+/* Pages de lecture (À propos, Sources, Limites et méthode) : une page pleine à la fois, avec un menu latéral commun.
+   Ouverte au premier lancement, « À propos » reste une fenêtre d'accueil courte (classe abw). */
+const RD_NAV=[['about','data-about','À propos','<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.1"/>'],['srcov','data-src','Sources','<path d="M4 5h6a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6z"/>'],['limov','data-lim','Limites et méthode','<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'],[null,'data-lex','Lexique','<path d="M5 4h11l3 3v13H5z"/><path d="M9 9h6M9 13h6"/>'],[null,'data-fbopen="list"','Retours publiés','<path d="M4 5h16v11H9l-5 4z"/>']];
+function rdShow(id){
+  const ab=$('#about'), wel=id==='about'?false:ab.classList.contains('abw')&&!ab.hidden;
+  ['about','srcov','limov'].forEach(k=>{ if(k!==id&&!(k==='about'&&wel)) $('#'+k).hidden=true; });
+  if(!id) return;
+  if(id==='about'){ ab.classList.remove('abw'); ab.classList.add('rdp','abopen'); ab.querySelector('.rdh h2').textContent='À propos'; }
+  const o=$('#'+id); o.hidden=false; o.scrollTop=0;
+  $$('.rdnav [data-rd]').forEach(b=>b.toggleAttribute('aria-current',b.dataset.rd===id));
+}
+$$('.ov.rdp, #about').forEach(o=>{ const n=document.createElement('nav'); n.className='rdnav'; n.setAttribute('aria-label','Pages du projet');
+  n.innerHTML='<button type="button" class="rdhome" data-rdhome="1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Accueil</button><div class="rdt">Le projet</div>'+RD_NAV.map(r=>'<button type="button" '+(r[1].includes('=')?r[1]:r[1]+'="1"')+(r[0]?' data-rd="'+r[0]+'"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+r[3]+'</svg>'+r[2]+'</button>').join('');
+  o.querySelector('.box').prepend(n); });
 document.addEventListener('click',e=>{
   if(e.target.closest('button,.seg button,.bank')&&!e.target.closest('#ackBtn,#alb-ack,#runAck,#tour')) SFX.tick();
-  if(e.target.closest('[data-about]')){ $('#about').hidden=false; return; }
-  if(e.target.closest('[data-src]')){ $('#limov').hidden=true; $('#srcov').hidden=false; return; }
-  if(e.target.closest('[data-lim]')){ $('#srcov').hidden=true; $('#limov').hidden=false; return; }
-  if(e.target.closest('#limClose')||e.target.id==='limov'){ $('#limov').hidden=true; return; }
-  if(e.target.closest('#srcClose')||e.target.id==='srcov'){ $('#srcov').hidden=true; return; }
+  if(e.target.closest('[data-about]')){ rdShow('about'); return; }
+  if(e.target.closest('[data-src]')){ rdShow('srcov'); return; }
+  if(e.target.closest('[data-lim]')){ rdShow('limov'); return; }
+  if(e.target.closest('[data-rdhome]')){ rdShow(null); openMenu(); $('#menu').scrollTo({top:0}); return; }
+  if(e.target.closest('#limClose')){ $('#limov').hidden=true; return; }
+  if(e.target.closest('#srcClose')){ $('#srcov').hidden=true; return; }
+  if(e.target.closest('#abClose')){ $('#about').hidden=true; return; }
+  if(e.target.closest('#abMore')){ const o=!$('#about').classList.contains('abopen'); $('#about').classList.toggle('abopen',o); $('#abMore').setAttribute('aria-expanded',String(o)); $('#abMore').textContent=o?'Masquer la présentation complète':'Lire la présentation complète'; return; }
   const fo=e.target.closest('[data-fbopen]'); if(fo){ openFB(fo.dataset.fbopen); return; }
   const ft=e.target.closest('[data-fbt]'); if(ft){ fbTab(ft.dataset.fbt); return; }
   const ff=e.target.closest('[data-fbf]'); if(ff){ FB.filter=ff.dataset.fbf; fbRender(); return; }
@@ -218,7 +235,7 @@ document.addEventListener('click',e=>{
   const pt=e.target.closest('#ptr'); if(pt){ const el=pt._el; if(el){ reveal(el); requestAnimationFrame(()=>el.scrollIntoView({behavior:'smooth',block:'center'})); } return; }
   const gq=e.target.closest('.g'); if(gq){ showGloss(+gq.dataset.g); return; }
   if(!e.target.closest('#gpop')) $('#gpop').hidden=true;
-  if(e.target.closest('#lexBtn')){ openLex(); return; }
+  if(e.target.closest('#lexBtn,[data-lex]')){ openLex(); return; }
   if(e.target.closest('#alb-see,#runTab')){ openCard('alarm'); return; }
   if(e.target.closest('#alb-ack,#runAck')){ ackAll(); return; }
   const vt=e.target.closest('#vtabs button'); if(vt){ setVue(vt.dataset.vue); return; }
@@ -571,17 +588,73 @@ function statsHTML(s,c){
   return '<h3>Valeurs extrêmes</h3><table class="kv"><tr><td>Puissance max.</td><td class="v">'+fmt(c.st.maxN*100,1)+' % PN</td></tr><tr><td>Pression pressu</td><td class="v">'+fmt(a.minPp,1)+' – '+fmt(a.maxPp,1)+' bar</td></tr><tr><td>Niveau pressu</td><td class="v">'+fmt(a.minLp,0)+' – '+fmt(a.maxLp,0)+' %</td></tr><tr><td>Niveau GV</td><td class="v">'+fmt(a.minLsg,0)+' – '+fmt(a.maxLsg,0)+' %</td></tr></table>';
 }
 
-/* ================= Menu ================= */
+/* ================= Accueil ================= */
+const HM_IC={
+  app:'<path d="M4 5h6a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6z"/>',
+  tuto:'<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
+  lecon:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"/>',
+  exo:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
+  alea:'<path d="M12 3.5L2.5 20h19z"/><path d="M12 10v4.5M12 17.2v.1"/>',
+  histo:'<path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3 4v4h4"/><path d="M12 7.5V12l3 2"/>',
+  demo:'<circle cx="12" cy="12" r="8.5"/><path d="M10 8.5l5 3.5-5 3.5z"/>',
+  libre:'<path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4-6"/><path d="M4 21h16"/>'};
+const hmIc=k=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+HM_IC[k]+'</svg>';
+const HM_CATS=[['app','Pour débuter'],['lecon','Leçons guidées'],['exo','Exercices'],['alea','Aléas'],['histo','Accidents historiques'],['demo','Corrections commentées'],['libre','Pilotage libre'],['tout','Tout']];
+const HM_KIND={tuto:'Tutoriel',lecon:'Leçon guidée',exo:'Exercice',alea:'Aléa',histo:'Accident historique',libre:'Pilotage libre'};
+const HM={cat:store('hmCat')||'app'};
+function hmCards(cat){
+  const best=store('best')||{}, done=store('done')||{}, nVus=tourVus().size;
+  const lvl=d=>'<span class="hm-lvl" aria-label="Difficulté '+d+' sur 3">Difficulté <i'+(d>=1?' class="on"':'')+'></i><i'+(d>=2?' class="on"':'')+'></i><i'+(d>=3?' class="on"':'')+'></i></span>';
+  const card=x=>'<button class="sc hm-sc" data-scn="'+x.id+'"><span class="hm-k k-'+x.kind+'">'+hmIc(x.kind)+HM_KIND[x.kind]+'</span><span class="t">'+x.title+'</span><span class="d">'+x.desc+'</span><span class="m"><span>'+(x.kind==='lecon'?'Leçon · '+(x.speed>=60?'longue (×300)':'15 à 25 min'):x.diff?lvl(x.diff):'Sans évaluation')+'</span><span class="hm-st">'+(done[x.id]?'<span class="done-tag">✓ terminé</span>':'')+(best[x.id]!=null?'<span class="stars" aria-label="Meilleur résultat : '+best[x.id]+' sur 3">'+'★'.repeat(best[x.id])+'☆'.repeat(3-best[x.id])+'</span>':'')+'</span></span></button>';
+  const app=()=>'<button class="sc hm-sc tourc" data-tourgo="0"><span class="hm-k k-app">'+hmIc('app')+'Formation <span class="reco">Pour commencer</span></span><span class="t">Formation</span><span class="d">Chapitres illustrés, sans manipulation : fission, réaction en chaîne, circuits, pilotage, électricité, xénon, sûreté, Three Mile Island, Fukushima.</span><span class="m"><span>'+TOUR.length+' chapitres en '+THEMES.length+' thèmes · 50 à 60 min'+(nVus?' · '+nVus+' lus':'')+'</span>'+(done.tour?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'
+    +'<button class="sc hm-sc tourc" data-tourgo="" data-path="essentiel"><span class="hm-k k-app">'+hmIc('app')+'Formation</span><span class="t">L\'essentiel en 15 minutes</span><span class="d">Douze chapitres pour comprendre l\'idée générale : la centrale, la réaction en chaîne, la stabilité, le pilotage, les circuits, la sûreté et la salle de commande.</span><span class="m"><span>'+ESSENTIEL.length+' chapitres · 15 min environ</span>'+(done.essentiel?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'
+    +SCN.filter(x=>x.kind==='tuto').map(card).join('');
+  const demo=()=>DEMO_IDS.map(id=>{ const x=byId(id); return '<button class="sc hm-sc dmc" data-demo="'+id+'"><span class="hm-k k-demo">'+hmIc('demo')+'Correction commentée</span><span class="t">'+x.title+'</span><span class="d">'+(x.kind==='exo'?'Exercice corrigé':x.kind==='histo'?'Accident historique commenté':'Aléa corrigé')+' pas à pas'+(id==='tmi'?', avec la voix':'')+'. Le pilote automatique joue la séance devant vous, clique au bon endroit et explique chaque action.</span></button>'; }).join('');
+  const one=k=>k==='app'?app():k==='demo'?demo():SCN.filter(x=>x.kind===k).map(card).join('');
+  if(cat!=='tout') return '<div class="hm-grid">'+one(cat)+'</div>';
+  return HM_CATS.filter(c=>c[0]!=='tout').map(c=>'<h3 class="hm-gt">'+c[1]+'</h3><div class="hm-grid">'+one(c[0])+'</div>').join('');
+}
+function hmCount(k){ return k==='app'?2+SCN.filter(x=>x.kind==='tuto').length:k==='demo'?DEMO_IDS.length:k==='tout'?2+SCN.length+DEMO_IDS.length:SCN.filter(x=>x.kind===k).length; }
+function hmSetCat(k,scroll){
+  HM.cat=k; store('hmCat',k);
+  $$('#hmFilt [data-hcat]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.hcat===k)));
+  $("#hmCatList").innerHTML=hmCards(k);
+  if(scroll) $('#hm-cat').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+}
 function openMenu(){
   A.paused=true; syncAll();
-  const best=store('best')||{}, done=store('done')||{}, nVus=tourVus().size, dern=tourDernier();
-  const card=x=>'<button class="sc" data-scn="'+x.id+'"><span class="t">'+x.title+'</span><span class="d">'+x.desc+'</span><span class="m"><span>'+(x.kind==='lecon'?'Leçon · '+(x.speed>=60?'longue (×300)':'15 à 25 min'):x.diff?'Difficulté '+'●'.repeat(x.diff)+'○'.repeat(3-x.diff):'Sans évaluation')+'</span>'+(done[x.id]?'<span class="done-tag">✓ terminé</span>':'')+(best[x.id]!=null?'<span class="stars">'+'★'.repeat(best[x.id])+'☆'.repeat(3-best[x.id])+'</span>':'')+'</span></button>';
-  const grp=(t,f)=>'<div class="sec">'+t+'</div><div class="cards">'+SCN.filter(f).map(card).join('')+'</div>';
-  $('#menuCards').innerHTML=(A.s&&!A.done?'<div class="row" style="margin-bottom:6px"><button class="btn pri" id="resume">Reprendre le quart en cours</button></div>':'')+'<div class="sec">Apprendre</div><div class="cards"><button class="sc tourc" data-tourgo="0"><span class="t">Formation <span class="reco">Pour commencer</span></span><span class="d">Chapitres illustrés, sans manipulation : fission, réaction en chaîne, circuits, pilotage, électricité, xénon, sûreté, Three Mile Island, Fukushima.</span><span class="m"><span>'+TOUR.length+' chapitres en '+THEMES.length+' thèmes · 50 à 60 min'+(nVus?' · '+nVus+' lus':'')+'</span>'+(done.tour?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'
-   +(dern!=null?'<button class="sc tourc" data-tourgo="'+dern+'"><span class="t">Reprendre la formation</span><span class="d">Au chapitre « '+TOUR[dern].t+' ».</span><span class="m"><span>'+nVus+' chapitres lus sur '+TOUR.length+'</span></span></button>':'')
-   +'<button class="sc tourc" data-tourgo="" data-path="essentiel"><span class="t">L\'essentiel en 15 minutes</span><span class="d">Douze chapitres pour comprendre l\'idée générale : la centrale, la réaction en chaîne, la stabilité, le pilotage, les circuits, la sûreté et la salle de commande.</span><span class="m"><span>'+ESSENTIEL.length+' chapitres · 15 min environ</span>'+(done.essentiel?'<span class="done-tag">✓ vu</span>':'')+'</span></button>'+SCN.filter(x=>x.kind==='tuto').map(card).join('')+'</div>'+grp('Comprendre — leçons guidées',x=>x.kind==='lecon')+grp("S'entraîner",x=>x.kind==='exo')+grp('Gérer un aléa',x=>x.kind==='alea')+grp('Accidents historiques',x=>x.kind==='histo')+'<div class="sec">Corrections commentées</div><p class="note" style="margin:0 0 8px">Le pilote automatique joue l\'exercice ou l\'aléa devant vous, clique au bon endroit et explique chaque action, à voix haute si vous activez la voix.</p><div class="cards">'+DEMO_IDS.map(id=>{ const x=byId(id); return '<button class="sc dmc" data-demo="'+id+'"><span class="t">▶ '+x.title+'</span><span class="d">'+(x.kind==='exo'?'Exercice corrigé':x.kind==='histo'?'Accident historique commenté':'Aléa corrigé')+' pas à pas'+(id==='tmi'?', avec la voix':'')+'</span></button>'; }).join('')+'</div>'+grp('Pilotage libre',x=>x.kind==='libre');
+  const nVus=tourVus().size, dern=tourDernier(), done=store('done')||{};
+  if(!$('#hmPlant').firstChild) $('#hmPlant').innerHTML=PLANT.replace(/ id="[^"]*"/g,'').replace('role="img"','role="img" focusable="false"');
+  const row=(lab,meta,attr)=>'<li><button type="button" '+attr+'><span>'+lab+'</span><span class="hm-rm">'+meta+'</span></button></li>';
+  const path=(n,ic,t,who,d,rows,reco)=>'<div class="hm-path'+(reco?' hm-reco':'')+'"><div class="hm-ph"><span class="hm-pic">'+hmIc(ic)+'</span><span class="hm-pn">Étape '+n+'</span></div>'+(reco?'<span class="reco">Pour commencer</span>':'')+'<h3>'+t+'</h3><span class="hm-who">'+who+'</span><p>'+d+'</p><ul>'+rows+'</ul></div>';
+  const nb=k=>SCN.filter(x=>x.kind===k).length;
+  let h='';
+  if(A.s&&!A.done) h+='<div class="hm-resume"><span class="hm-ric">'+hmIc('libre')+'</span><div class="hm-rb"><b>Quart en cours</b><small>'+A.scn.title+'</small></div><button class="btn pri" id="resume">Reprendre le quart en cours</button></div>';
+  if(dern!=null) h+='<div class="hm-resume"><span class="hm-ric">'+hmIc('app')+'</span><div class="hm-rb"><b>Formation</b><small>Au chapitre « '+TOUR[dern].t+' » · '+nVus+' chapitres lus sur '+TOUR.length+'</small><div class="hm-bar"><i style="width:'+Math.round(nVus/TOUR.length*100)+'%"></i></div></div><button class="btn tourc" data-tourgo="'+dern+'">Reprendre la formation</button></div>';
+  h+='<section class="hm-sect"><h2>Par où commencer ?</h2><p class="hm-sub">Trois parcours, du plus simple au plus exigeant.</p><div class="hm-paths">'
+   +path(1,'app','Découvrir','Je n\'y connais rien','Comprendre ce qu\'est une centrale, la réaction en chaîne et la sûreté, avec des schémas animés. Sans rien manipuler.',
+      row('L\'essentiel en 15 minutes',ESSENTIEL.length+' ch.'+(done.essentiel?' · ✓':''),'data-tourgo="" data-path="essentiel"')+row('Formation complète',TOUR.length+' ch. · 1 h','data-tourgo="0"')+row('Lexique des termes','A → Z','data-lex="1"'),1)
+   +path(2,'tuto','Apprendre à piloter','Je veux prendre les commandes','Découvrir le poste de pilotage, puis des leçons guidées où le simulateur vous montre chaque phénomène.',
+      row(byId('ihm').title,done.ihm?'✓':'Débutant','data-scn="ihm"')+row(byId('tuto').title,done.tuto?'✓':'Débutant','data-scn="tuto"')+row('Leçons guidées',nb('lecon')+' leçons','data-hcat="lecon"'))
+   +path(3,'exo','S\'entraîner','Je veux être évalué','Exercices notés, incidents à maîtriser et accident de Three Mile Island, avec débriefing et correction commentée.',
+      row('Exercices d\'exploitation',nb('exo'),'data-hcat="exo"')+row('Aléas et incidents',nb('alea'),'data-hcat="alea"')+row('Accidents historiques',nb('histo'),'data-hcat="histo"')+row('Corrections commentées',DEMO_IDS.length,'data-hcat="demo"'))
+   +'</div></section>';
+  h+='<section class="hm-sect" id="hm-cat"><h2>Toutes les séances</h2><p class="hm-sub">Le catalogue complet, par catégorie. Les coches et les étoiles gardent la trace de vos résultats.</p><div class="hm-filt" id="hmFilt" role="group" aria-label="Catégories">'
+   +HM_CATS.map(c=>'<button type="button" class="hm-chf" data-hcat="'+c[0]+'" aria-pressed="false">'+c[1]+' <small>'+hmCount(c[0])+'</small></button>').join('')+'</div><div id="hmCatList"></div></section>';
+  $('#menuCards').innerHTML=h; hmSetCat(HM.cat);
   $('#menu').hidden=false; $('#debrief').hidden=true; $('#brief').hidden=true;
   const r=$('#resume'); if(r) r.onclick=()=>{ $('#menu').hidden=true; A.paused=false; syncAll(); };
 }
-$('#menuCards').addEventListener('click',e=>{ const dm=e.target.closest('[data-demo]'); if(dm){ demoStart(dm.dataset.demo); return; } const b=e.target.closest('[data-scn]'); if(b) launch(b.dataset.scn); });
+function hmSet(open){ $('#hmSet').hidden=!open; $('#hmSetBtn').setAttribute('aria-expanded',String(open)); if(open) $('#hmSetClose').focus(); }
+$('#menu').addEventListener('click',e=>{
+  const dm=e.target.closest('[data-demo]'); if(dm){ demoStart(dm.dataset.demo); return; }
+  const b=e.target.closest('[data-scn]'); if(b){ launch(b.dataset.scn); return; }
+  const hc=e.target.closest('[data-hcat]'); if(hc){ hmSetCat(hc.dataset.hcat,!hc.closest('#hmFilt')); return; }
+  const hg=e.target.closest('[data-hgo]'); if(hg){ const t=hg.dataset.hgo; if(t==='top') $('#menu').scrollTo({top:0}); else $('#'+t).scrollIntoView({block:'start'}); return; }
+  if(e.target.closest('[data-hposte]')){ if(A.s&&!A.done){ $('#menu').hidden=true; A.paused=false; syncAll(); } else launch('libre'); return; }
+  if(e.target.closest('#hmSetBtn')){ hmSet($('#hmSet').hidden); return; }
+  if(e.target.closest('#hmSetClose')){ hmSet(false); $('#hmSetBtn').focus(); return; }
+  if(!$('#hmSet').hidden&&!e.target.closest('#hmSet')) hmSet(false);
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#hmSet').hidden){ hmSet(false); $('#hmSetBtn').focus(); } });
 { const r=store('rnd'); if(r) $('#rndAlea').checked=true; $('#rndAlea').addEventListener('change',e=>store('rnd',e.target.checked)); }
