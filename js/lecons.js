@@ -407,7 +407,7 @@ const COACH={
   [(s,c)=>s.coupled&&(s.modeR!=='auto'||s.modeG!=='auto')&&s.Lt<0.1,"Montez d'abord la charge vers 10–12 % (« +5 % ») pour égaler la puissance du réacteur, puis passez R et GCP en automatique."],
   [(s,c)=>s.coupled&&(s.modeR!=='auto'||s.modeG!=='auto'),"Passez R et GCP en automatique : en mode G, ce sont eux qui feront suivre le réacteur."],
   [(s,c)=>s.rods.R.p<175&&!s.rea.run,"R descend sous 175 pas : les GCP compensent un peu trop le défaut de puissance. Borez maintenant, 300 L à 10 m³/h, avant d'atteindre la limite de 150 pas."],
-  [(s,c)=>s.rods.R.p>214,"R approche de sa butée haute : diluez (10 m³/h, 300 L), sinon Tmoy décrochera."],
+  [(s,c)=>s.rods.R.p>214,"R approche de sa butée haute (225 pas) : une fois en butée, il ne peut plus apporter de réactivité, et c'est la température qui s'en chargera en baissant (Tmoy décrochera sous Tref). Diluez (10 m³/h, 300 L) pour le ramener dans sa bande."],
   [(s,c)=>Math.abs(s.DI+1.5*s.n)>4,"ΔI s'approche de la limite du domaine : R est trop inséré. Remontez-le en borant."],
   [(s,c)=>Math.abs(s.Tavg-s.Tref)>1.5,"Tmoy s'écarte de Tref : R est-il en butée ? Corrigez au bore."],
   [(s,c)=>s.ramp>3,"Vitesse au-dessus de 3 %/min : l'exercice demande 3 au maximum."],
