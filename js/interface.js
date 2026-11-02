@@ -456,6 +456,7 @@ function renderMission(force){
   if(A.demo){ if(!force&&A.demo.v===A.demo.rv){ const il=document.getElementById('mis-info'); const iv=curInfo(scn,c,s); if(il&&iv!=null) il.innerHTML=iv; return; } A.demo.rv=A.demo.v; $$('.focus').forEach(e=>e.classList.remove('focus','focus-sm')); A.ptrT=[]; demoMission(); return; }
   if(!force&&scn.steps){ const stp=scn.steps[c.step]; if(stp.sub&&!c.stepOk){ const m=stp.sub.map(x=>{ try{ return x[1](s,c,c.sk)?1:0; }catch(e){ return 0; } }).join(''); if(m!==c.subM){ c.subM=m; c.dirty=true; } } }
   if(!force&&scn.steps&&GARDE[scn.id]){ const t=gardeTxt(scn,s,c); if(t!==c.garde){ c.garde=t; c.dirty=true; } }
+  if(!force&&scn.kind==='exo'&&GAMME[scn.id]){ const i=gammeIdx(scn,s,c); if(i!==c.gI){ c.gI=i; c.dirty=true; } }
   if(!force&&scn.kind==='exo'&&COACH[scn.id]){ const t=(COACH[scn.id].find(x=>{ try{ return x[0](s,c); }catch(e){ return false; } })||[])[1]||''; if(t!==c.coach){ c.coach=t; c.dirty=true; } }
   if(!force&&!c.dirty&&!c.liveInfo&&c.lastFire===c.fired){ /* only refresh live info line */ const il=document.getElementById('mis-info'); const iv=curInfo(scn,c,s); if(il&&iv!=null) il.innerHTML=iv; return; }
   c.dirty=false; c.lastFire=c.fired;
@@ -476,7 +477,7 @@ function renderMission(force){
     if(c.step>0) foot+='<button class="btn sm" id="tPrev" aria-label="Précédent"><span class="lg2">Précédent</span><span class="sh2">‹</span></button>';
     foot+=stp.last?'<button class="btn pri" id="tEnd">Terminer '+(scn.kind==='tuto'?'le tutoriel':'la leçon')+'</button>':'<button class="btn pri" id="tNext"'+(stp.ok&&!c.stepOk&&!stp.opt?' disabled':'')+'>Suivant ›</button>';
   } else if(scn.kind==='exo'){
-    body=(isDeb()?planBox(scn,c.planOpen!==false):'')+'<ul class="obj">'+scn.obj.map(o=>'<li class="'+(c.o[o.id]!=null?'done':'')+'"><span>'+o.t+(o.w&&c.o[o.id]==null?'<small class="why">'+o.w+'</small>':'')+'</span></li>').join('')+'</ul>'+(scn.info?'<div class="info" id="mis-info">'+scn.info(s,c)+'</div>':'');
+    body=gammeBox(scn,s,c)+(isDeb()?planBox(scn,c.planOpen!==false&&!GAMME[scn.id]):'')+'<ul class="obj">'+scn.obj.map(o=>'<li class="'+(c.o[o.id]!=null?'done':'')+'"><span>'+o.t+(o.w&&c.o[o.id]==null?'<small class="why">'+o.w+'</small>':'')+'</span></li>').join('')+'</ul>'+(scn.info?'<div class="info" id="mis-info">'+scn.info(s,c)+'</div>':'');
     if(c.coach) body+='<div class="coach"><b>Formateur :</b> '+c.coach+'</div>';
     foot='<button class="btn" id="mEnd">Terminer et débriefer</button>';
   } else if(scn.kind==='histo'){
@@ -500,6 +501,8 @@ function renderMission(force){
   on('tNext',()=>{ if(c.step<scn.steps.length-1) enterStep(c.step+1); });
   on('tPrev',()=>enterStep(c.step-1));
   on('tHint',()=>{ c.showHint=true; renderMission(true); });
+  on('gHint',()=>{ c.gHint=!c.gHint; renderMission(true); });
+  const gd=$('#mis-body .gamme details'); if(gd) gd.addEventListener('toggle',()=>{ c.gOpen=gd.open; });
   on('tTab',()=>{ setTab(scn.steps[c.step].tab); renderMission(true); });
   on('tEnd',()=>finish());
   on('tLvl',()=>lvlSet(isDeb()?'exp':'deb'));

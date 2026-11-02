@@ -1173,3 +1173,14 @@ details.eclair.ecd:not([open]){padding-block:4px}
 .rodmvh #c-sel{color:var(--bk)}
 .rodmv .btn:not(.amber){border-color:color-mix(in srgb,var(--bk) 60%,var(--line));color:color-mix(in srgb,var(--bk) 70%,var(--fg))}
 .rodmv{padding:6px;border-radius:8px;background:color-mix(in srgb,var(--bk) 8%,transparent)}
+/* Procédure des exercices (GAMME) : étape en cours, liste dépliable, « Comment faire ? » */
+.gamme{column-span:all;margin:4px 0 10px;padding:8px 10px;border-radius:8px;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));border-left:4px solid var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--bg));font-size:13.5px}
+.gamme summary{cursor:pointer;font-weight:600;line-height:1.4}
+.gamme summary .gk{display:inline-block;margin-right:6px;font:700 11px var(--f-disp);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.gamme ol{margin:6px 0 2px;padding-left:22px;color:var(--mute)}
+.gamme li{margin:2px 0}
+.gamme li.done{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--mute) 60%,transparent)}
+.gamme li.done::marker{color:var(--ok)}
+.gamme li.cur{color:var(--fg);font-weight:600}
+.gamme .hintb{margin:8px 0 6px}
+.gamme #gHint{margin-top:6px}
