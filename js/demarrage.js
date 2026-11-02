@@ -72,3 +72,8 @@ if(store('about')!==1) $('#about').hidden=false;
 $('#bandBtn').onclick=()=>{ const on=document.body.classList.toggle('bandfull'); store('bandfull',on); $('#bandBtn').textContent=on?'▴':'▾'; $('#bandBtn').setAttribute('aria-expanded',String(on)); };
 if(document.body.classList.contains('bandfull')) $('#bandBtn').textContent='▴'; setTab('synop'); setVue('synop'); setFam('core'); setZoom(+store('zoom')||1); if(document.fonts) document.fonts.ready.then(()=>{ fitPoste(); fitBand(); }); buildAnn(); syncAll(); openMenu();
 requestAnimationFrame(frame);
+/* mention des droits d'auteur sur chaque fenêtre (le menu a déjà la sienne) et dans la visite */
+{ const CPY='© 2026 David Devesa. Tous droits réservés · <a href="mailto:repsimulator@proton.me">repsimulator@proton.me</a>';
+  /* dans la carte quand son contenu est fixe ; sous la carte quand il est réécrit à chaque ouverture (consigne, aide, débriefing) */
+  $$('.ov:not(#menu) > .box').forEach(b=>{ const c=b.querySelector(':scope > .brief'), t=c&&!c.id?c:b; const p=document.createElement('p'); p.className='copyl'; p.innerHTML=CPY; t.appendChild(p); });
+  const tf=$('#tour .tf'); if(tf){ const p=document.createElement('p'); p.className='copyl'; p.innerHTML=CPY; tf.appendChild(p); } }
