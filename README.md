@@ -86,3 +86,7 @@ Ce sont des scripts classiques partagés : un fichier ne peut appeler, au charge
 
 - `node tests/physique.test.mjs` vérifie les grandeurs de référence du modèle (états stables à 100 % et 50 %, AAR, puissance résiduelle, xénon, criticité à l'arrêt à chaud, perte de pompe primaire). Aucune dépendance n'est nécessaire.
 - `node tests/interface.test.mjs` ouvre la page dans Chromium à 320, 390 et 1 440 px, en thème clair et sombre, parcourt scénarios, visite et retours (envoi au formulaire Netlify et lecture de `retours.json` via un petit serveur local), déroule les huit leçons de bout en bout (dont cinétique et xénon) et vérifie la fenêtre « Pourquoi l'AAR ? » (nécessite Playwright : `npm install` puis `npx playwright install chromium`).
+
+## Droits d'auteur
+
+© 2026 David Devesa. Tous droits réservés. Ce dépôt est public pour consultation uniquement : aucune réutilisation n'est autorisée sans l'accord écrit de l'auteur. Voir [LICENSE](LICENSE).
