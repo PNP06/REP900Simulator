@@ -417,6 +417,35 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
     return o; });
   check('Divergence par dilution : bore critique prévu 1 088 ppm, criticité dans la fourchette, 1/M tracé selon le volume', dd.cb0 === 1128 && dd.cbc === 1088 && Math.abs(dd.cbP6 - 1088) <= 15 && dd.pts >= 4 && dd.axe === 'V' && !dd.trip, JSON.stringify(dd));
   check('Grappes : le groupe sélectionné colore la ligne de déplacement', dd.sel === 'G' && dd.col, JSON.stringify(dd));
+  const gm = await pg.evaluate(() => {
+    launch('div'); document.querySelector('#brief').hidden = true; A.paused = true; const s = A.s, c = A.ctx;
+    renderMission(true); const o = { s0: document.querySelector('#mis-body .gamme summary')?.textContent || '' };
+    document.querySelector('#gHint').click(); o.aide = document.querySelector('#mis-body .gamme .hintb')?.textContent || '';
+    act('rodSel', 'R'); act('rod', 100); for (let i = 0; i < 150 / DT; i++) { step(s); evalAlarms(s); tick(s, c); }
+    renderMission(); o.s1 = document.querySelector('#mis-body .gamme summary')?.textContent || ''; o.aide1 = document.querySelector('#mis-body .gamme .hintb')?.textContent || '';
+    o.sans = SCN.filter(x => ['div', 'divdil', 'demarr', 'montee'].includes(x.id) && !GAMME[x.id]).map(x => x.id); return o; });
+  check('Exercices de divergence et de démarrage : procédure pas à pas, étape cochée au fil de l\'eau, « Comment faire ? » de l\'étape en cours', /1 \/ 7/.test(gm.s0) && /Tout ext/.test(gm.aide) && /2 \/ 7/.test(gm.s1) && /quatre fois/.test(gm.aide1) && !gm.sans.length, JSON.stringify(gm));
+  const dm = await pg.evaluate(() => {
+    launch('demarr'); document.querySelector('#brief').hidden = true; A.paused = true; const s = A.s, c = A.ctx, scn = SCN.find(x => x.id === 'demarr');
+    const run = sec => { for (let i = 0; i < sec / DT; i++) { step(s); evalAlarms(s); tick(s, c); if (s.tripped) return true; } return false; };
+    const appoint = (m, v) => { act('reaMode', m); act('reaQ', '10'); act('reaV', String(v)); act('reaStart'); };
+    act('rodSel', 'R'); act('rod', 100); run(200); act('rod', 40); run(200); act('rod', 10); run(150); act('rod', 10); run(150);
+    while (s.Td > 300 && !s.tripped) { act('rod', 2); run(45); }
+    let last = 0;
+    for (let k = 0; k < 6000 && !s.tripped && s.n < 0.11; k++) { if (s.n > 1e-7 && !s.srInhib) act('srInhib'); if (s.p10 && !s.lowBlk) act('lowBlk');
+      if (s.t - last > 30) { last = s.t; if (c.o.p2 == null) { if (s.n < 0.012 && s.Td > 150) act('rod', 1); else if (s.n > 0.015 && s.rate > 0) act('rod', -1); }
+        else { const td = s.rate > 0 ? Math.LN2 / s.rate : 1e9; if (td > 200 && s.rods.R.p < 205) act('rod', 1); else if (td < 60) act('rod', -1); } }
+      if (c.o.p2 != null && s.rods.R.p >= 200 && !s.rea.run && s.rate < Math.LN2 / 300) appoint('dil', 1);
+      run(1); }
+    if (s.p10 && !s.lowBlk) act('lowBlk'); run(60);
+    act('couple'); act('ltStep', 8); run(60); act('modeG', 'auto'); appoint('bor', 1); run(120);
+    for (let k = 0; k < 600 && Math.abs(s.Tavg - s.Tref) > 0.5; k++) run(1); act('modeR', 'auto');
+    act('ramp', '3'); s.LtSet = 1; last = 0;
+    for (let k = 0; k < 5400 && !s.tripped && !(c.o.p100 && s.t - c.o.p100 > 70); k++) { run(1);
+      if (!s.rea.run && s.t - last > 60) { if (s.rods.R.p < 180) { appoint('bor', 0.3); last = s.t; } else if (s.rods.R.p > 212) { appoint('dil', 1); last = s.t; } } }
+    const ev = scn.evaluate(s, c), ko = ev.filter(r => !r.ok).map(r => r.t);
+    return { obj: Object.keys(c.o).filter(k => c.o[k] != null), ko, fin: scn.end(s, c), g: gammeIdx(scn, s, c), trip: s.tripped ? s.tripCause : '', h: Math.round(s.t / 60) }; });
+  check('Démarrage complet : de l\'arrêt à chaud à 100 % sans AAR, tous les objectifs, toute la procédure et une note sans faute', dm.obj.length === 7 && !dm.ko.length && dm.fin && dm.g === 11 && !dm.trip, JSON.stringify(dm));
   check('1520 × 810 : aucune erreur JavaScript', !errs.length, errs.join(' | '));
   await pg.close();
 }

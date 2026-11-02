@@ -151,6 +151,19 @@ DM.tmi={speed:2,intro:"L'accident de Three Mile Island rejoué sur notre tranche
   {w:s=>s.porvIsol&&s.satMargin>10,t:"Situation stabilisée",why:"La pression remonte, l'eau est revenue loin de l'ébullition et le cœur n'a jamais été découvert. Il reste à refroidir la tranche normalement.",a:[DA.look('#rd-pp')]}]};
 /* maillons de la chaîne que la correction lit à voix haute : les autres sont déjà dits par les étapes */
 const CHAIN_SAY=new Set(['chaud','aar','is','sat','iscut','rdp','vib','pmp','unc','fus']);
+/* démarrage complet : la divergence de l'exercice « Divergence », un palier d'échauffement, la montée vers 10 % (R puis dilution), puis le couplage et la montée de l'exercice « Couplage et montée en charge » */
+DM.demarr={speed:5,intro:"Démarrage complet, de l'arrêt à chaud à 100 %. Regardez comment on change d'outil à chaque palier : les grappes et 1/M pour diverger, le Doppler pour se poser, le bore pour monter, puis la turbine et les automatismes.",steps:[
+  ...DM.div.steps.slice(0,-1),
+  Object.assign({},DM.div.steps[DM.div.steps.length-1],{ctl:Object.assign({},DM.div.steps[DM.div.steps.length-1].ctl,{until:(s,c)=>c.o.p2!=null}),t:"Palier d'échauffement entre 1 et 3 %"}),
+  {t:'Monter vers 10 %',why:"Le palier est tenu : le combustible et l'eau ont chauffé, tout est normal. On reprend la montée vers 10 à 12 %, où l'on pourra coupler. La vapeur produite part au condenseur par le contournement GCT-c.",a:[DA.look('#rd-pn')]},
+  {ctl:{every:30,until:s=>s.lowBlk&&s.n>=0.105,f:s=>{ if(s.p10&&!s.lowBlk) return {t:'Bloquer le seuil bas (P10)',why:"P10 est apparu : la puissance dépasse 10 %. On bloque le seuil bas de haut flux, sinon l'arrêt automatique tomberait à 25 % pendant la montée.",a:[DA.btn('lowBlk')]};
+    if(s.rea.run) return null; const td=s.rate>0?Math.LN2/s.rate:1e9;
+    if(td<60) return {t:'−1 pas',why:"La montée devient trop rapide : on garde un temps de doublement d'au moins une minute.",a:[DA.btn('rod','-1')]};
+    if(td>150&&s.rods.R.p<200) return {t:'+2 pas',why:"Plus la puissance monte, plus le combustible chaud freine (défaut de puissance) : il faut extraire R régulièrement pour continuer.",a:[DA.btn('rod','1',2)]};
+    if(td>150) return {t:'Dilution de 1 m³',why:"R arrive vers 200 pas : il ne suffit plus à compenser le défaut de puissance. On retire du bore, par lots de 1 m³, en attendant l'effet entre deux lots.",a:DA.bore('dil','10','1')};
+    return null; }},t:'Monter vers 10–12 % : R, puis dilution'},
+  {w:stableFor(30,0.002),t:'Prêt à coupler',why:"Le réacteur est vers 11 %, seuil bas bloqué, la vapeur au condenseur. On passe à la turbine.",a:[DA.look('#rd-pn')]},
+  ...DM.montee.steps]};
 const DEMO_IDS=Object.keys(DM);
 /* voix des corrections commentées (synthèse vocale du navigateur, en français) */
 const canSpeak=()=>typeof speechSynthesis!=='undefined'&&typeof SpeechSynthesisUtterance!=='undefined';

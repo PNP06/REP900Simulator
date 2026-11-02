@@ -270,6 +270,10 @@ const ECLAIR={
  ],
  div:{d:"Approcher la criticité, c'est avancer vers un bord dans le brouillard : petits pas, et une mesure à chaque fois. Le 1/M sert de télémètre. Une fois critique, la puissance monte seule, puis le Doppler la stabilise vers 1 %. Les deux pièges : extraire trop vite, et oublier d'inhiber la gamme source.",e:"Démarrer un réacteur, c'est l'amener de l'arrêt, où la réaction en chaîne s'éteint d'elle-même, à la <b>criticité</b>, où elle s'entretient seule, sans jamais aller trop vite. On avance par paliers en mesurant à chaque fois si l'on se rapproche.",
   plan:["Remontez R par paliers de 20 à 30 pas. Après chaque palier, attendez que le comptage se stabilise et lisez 1/M dans la ligne d'information.","Quand 1/M passe sous 0,25, réduisez les paliers à 2 à 5 pas : vous êtes proche.","Quand un temps de doublement constant apparaît, cessez d'extraire : le réacteur est critique.","À l'alarme P6, inhibez la gamme source (Agir › Protection).","Laissez monter jusqu'à 1 à 3 %, puis stabilisez par petites corrections d'un pas."]},
+ divdil:{d:"Diverger par dilution, c'est approcher le bord du réacteur critique sans toucher aux grappes : on retire du frein dissous dans l'eau, lot après lot. L'eau pure met du temps à agir et continue d'agir après l'arrêt de l'appoint : c'est pour cela qu'on dilue par petits lots et qu'on attend toujours.",e:"Cette fois, les grappes restent où elles sont. On rapproche le réacteur de la criticité en retirant un peu du bore dissous dans l'eau, par petites quantités, en mesurant à chaque fois si l'on se rapproche.",
+  plan:["Agir › Bore : mode Dilution, débit 10 m³/h, volume 3 m³, puis « Lancer l'appoint ».","Quand l'appoint s'arrête, attendez que le comptage se stabilise (Td « stable ») et regardez 1/M dans la vue Réactivité, « selon la dilution ».","Recommencez avec des lots plus petits : 3 m³, puis 1 m³, puis 300 L et 100 L quand 1/M passe sous 0,25.","Quand un temps de doublement apparaît, n'ajoutez plus d'eau pure. À P6, inhibez la gamme source (Agir › Protection).","Laissez monter jusqu'à 1 à 3 %, puis stabilisez avec R par pas de 1."]},
+ demarr:{d:"Un démarrage, c'est une suite de paliers où l'on change d'outil : les grappes et 1/M pour diverger, le Doppler pour se poser, le bore pour aller plus haut, la turbine pour produire, puis les automatismes et le bore pour suivre. À chaque palier, on vérifie avant de continuer.",e:"On part d'un réacteur arrêté mais chaud et on va jusqu'à la pleine production d'électricité : d'abord réveiller la réaction en chaîne tout doucement, puis chauffer, puis envoyer la vapeur à la turbine et monter jusqu'à 100 %.",
+  plan:["Divergence : R par paliers de 20 à 40 pas, 1/M après chaque palier (vue Réactivité), puis 1 à 2 pas près de 170 pas. Td entre 60 et 120 s.","À P6 : Agir › Protection › Inhiber GS.","Posez-vous vers 1 à 3 % une minute (palier d'échauffement), en corrigeant R d'un pas.","Montez vers 10–12 % : extrayez R jusque vers 200 pas, puis diluez par lots de 1 m³. À P10 : Agir › Protection › Bloquer seuil bas.","Couplez (Agir › Turbine), montez la charge vers 13 %, passez les GCP puis R en automatique quand Tmoy est sur Tref.","Vitesse 3 %/min, consigne 100 % : borez si R descend sous 180 pas, diluez s'il approche 215 pas."]},
  montee:{d:"En mode G, vous ne pilotez pas le réacteur mais la turbine : les grappes suivent. Leurs réglages automatiques ne sont jamais parfaits, et c'est au bore de corriger la dérive lente pour garder R dans sa bande. Monter doucement protège le combustible.",e:"Le réacteur chauffe déjà, mais sa vapeur part directement au condenseur : aucune électricité n'est produite. Il faut raccorder l'alternateur au réseau, puis augmenter progressivement la production jusqu'à 100 %, en laissant les automatismes faire suivre le réacteur.",
   plan:["Couplez l'alternateur (Agir › Turbine).","Montez la charge vers 13 à 14 %, puis passez les GCP en automatique en lançant une borication de 1 m³.","Quand Tmoy est revenue sur Tref, passez R en automatique.","Réglez la vitesse à 3 %/min et la consigne à 100 %, puis passez en ×5.","Surveillez R : s'il descend vers 150 pas, borez ; s'il monte trop haut, diluez. Gardez un œil sur le ΔI."]},
  suivi:{d:"Le vrai adversaire du suivi de charge est le xénon, qui réagit avec des heures de retard. Après la baisse, il s'accumule et freine le réacteur : il faut diluer, assez et tôt. À la remontée, il disparaît et accélère le réacteur : il faut borer.",e:"La nuit ou le week-end, le réseau a besoin de moins d'électricité : la centrale baisse sa production, puis la remonte. La manœuvre en elle-même est simple ; la difficulté, c'est le <b>xénon</b>, qui continue d'évoluer pendant des heures après chaque changement.",
@@ -306,7 +310,65 @@ document.addEventListener('click',e=>{ const b=e.target.closest('.lvlseg button'
 $$('.lvlseg button').forEach(b=>{ b.classList.toggle('on',b.dataset.lvl===LVL.v); b.setAttribute('aria-pressed',String(b.dataset.lvl===LVL.v)); });
 
 /* Formateur pour les exercices : premier conseil applicable */
+/* Procédure des exercices : comme une gamme en salle de commande, une suite d'étapes cochées au fil de l'eau.
+   L'étape en cours est affichée avec son « Comment faire ? » ; une étape cochée le reste. */
+const GAMME={
+ div:[
+  {t:'Premier palier : R à 100 pas, puis 1/M',f:s=>s.rods.R.p>=99,h:"Groupe R sélectionné (Agir › Grappes), « +10 » dix fois, ou « Tout ext. » puis « Stop ». Attendez que le comptage se stabilise (temps de doublement « stable ») et lisez 1/M : ligne de mesures ci-dessous, ou vue Réactivité qui trace la courbe."},
+  {t:'Deuxième palier : R à 140 pas, 1/M et cote extrapolée',f:s=>s.rods.R.p>=139,h:"« +10 » quatre fois, puis attendez la stabilisation (×5 ou ×10). Avec deux points, la vue Réactivité prolonge la droite 1/M jusqu'à 0 : c'est la position critique estimée. Comparez-la à la prévision, 170 ± 25 pas."},
+  {t:'Troisième palier : R à 160 pas',f:s=>s.rods.R.p>=159,h:"« +10 » deux fois. Près du critique, le comptage met plusieurs minutes à se stabiliser : passez en ×10. La cote extrapolée doit se resserrer vers 170 pas."},
+  {t:'Approche fine jusqu\'à la criticité',f:s=>s.n>1e-8&&s.rate>0&&s.Td<300,h:"« +1 » ou « +2 », puis 30 à 60 s d'attente, et ainsi de suite. Quand le comptage ne se stabilise plus et monte avec un temps de doublement constant, le réacteur est critique. Visez 60 à 120 s, jamais moins de 20 s."},
+  {t:'Inhiber la gamme source à P6',f:s=>s.srInhib,h:"Quand l'alarme « P6 » apparaît (vers 10³ c/s) : Agir › Protection › « Inhiber GS », tout de suite. Sinon l'AAR tombe à 10⁵ c/s."},
+  {t:'Laisser monter jusqu\'à 1 %',f:s=>s.n>=0.01,h:"Passez en ×10 et surveillez le temps de doublement (60 à 120 s). Rien d'autre à faire : chaque doublement prend une à deux minutes, il en faut une quinzaine."},
+  {t:'Stabiliser entre 1 et 3 %',f:(s,c)=>c.o.stab!=null,h:"Vers 1 %, le Doppler freine seul la montée. Corrigez R d'un pas (« −1 » au-dessus de 3 %, « +1 » si la puissance retombe sous 1 %), puis attendez une minute avant de recorriger. Il faut tenir 2 minutes quasi stable."}],
+ divdil:[
+  {t:'Lancer un premier lot de 3 m³',f:s=>s.Cb<1126,h:"Agir › Bore : mode « Dilution », débit 10 m³/h, volume 3 m³, puis « Lancer l'appoint ». Le groupe R reste à 200 pas pendant toute l'approche."},
+  {t:'Lots de 3 m³ : attendre et relever 1/M',f:s=>s.Cb<=1105,h:"L'appoint s'arrête seul à la fin du lot. Attendez que le comptage se stabilise (temps de doublement « stable »), puis lisez 1/M dans la vue Réactivité, « selon la dilution ». Relancez un lot de 3 m³."},
+  {t:'Réduire les lots : 1 m³, puis 300 L, puis 100 L',f:s=>s.n>1e-8&&s.rate>0&&s.Td<300,h:"Quand 1/M passe sous 0,25, réduisez les lots. La droite 1/M prolongée jusqu'à 0 donne le volume qui reste à injecter : n'en injectez jamais plus de la moitié d'un coup. Attendez toujours la stabilisation."},
+  {t:'Critique : plus d\'eau pure',f:s=>s.n>1e-7,h:"Un temps de doublement apparaît : n'ajoutez plus d'eau, celle qui est déjà injectée continue d'agir. Si l'appoint tourne encore, « Arrêter ». Si Td descend sous 60 s, insérez R d'un ou deux pas."},
+  {t:'Inhiber la gamme source à P6',f:s=>s.srInhib,h:"Quand l'alarme « P6 » apparaît : Agir › Protection › « Inhiber GS », tout de suite."},
+  {t:'Stabiliser entre 1 et 3 %',f:(s,c)=>c.o.stab!=null,h:"Laissez monter en ×10, puis ajustez R par pas de 1 : le Doppler stabilise la puissance vers 1 à 3 %. Tenez 2 minutes."}],
+ demarr:[
+  {t:'Approche : R par paliers jusque vers 160 pas, 1/M à chaque palier',f:(s,c)=>s.rods.R.p>=159||s.n>1e-7,h:"Agir › Grappes, groupe R : « +10 » par paliers de 20 à 40 pas (100, 140, 160). Après chaque palier, attendez la stabilisation du comptage et lisez 1/M (vue Réactivité : courbe et cote extrapolée). La prévision est 170 ± 25 pas."},
+  {t:'Approche fine jusqu\'à la criticité',f:s=>s.n>1e-8&&s.rate>0&&s.Td<300,h:"« +1 » ou « +2 », puis 30 à 60 s d'attente. Critique quand le comptage monte avec un temps de doublement constant. Visez 60 à 120 s."},
+  {t:'Inhiber la gamme source à P6',f:s=>s.srInhib,h:"Alarme « P6 » : Agir › Protection › « Inhiber GS », tout de suite."},
+  {t:"Palier d'échauffement entre 1 et 3 %",f:(s,c)=>c.o.p2!=null,h:"Laissez monter en ×10 avec un temps de doublement de 60 à 120 s. Vers 1 %, le Doppler freine : ajustez R d'un pas jusqu'à une puissance quasi stable entre 1 et 3 %, et tenez une minute."},
+  {t:'Monter vers 10 % : R jusque vers 200 pas, puis dilution',f:s=>s.n>=0.10,h:"Extrayez R de quelques pas à la fois (Td d'au moins une minute). Plus la puissance monte, plus le défaut de puissance freine : vers 200 pas, R ne suffit plus. Diluez alors par lots de 1 m³ (Agir › Bore, 10 m³/h) en attendant l'effet entre deux lots. La vapeur part au condenseur par le GCT-c."},
+  {t:'Bloquer le seuil bas à P10',f:s=>s.lowBlk,h:"Alarme « P10 » : Agir › Protection › « Bloquer seuil bas ». Sinon l'AAR tombe à 25 %."},
+  {t:"Coupler l'alternateur",f:s=>s.coupled,h:"Vers 10 à 12 % : Agir › Turbine › « Coupler ». La turbine prend 5 % au couplage ; le reste de la vapeur continue au condenseur."},
+  {t:'Aligner la charge vers 13 %',f:s=>s.coupled&&s.LtSet>=0.12,h:"Agir › Turbine : vitesse 3 %/min, « +5 % » deux fois. La charge rejoint la puissance du réacteur et Tmoy se rapproche de Tref."},
+  {t:'GCP en automatique, avec 1 m³ de borication',f:s=>s.coupled&&s.modeG==='auto',h:"Agir › Grappes : GCP en « Auto ». Ils rejoignent leur courbe de calibrage et ajoutent environ 200 pcm : lancez aussitôt une borication de 1 m³ (Agir › Bore) pour compenser. Laissez R en manuel pour l'instant."},
+  {t:'R en automatique quand Tmoy est sur Tref',f:(s,c)=>c.o.auto!=null,h:"Attendez que Tmoy − Tref soit sous 0,5 °C, puis groupe R en « Auto » : la régulation prend la main sans à-coup."},
+  {t:'Monter à 100 % à 3 %/min',f:(s,c)=>c.o.p100!=null,h:"Agir › Turbine : consigne 100 %, vitesse 3 %/min, ×5. Surveillez R : s'il descend sous 180 pas, borez 300 L ; s'il approche 215 pas, diluez 1 m³. Gardez un œil sur le ΔI."}]
+};
+GAMME.montee=GAMME.demarr.slice(5);
+/* indice de l'étape en cours (les étapes cochées le restent) */
+function gammeIdx(scn,s,c){ const g=GAMME[scn.id]; if(!g) return -1; c.gOk=c.gOk||[];
+  g.forEach((e,i)=>{ if(!c.gOk[i]){ try{ if(e.f(s,c)) c.gOk[i]=true; }catch(er){} } });
+  for(let i=g.length-1;i>=0;i--) if(c.gOk[i]){ for(let j=0;j<i;j++) c.gOk[j]=true; break; }
+  const i=g.findIndex((e,k)=>!c.gOk[k]); return i<0?g.length:i; }
+function gammeBox(scn,s,c){ const g=GAMME[scn.id]; if(!g) return ''; const i=gammeIdx(scn,s,c); c.gI=i;
+  const cur=g[i], li=g.map((e,k)=>'<li class="'+(k<i?'done':k===i?'cur':'')+'">'+e.t+'</li>').join('');
+  return '<div class="gamme"><details'+(c.gOpen?' open':'')+'><summary><span class="gk">Procédure'+(cur?' '+(i+1)+' / '+g.length:'')+'</span> '+(cur?cur.t:'toutes les étapes sont faites')+'</summary><ol>'+li+'</ol></details>'
+   +(cur&&c.gHint?'<div class="hintb"><b>Comment faire :</b> '+cur.h+'</div>':'')
+   +(cur?'<button class="btn sm" id="gHint" aria-expanded="'+(c.gHint?'true':'false')+'">'+(c.gHint?'Masquer l\'aide':'Comment faire ?')+'</button>':'')+'</div>'; }
+
 const COACH={
+ demarr:[
+  [(s,c)=>s.tripped,"AAR : relisez la cause dans le journal et le débriefing."],
+  [(s,c)=>s.n>1e-7&&!s.srInhib,"P6 est franchi : inhibez la gamme source maintenant (Agir › Protection › Inhiber GS), sinon l'AAR tombera vers 10⁵ c/s."],
+  [(s,c)=>s.p10&&!s.lowBlk,"P10 est franchi : bloquez le seuil bas de haut flux (Agir › Protection › « Bloquer seuil bas »), sinon l'AAR tombera à 25 %."],
+  [(s,c)=>!s.coupled&&s.Td<40&&s.n>1e-9,"Temps de doublement court : arrêtez d'extraire, voire insérez 1 ou 2 pas. Visez 60 s ou plus."],
+  [(s,c)=>!s.srInhib&&s.n<1e-7&&s.rods.R.p>195,"R dépasse la fourchette prévue (170 ± 25 pas) sans criticité : arrêtez d'extraire et cherchez l'écart, comme on le ferait en salle."],
+  [(s,c)=>!s.srInhib&&s.rods.R.p<130,"Divergence : extrayez R par paliers de 20 à 40 pas (« +10 »), attendez que le comptage se stabilise, puis lisez 1/M (ligne de mesures ou vue Réactivité). ×10 pendant les attentes."],
+  [(s,c)=>!s.srInhib&&c.k.cps0&&c.k.cps0/(s.n*1e10)<0.25,"1/M sous 0,25 : vous approchez. Pas de 1 ou 2, et attendez à chaque fois la stabilisation."],
+  [(s,c)=>!s.srInhib,"Continuez par paliers plus petits (5 à 10 pas) et regardez la cote extrapolée dans la vue Réactivité."],
+  [(s,c)=>!s.coupled&&c.o.p2==null&&s.n<0.01,"Laissez monter vers 1 % avec un temps de doublement de 60 à 120 s. Le Doppler va freiner la montée."],
+  [(s,c)=>!s.coupled&&c.o.p2==null&&s.n>0.03,"Au-dessus de 3 % trop tôt : insérez R de 1 ou 2 pas et posez-vous entre 1 et 3 % une minute."],
+  [(s,c)=>!s.coupled&&c.o.p2==null,"Palier d'échauffement : ajustez R par pas de 1 jusqu'à une puissance quasi stable entre 1 et 3 %, et tenez une minute."],
+  [(s,c)=>!s.coupled&&s.n<0.10&&s.rods.R.p>=200&&!s.rea.run,"R approche du haut : pour continuer à monter, diluez par lots de 1 m³ (Agir › Bore, 10 m³/h). Attendez l'effet entre deux lots."],
+  [(s,c)=>!s.coupled&&s.n<0.10,"Montez vers 10–12 % : extrayez R de quelques pas en gardant un temps de doublement d'au moins une minute. La vapeur part au condenseur par le GCT-c."],
+ ],
  divdil:[
   [(s,c)=>s.tripped,"AAR : relisez le débriefing. Le plus souvent, la gamme source n'a pas été inhibée, ou la dilution a continué trop longtemps."],
   [(s,c)=>s.n>1e-7&&!s.srInhib,"P6 est franchi : inhibez la gamme source maintenant (Agir › Protection › Inhiber GS), sinon l'AAR tombera vers 10⁵ c/s."],
@@ -412,6 +474,14 @@ const RAPPELS={
   "<b>Règle d'or</b> : jamais de dilution en cours quand un temps de doublement apparaît. L'eau pure déjà injectée continue d'agir ; on arrête l'appoint et on corrige avec R si besoin.",
   "<b>Une fois critique</b> : P6 → inhiber la gamme source ; Td entre 60 et 120 s, jamais sous 20 s ; stabiliser entre 1 et 3 % avec quelques pas de R."],
   ch:['comptage','doublement','diverg']},
+ demarr:{l:[
+  "<b>Prévision</b> : criticité vers <b>R = 170 pas ± 25</b>. Hors fourchette, on s'arrête et on cherche pourquoi.",
+  "<b>Divergence</b> : paliers, stabilisation, 1/M (vue Réactivité), puis 1 ou 2 pas près du but. Td entre 60 et 120 s, <b>jamais sous 20 s</b>.",
+  "<b>Les deux permissifs</b> : à <b>P6</b> (GI > 10⁻¹⁰ A), inhiber la gamme source ; à <b>P10</b> (10 %), bloquer le seuil bas. Les oublier, c'est l'AAR à 10⁵ c/s, puis à 25 %.",
+  "<b>Pour monter au-delà de quelques %</b> : R seul ne suffit pas (défaut de puissance). Quand R approche 200 pas, diluer par lots de 1 m³.",
+  "<b>Couplage</b> : au moins 6 % ; monter la charge vers 13 % pour égaler la puissance du réacteur ; GCP puis R en automatique quand Tmoy est sur Tref.",
+  "<b>Montée</b> : 3 %/min au plus, Tmoy à ± 2 °C de Tref, R entre 150 et 220 pas (borer s'il descend, diluer s'il monte), ΔI dans le domaine."],
+  ch:['diverg','doublement','couplage','montee']},
  montee:{l:[
   "<b>Couplage</b> : turbine découplée, au moins 6 % de puissance. Après le couplage, monter la charge vers 13–14 % pour égaler la puissance du réacteur avant de passer en automatique.",
   "<b>Seuil bas de haut flux</b> : bloqué au-dessus de P10 (10 %). S'il se réarme (puissance repassée sous 9 %), le rebloquer avant de remonter, sinon AAR à 25 %.",
@@ -447,3 +517,5 @@ const RAPPELS={
 const rappelsBox=scn=>{ const r=RAPPELS[scn.id]; if(!r) return ''; const idx=k=>typeof TOUR!=='undefined'?TOUR.findIndex(c=>c.id===k):-1;
   const lk=r.ch.map(k=>{ const i=idx(k); return i<0?'':'<button type="button" class="btn sm" data-tourgo="'+i+'">'+TOUR[i].t+'</button>'; }).join('');
   return '<details class="eclair rappels" open><summary><span class="ecl">Rappels avant de commencer</span></summary><ul>'+r.l.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+(lk?'<div class="rev"><span>Revoir dans la visite :</span>'+lk+'</div>':'')+'</details>'; };
+/* fin de démarrage : mêmes conseils que l'exercice « Couplage et montée en charge », à partir du couplage */
+COACH.demarr.push(...COACH.montee.slice(2));
