@@ -378,3 +378,50 @@ const GARDE={
  ],
 };
 const gardeTxt=(scn,s,c)=>{ const g=scn&&GARDE[scn.id]; if(!g) return ''; const x=g.find(e=>{ try{ return e[0](s,c); }catch(er){ return false; } }); return x?x[1]:''; };
+
+/* Rappels affichés dans la présentation des exercices : l'essentiel des seuils, des gestes et des repères,
+   avec les chapitres de la visite à revoir (ouverts par-dessus la présentation, la séance reste en pause). */
+const RAPPELS={
+ div:{l:[
+  "<b>Départ</b> : arrêt à chaud, 286 °C et 155 bar. Les groupes d'arrêt sont extraits et doivent le rester : ils sont prêts à tomber. Seul R bouge.",
+  "<b>Prévision</b> : criticité attendue vers <b>R = 170 pas ± 25</b>. Si elle arrive nettement hors de cette fourchette, on s'arrête et on cherche pourquoi (bore, grappes, calcul).",
+  "<b>Approche</b> : paliers de 20 à 40 pas, puis on attend que le comptage se stabilise avant de lire 1/M. La vue <b>Réactivité</b> trace la courbe 1/M et la cote extrapolée. Près du but, jamais plus de la moitié de la distance restante d'un coup : 1 ou 2 pas.",
+  "<b>Temps de doublement</b> : viser 60 à 120 s une fois critique, <b>jamais sous 20 s</b>. Juste après un mouvement de grappes, il est faussé quelques secondes.",
+  "<b>P6</b> (GI > 10⁻¹⁰ A, vers 10³ c/s) : inhiber la gamme source <b>aussitôt</b> (Agir › Protection). Sinon AAR à 10⁵ c/s, deux décades plus haut : quelques minutes à Td 60 s, bien moins à ×10.",
+  "<b>Arrivée</b> : vers 1 % le Doppler freine seul la montée ; stabiliser entre 1 et 3 % par pas de 1. Le seuil bas (25 %) ne se bloque qu'à P10, pendant la montée en charge."],
+  ch:['comptage','doublement','diverg']},
+ montee:{l:[
+  "<b>Couplage</b> : turbine découplée, au moins 6 % de puissance. Après le couplage, monter la charge vers 13–14 % pour égaler la puissance du réacteur avant de passer en automatique.",
+  "<b>Seuil bas de haut flux</b> : bloqué au-dessus de P10 (10 %). S'il se réarme (puissance repassée sous 9 %), le rebloquer avant de remonter, sinon AAR à 25 %.",
+  "<b>Vitesse</b> : 3 %/min au plus. <b>Tmoy</b> suit Tref (286 °C à vide, ≈ 304,5 °C à 100 %), à ± 2 °C.",
+  "<b>Groupe R</b> : jamais sous 150 pas (limite basse), idéalement 180–210. R descend → borer ; R monte vers sa butée → diluer. La vue Réactivité donne le <b>bore pour R à 190 pas</b>.",
+  "<b>ΔI</b> : dans le domaine (± 5 % autour de la référence). Un R trop inséré le pousse vers le bas du cœur."],
+  ch:['couplage','montee','rband','dianim']},
+ suivi:{l:[
+  "<b>Programme</b> : baisse à 50 % à 5 %/min, palier de 2 h, retour à 100 %. Tmoy à ± 1,5 °C de Tref, R entre 150 et 220 pas, ΔI dans le domaine.",
+  "<b>Xénon après une baisse</b> : il monte pendant plusieurs heures et consomme jusqu'à ~5 pcm/min au début du palier. Il faut <b>diluer tôt et franchement</b> (20 à 30 m³/h) ; à 10 m³/h, R finit en butée haute.",
+  "<b>Xénon à la remontée</b> : il est brûlé plus vite qu'il ne se forme, la réactivité remonte : il faut <b>borer</b>.",
+  "<b>Repère</b> : la vue Réactivité donne le bore pour ramener R à 190 pas et le volume à injecter ; ×60 pendant le palier."],
+  ch:['xeanim','xenon','suivi','rband']},
+ arret:{l:[
+  "<b>Ordre</b> : baisse de charge, découplage sous 6 %, passage des groupes en manuel, insertion des GCP puis de R jusqu'à la sous-criticité, puis borication.",
+  "<b>Groupes d'arrêt</b> : ils restent extraits, prêts à tomber. La sous-criticité se fait avec les groupes de commande et le bore.",
+  "<b>Marge d'arrêt</b> = −ρ total, à porter à <b>3 000 pcm</b>. Repère : à −9 pcm par ppm, c'est environ 330 ppm au-dessus du bore critique affiché dans la vue Réactivité.",
+  "<b>Pourquoi borer large</b> : le xénon va disparaître dans les jours suivants et rendre de la réactivité ; un refroidissement en rendrait aussi.",
+  "<b>Tmoy</b> : stabilisée vers 286 °C par le GCT-c en mode pression."],
+  ch:['etats','leviers','pcm']},
+ essaidg:{l:[
+  "<b>Une voie à la fois</b> : on n'essaie jamais les deux diesels en même temps, l'autre voie doit rester intacte.",
+  "<b>Déroulé</b> : démarrage (environ 10 s), contrôle tension et fréquence, 5 minutes de marche, arrêt, remise en attente.",
+  "<b>Fin</b> : les deux diesels « prêts ». Commandes dans la vue <b>Électrique</b>."],
+  ch:['elsecu','eldg']},
+ h3:{l:[
+  "<b>Chaîne des secours</b> : TS, puis TA (225 kV), puis les deux diesels ; ici tout manque. Restent le <b>DUS</b>, le turboalternateur <b>LLS</b>, la <b>turbopompe ASG</b> (vapeur des GV) et les <b>batteries</b>.",
+  "<b>Priorité</b> : garder les GV alimentés par la turbopompe ASG pour évacuer la puissance résiduelle ; sans pompes primaires, la circulation naturelle fait le reste.",
+  "<b>Batteries</b> : de l'ordre de l'heure ; surveillez leur charge dans la vue Électrique.",
+  "<b>DUS</b> : environ 2 minutes pour reprendre un tableau secouru ; les charges redémarrent ensuite par paliers."],
+  ch:['elsecu','elcn','elbat']}
+};
+const rappelsBox=scn=>{ const r=RAPPELS[scn.id]; if(!r) return ''; const idx=k=>typeof TOUR!=='undefined'?TOUR.findIndex(c=>c.id===k):-1;
+  const lk=r.ch.map(k=>{ const i=idx(k); return i<0?'':'<button type="button" class="btn sm" data-tourgo="'+i+'">'+TOUR[i].t+'</button>'; }).join('');
+  return '<details class="eclair rappels" open><summary><span class="ecl">Rappels avant de commencer</span></summary><ul>'+r.l.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+(lk?'<div class="rev"><span>Revoir dans la visite :</span>'+lk+'</div>':'')+'</details>'; };

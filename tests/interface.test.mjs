@@ -402,6 +402,10 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
     act('srInhib'); renderMission(true); o.gardeApres = !!document.querySelector('#mis-body .coach.garde'); return o; });
   check('Divergence guidée : alerte « P6 » affichée dès l\'apparition de P6, quelle que soit l\'étape, puis effacée après l\'inhibition', !dv.avantP6 && dv.p6 && dv.garde && !dv.gardeApres && !dv.trip, JSON.stringify(dv));
   check('Réactivité : position critique de R, bore critique et points 1/M relevés à chaque palier', /170 pas/.test(dv.rc) && /ppm/.test(dv.cbc) && dv.pts >= 4, JSON.stringify(dv));
+  const rp = await pg.evaluate(() => { const ex = SCN.filter(x => x.kind === 'exo'); const sans = ex.filter(x => !RAPPELS[x.id]).map(x => x.id);
+    const liens = Object.values(RAPPELS).flatMap(r => r.ch).filter(k => !TOUR.some(c => c.id === k));
+    launch('div'); const box = document.querySelector('#briefBox .rappels'); const n = box ? box.querySelectorAll('[data-tourgo]').length : 0; document.querySelector('#brief').hidden = true; return { sans, liens, box: !!box, n }; });
+  check('Exercices : chaque présentation a ses rappels, avec des liens vers des chapitres existants', !rp.sans.length && !rp.liens.length && rp.box && rp.n === 3, JSON.stringify(rp));
   check('1520 × 810 : aucune erreur JavaScript', !errs.length, errs.join(' | '));
   await pg.close();
 }

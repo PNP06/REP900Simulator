@@ -33,6 +33,7 @@ function showBrief(){
   if(scn.kind==='alea') h+=INTRO_ALEA+(scn.id==='rodwd'?"<p>État : réacteur tout juste critique à puissance nulle (GI ≈ 10⁻⁸ A), turbine découplée, groupes en manuel. Restez à ×1.</p>":'');
   else if(scn.kind==='libre') h+="<p>Aucun objectif imposé : manœuvrez librement. "+(A.ctx.rnd?'Des aléas aléatoires surviendront pendant le pilotage. ':'')+"Le bouton <kbd>Terminer</kbd> affiche un bilan.</p>";
   else h+=scn.brief||'';
+  if(scn.kind==='exo') h+=rappelsBox(scn);
   if(scn.kind==='histo') h+='<div class="row"><span class="lbl">Instruments</span><div class="seg" data-key="era"><button data-v="79">Salle de 1979</button><button data-v="now">Après TMI</button></div></div><p class="note">Salle de 1979 : le voyant de la soupape montre l\'ordre envoyé, pas sa position, et la marge à la saturation n\'est pas affichée. Après TMI : position réelle et marge à la saturation, comme aujourd\'hui.</p>';
   if(scn.obj){ h+='<h3>Objectifs</h3><ul class="crit">'+scn.obj.map(o=>'<li><span class="i">○</span><span>'+o.t+(o.w?'<small>'+o.w+'</small>':'')+'</span></li>').join('')+'</ul>'; }
   if(scn.tips) h+='<p class="note" style="font-size:14px">'+scn.tips+'</p>';
