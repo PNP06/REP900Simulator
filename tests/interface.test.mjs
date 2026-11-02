@@ -446,6 +446,17 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
     const ev = scn.evaluate(s, c), ko = ev.filter(r => !r.ok).map(r => r.t);
     return { obj: Object.keys(c.o).filter(k => c.o[k] != null), ko, fin: scn.end(s, c), g: gammeIdx(scn, s, c), trip: s.tripped ? s.tripCause : '', h: Math.round(s.t / 60) }; });
   check('Démarrage complet : de l\'arrêt à chaud à 100 % sans AAR, tous les objectifs, toute la procédure et une note sans faute', dm.obj.length === 7 && !dm.ko.length && dm.fin && dm.g === 11 && !dm.trip, JSON.stringify(dm));
+  const dh = await pg.evaluate(() => {
+    launch('l-div'); document.querySelector('#brief').hidden = true; A.paused = true; const s = A.s, c = A.ctx; updateUI();
+    const o = { pn0: document.querySelector('#b-pn').textContent };
+    enterStep(5); act('reaMode', 'dil'); act('reaQ', '10'); act('reaV', '1'); act('reaStart'); act('rodSel', 'R'); act('rodOut');
+    for (let m = 0; m < 25; m++) { if (s.n > 1e-7 && !s.srInhib) act('srInhib'); for (let i = 0; i < 60 / DT; i++) { step(s); evalAlarms(s); tick(s, c); } }
+    o.n = +(s.n * 100).toFixed(1); o.td = s.Td; o.ok = c.stepOk; o.garde = gardeTxt(A.scn, s, c);
+    const x = Math.round(rRetour(s, 27)); o.cible = x; act('rod', x - Math.round(s.rods.R.p));
+    for (let i = 0; i < 1200 / DT; i++) { step(s); evalAlarms(s); tick(s, c); } o.apres = +(s.n * 100).toFixed(2); o.trip = s.tripped; return o; });
+  check('Divergence guidée : l\'étape « Divergez » se valide même si la puissance s\'est déjà stabilisée au-delà de la criticité', dh.ok && dh.n > 3 && !(dh.td < 1e5), JSON.stringify(dh));
+  check('R trop haut au-dessus de 3 % : l\'alerte donne la cote où insérer R, et cette cote ramène la puissance entre 1 et 3 %', /insérez R jusque vers <b>\d+ pas/.test(dh.garde) && dh.apres >= 1 && dh.apres <= 3 && !dh.trip, JSON.stringify(dh));
+  check('Bandeau : puissance nucléaire en notation scientifique sous 0,001 %', /^5,0·10⁻⁷$/.test(dh.pn0), dh.pn0);
   check('1520 × 810 : aucune erreur JavaScript', !errs.length, errs.join(' | '));
   await pg.close();
 }
