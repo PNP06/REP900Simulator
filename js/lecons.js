@@ -532,6 +532,6 @@ const RAPPELS={
 };
 const rappelsBox=scn=>{ const r=RAPPELS[scn.id]; if(!r) return ''; const idx=k=>typeof TOUR!=='undefined'?TOUR.findIndex(c=>c.id===k):-1;
   const lk=r.ch.map(k=>{ const i=idx(k); return i<0?'':'<button type="button" class="btn sm" data-tourgo="'+i+'">'+TOUR[i].t+'</button>'; }).join('');
-  return '<details class="eclair rappels" open><summary><span class="ecl">Rappels avant de commencer</span></summary><ul>'+r.l.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+(lk?'<div class="rev"><span>Revoir dans la visite :</span>'+lk+'</div>':'')+'</details>'; };
+  return '<details class="eclair rappels" open><summary><span class="ecl">Rappels avant de commencer</span></summary><ul>'+r.l.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+(lk?'<div class="rev"><span>Revoir dans la formation :</span>'+lk+'</div>':'')+'</details>'; };
 /* fin de démarrage : mêmes conseils que l'exercice « Couplage et montée en charge », à partir du couplage */
 COACH.demarr.push(...COACH.montee.slice(2));

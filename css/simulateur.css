@@ -1234,3 +1234,13 @@ details.eclair.ecd:not([open]){padding-block:4px}
 .tf .copyl{flex-basis:100%;margin:0}
 .brand .cpy{text-transform:none;letter-spacing:.02em;color:var(--dim)}
 .brief .copyl{text-align:left;grid-column:1/-1}
+/* recherche dans la formation */
+.tq{height:30px;width:200px;padding:0 10px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel);color:var(--fg);font:14px var(--f-body,inherit)}
+.tq:focus{outline:2px solid var(--accent);outline-offset:1px}
+.tqres{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.tqres .tsomc{padding:6px 10px;display:grid;gap:2px}
+.tqres .tsomc b{font-weight:600;color:var(--fg)}
+.tqres .tsomc small{font:600 11px var(--f-disp);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.tqres .tsomc span{font-size:13px;color:var(--mute)}
+.tqres mark{background:color-mix(in srgb,var(--warn) 35%,transparent);color:inherit;border-radius:2px}
+@media (max-width:860px){ .tq{width:130px} }

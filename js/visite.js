@@ -664,10 +664,28 @@ Object.assign(ANIM,{
 /* --- sommaire : tous les chapitres, rangés par partie et par thème --- */
 function tourSommaire(open){
   const el=$('#tsom'), b=$('#tvSom'); if(open!=null){ el.hidden=!open; if(b){ b.setAttribute('aria-expanded',String(open)); } }
-  if(el.hidden) return;
+  if(open!=null){ delete el.dataset.mode; const q=$('#tq'); if(q&&open) q.value=''; }
+  if(el.hidden||el.dataset.mode==='q') return;
   const seen=TV.seen||new Set(), esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
   el.innerHTML='<div class="tsomh"><b>Sommaire</b><span>'+TOUR.length+' chapitres · '+seen.size+' lus</span></div><div class="tsomg">'+PARTIES.map(([pid,pname])=>'<section class="tsomp"><h3>'+pname+'</h3>'+THEMES.filter(t=>t[3]===pid).map(([id,name])=>'<h4>'+name+'</h4><ol>'+TOUR.map((x,j)=>x.th===id?'<li><button class="tsomc'+(j===TV.i?' on':'')+(seen.has(j)?' seen':'')+'" data-tv="'+j+'" data-som="1">'+esc(x.t)+'</button></li>':'').join('')+'</ol>').join('')+'</section>').join('')+'</div>';
   const on=el.querySelector('.tsomc.on'); if(on&&open){ const y=on.offsetTop-el.offsetTop; el.scrollTop=y+on.offsetHeight>el.clientHeight-8?Math.max(0,y-el.clientHeight/2):0; }
+}
+/* --- recherche par mot-clé : titres, textes et « À retenir » des chapitres, sans tenir compte des accents ni des majuscules --- */
+const tNorm=t=>t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+let TIDX=null;
+function tourIndex(){ if(TIDX) return TIDX; const d=document.createElement('div');
+  TIDX=TOUR.map((c,j)=>{ d.innerHTML=c.h; const txt=(d.textContent+' '+(RETENIR[c.id]||'')).replace(/\s+/g,' '); return {j,t:c.t,txt,nt:tNorm(c.t),nx:tNorm(txt)}; }); return TIDX; }
+function tourSearch(q){
+  const el=$('#tsom'), words=tNorm(q.trim()).split(/\s+/).filter(w=>w.length>1);
+  if(!words.length){ if(el.dataset.mode==='q'){ delete el.dataset.mode; tourSommaire(false); } return; }
+  el.dataset.mode='q'; el.hidden=false; $('#tvSom').setAttribute('aria-expanded','true');
+  const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const res=tourIndex().map(r=>{ let sc=0; for(const w of words){ const inT=r.nt.includes(w), inX=r.nx.includes(w); if(!inT&&!inX) return null; sc+=inT?3:1; } return {r,sc}; }).filter(Boolean).sort((a,b)=>b.sc-a.sc||a.r.j-b.r.j);
+  const snip=r=>{ const i=r.nx.indexOf(words[0]); if(i<0) return ''; const a=Math.max(0,i-60), b=Math.min(r.txt.length,i+words[0].length+90);
+    return (a?'… ':'')+esc(r.txt.slice(a,i))+'<mark>'+esc(r.txt.slice(i,i+words[0].length))+'</mark>'+esc(r.txt.slice(i+words[0].length,b))+(b<r.txt.length?' …':''); };
+  el.innerHTML='<div class="tsomh"><b>Recherche</b><span>'+(res.length?res.length+' chapitre'+(res.length>1?'s':'')+' pour « '+esc(q.trim())+' »':'Aucun chapitre ne contient « '+esc(q.trim())+' »')+'</span></div>'
+   +'<ol class="tqres">'+res.slice(0,40).map(({r})=>'<li><button class="tsomc" data-tv="'+r.j+'" data-som="1"><b>'+esc(r.t)+'</b><small>'+esc(TOUR[r.j].k)+'</small><span>'+snip(r)+'</span></button></li>').join('')+'</ol>';
+  el.scrollTop=0;
 }
 /* taille du texte et des schémas de la visite, réglée à part de celle du poste */
 const TZOOMS=[0.8,0.9,1,1.1,1.2,1.3,1.4,1.5];

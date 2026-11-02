@@ -61,6 +61,10 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
     document.querySelector('#tsom [data-tv="12"]').click(); return { n, vis, i: TV.i }; });
   await pg.waitForTimeout(50);
   check(`${w}px : sommaire de la visite (tous les chapitres, clic = aller au chapitre)`, som.vis && som.n === (await pg.evaluate(() => TOUR.length)) && som.i === 12 && await pg.evaluate(() => document.querySelector('#tsom').hidden));
+  const sr = await pg.evaluate(() => { const q = document.querySelector('#tq'); q.value = 'xenon'; q.dispatchEvent(new Event('input'));
+    const n = document.querySelectorAll('#tsom .tqres [data-tv]').length, first = document.querySelector('#tsom .tqres [data-tv]'), t = first && TOUR[+first.dataset.tv].t;
+    q.value = ''; q.dispatchEvent(new Event('input')); return { n, t, ferme: document.querySelector('#tsom').hidden }; });
+  check(`${w}px : recherche dans la formation (« xenon » sans accent trouve les chapitres du xénon)`, sr.n >= 2 && /xénon/i.test(sr.t || '') && sr.ferme, JSON.stringify(sr));
   const tz = await pg.evaluate(() => { setTourZoom(1.2); const z = getComputedStyle(document.documentElement).getPropertyValue('--tz').trim(); setTourZoom(1); return z; });
   check(`${w}px : taille du texte de la visite réglable`, tz === '1.2', tz);
   await pg.evaluate(() => { document.querySelector('#about').hidden = false; document.querySelector('#about [data-lim]').click(); });
