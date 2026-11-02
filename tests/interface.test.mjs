@@ -392,6 +392,16 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
   check('Visite : parcours « L\'essentiel » de 12 chapitres, de la centrale à la salle de commande', vz.debut && vz.ch === 'La réaction en chaîne' && vz.fin === 'La salle de commande' && vz.fait && vz.essIds, JSON.stringify(vz));
   check('Visite : chaque chapitre a son « À retenir », chaque « Essayer » mène à une séance existante', vz.retenir && vz.essai === 'l-cin' && !vz.manque.length && vz.essaisValides, JSON.stringify(vz.manque));
   check('Visite : chapitres lus mémorisés, « Reprendre » rouvre le dernier chapitre', vz.vus === 12 && vz.reprendre && vz.reprise === 'La salle de commande', JSON.stringify(vz));
+  const dv = await pg.evaluate(() => {
+    launch('l-div'); document.querySelector('#brief').hidden = true; A.paused = true; const s = A.s, c = A.ctx; act('rodSel', 'R');
+    const run = sec => { for (let i = 0; i < sec / DT; i++) { step(s); evalAlarms(s); tick(s, c); if (i % 20 === 0) invmTrack(); } };
+    run(30); enterStep(1); act('rod', 100); run(200); enterStep(2); act('rod', 40); run(170); enterStep(3); act('rod', 20); run(280); enterStep(4);
+    const avantP6 = gardeTxt(A.scn, s, c); for (let k = 0; k < 6 && s.n <= 1e-7; k++) { act('rod', 2); run(45); }
+    renderMission(true); updateUI();
+    const o = { avantP6, p6: s.n > 1e-7, garde: !!document.querySelector('#mis-body .coach.garde'), trip: s.tripped, pts: IM.pts.length, rc: document.querySelector('#a-rc').textContent, cbc: document.querySelector('#a-cbc').textContent };
+    act('srInhib'); renderMission(true); o.gardeApres = !!document.querySelector('#mis-body .coach.garde'); return o; });
+  check('Divergence guidée : alerte « P6 » affichée dès l\'apparition de P6, quelle que soit l\'étape, puis effacée après l\'inhibition', !dv.avantP6 && dv.p6 && dv.garde && !dv.gardeApres && !dv.trip, JSON.stringify(dv));
+  check('Réactivité : position critique de R, bore critique et points 1/M relevés à chaque palier', /170 pas/.test(dv.rc) && /ppm/.test(dv.cbc) && dv.pts >= 4, JSON.stringify(dv));
   check('1520 × 810 : aucune erreur JavaScript', !errs.length, errs.join(' | '));
   await pg.close();
 }

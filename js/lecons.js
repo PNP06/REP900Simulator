@@ -307,7 +307,7 @@ $$('.lvlseg button').forEach(b=>{ b.classList.toggle('on',b.dataset.lvl===LVL.v)
 const COACH={
  div:[
   [(s,c)=>s.tripped,"AAR : relisez le débriefing. Le plus souvent, la gamme source n'a pas été inhibée, ou l'extraction a été trop rapide."],
-  [(s,c)=>s.n>1e-7&&!s.srInhib,"P6 est franchi : inhibez la gamme source maintenant (Commandes › Protection › Inhiber GS), sinon l'AAR tombera vers 10⁵ c/s."],
+  [(s,c)=>s.n>1e-7&&!s.srInhib,"P6 est franchi : inhibez la gamme source maintenant (Agir › Protection › Inhiber GS), sinon l'AAR tombera vers 10⁵ c/s."],
   [(s,c)=>s.Td<40&&s.n>1e-9,"Temps de doublement court : arrêtez d'extraire, voire insérez 1 ou 2 pas. Visez 60 s ou plus."],
   [(s,c)=>s.n>0.03,"Au-dessus de 3 % : insérez R de 1 ou 2 pas. Le Doppler fera le reste."],
   [(s,c)=>s.n>=0.01&&s.n<=0.03,"Vous êtes dans la plage. Ajustez par pas de 1 jusqu'à un temps de doublement « stable », puis attendez 2 minutes."],
@@ -367,3 +367,14 @@ const COACH={
   [(s,c)=>true,"Tous les critères sont proches : vérifiez la marge et Tmoy."],
  ],
 };
+
+/* Garde-fous des leçons guidées : un avertissement qui s'affiche quelle que soit l'étape en cours,
+   quand l'état de la tranche appelle un geste immédiat (premier applicable). */
+const GARDE={
+ 'l-div':[
+  [s=>!s.tripped&&s.n>1e-7&&!s.srInhib,"<b>P6 est apparu</b> : inhibez la gamme source maintenant (Agir › Protection › « Inhiber GS »), même si l'étape en cours parle d'autre chose. Sinon l'AAR tombera à 10⁵ c/s."],
+  [s=>!s.tripped&&s.p10&&!s.lowBlk,"<b>P10 est franchi</b> : la puissance dépasse 10 %, c'est trop pour cette leçon. Insérez R de quelques pas ; si vous voulez monter, bloquez le seuil bas (Agir › Protection), sinon l'AAR tombera à 25 %."],
+  [s=>!s.tripped&&s.Td<30&&s.n>1e-9&&s.n<0.5,"<b>Temps de doublement court</b> : arrêtez d'extraire, voire insérez 1 ou 2 pas. On vise une à deux minutes."],
+ ],
+};
+const gardeTxt=(scn,s,c)=>{ const g=scn&&GARDE[scn.id]; if(!g) return ''; const x=g.find(e=>{ try{ return e[0](s,c); }catch(er){ return false; } }); return x?x[1]:''; };

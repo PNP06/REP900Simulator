@@ -10,9 +10,10 @@ function frame(now){
     while(A.acc>=DT&&k<4000){ step(A.s); evalAlarms(A.s); if(A.ctx) tick(A.s,A.ctx); A.acc-=DT; k++; if(A.paused) break; if(A.demo){ demoTick(); if(A.demoHold){ A.acc=0; break; } } }
     if(k>=4000) A.acc=0;
   }
+  invmTrack();
   uiAcc+=rd; chAcc+=rd;
   if(A.s&&uiAcc>0.1){ uiAcc=0; updateUI(); aarWatch(); }
-  if(A.s&&chAcc>0.5){ chAcc=0; drawCharts(); drawDI(); drawPT(); drawBand(); updateRun(); }
+  if(A.s&&chAcc>0.5){ chAcc=0; drawCharts(); drawDI(); drawPT(); drawInvM(); drawBand(); updateRun(); }
   ptAcc+=rd; if(ptAcc>0.15){ ptAcc=0; updPtr(); }
   const live=A.s&&!A.paused&&$('#menu').hidden&&$('#tour').hidden&&$('#brief').hidden;
   if(SND.ctx){ sndAmbient(A.s||{Wst:0,pumps:[]},!!live);
@@ -20,7 +21,7 @@ function frame(now){
     sndHorn(live); }
   requestAnimationFrame(frame);
 }
-addEventListener('resize',()=>{ fitPoste(); requestAnimationFrame(()=>{ fitPoste(); fitBand(); }); drawCharts(); drawDI(); drawPT(); drawBand(); });
+addEventListener('resize',()=>{ fitPoste(); requestAnimationFrame(()=>{ fitPoste(); fitBand(); }); drawCharts(); drawDI(); drawPT(); drawInvM(); drawBand(); });
 $('#zmM').onclick=()=>setZoom((A.zoom||1)-0.1); $('#zmP').onclick=()=>setZoom((A.zoom||1)+0.1); $('#zmV').onclick=()=>setZoom(1);
 { let lw=desk(), ww=wide(), th=innerHeight>=1000; addEventListener('resize',()=>{ if(desk()!==lw||wide()!==ww||(innerHeight>=1000)!==th){ lw=desk(); ww=wide(); th=innerHeight>=1000; applyVues(); } }); }
 $('#tvPrev').onclick=()=>{ TV.auto=false; const j=tourNext(-1); if(j!=null) tourGo(j); };

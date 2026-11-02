@@ -365,6 +365,7 @@ table.kv td{padding:3px 0;font-size:13px}
 .subl li.done::before{background:var(--ok);border-color:var(--ok)}
 .hintb,.coach{column-span:all;margin:8px 0;padding:8px 10px;border-radius:7px;background:color-mix(in srgb,var(--accent) 9%,var(--bg));border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));font-size:13.5px}
 .coach{background:color-mix(in srgb,var(--ok) 8%,var(--bg));border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.coach.garde{background:color-mix(in srgb,var(--warn) 12%,var(--bg));border-color:color-mix(in srgb,var(--warn) 55%,var(--line))}
 .hintb b,.coach b{color:var(--accent)}.coach b{color:var(--ok)}
 .aft{column-span:all;margin-top:8px;padding:8px 10px;border-radius:7px;background:color-mix(in srgb,var(--ok) 8%,var(--bg));border:1px solid color-mix(in srgb,var(--ok) 35%,var(--line))}
 .aft p{margin:4px 0 0}
@@ -1144,3 +1145,13 @@ details.eclair.ecd:not([open]){padding-block:4px}
 .essai .btn{display:inline-flex;align-items:center;gap:8px;text-align:left;white-space:normal}
 .essai .pic{flex:none;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 #tvPath{white-space:nowrap}
+
+/* Réactivité : aides au pilotage du cœur (bore critique, position critique de R, courbe 1/M) */
+.aidh{display:flex;align-items:center;gap:6px;margin:12px 0 4px}
+#aidtab td.v{white-space:normal}
+#aidtab td.v small{display:block;color:var(--mute);font-size:11.5px;line-height:1.35}
+.invmh{display:flex;align-items:center;gap:8px;margin:10px 0 6px;flex-wrap:wrap}
+.invmh .mseg{margin-left:auto}
+.invmc{width:100%;height:190px;display:block;background:var(--bg);border:1px solid var(--line);border-radius:6px}
+#invm-st{font-family:var(--f-num);font-size:11.5px}
+@media (min-width:1080px){ .views .invmc{flex:1 1 0;min-height:150px;height:auto} }

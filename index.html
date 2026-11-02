@@ -95,6 +95,16 @@
             <tr><td>Réserve du cœur</td><td class="v"><span class="rbar"><i id="rb-exc"></i></span><span id="r-exc">—</span></td></tr>
             <tr class="tot"><td>Total ρ</td><td class="v" id="r-tot">—</td></tr>
           </table>
+          <h3 class="aidh">Aides au pilotage du cœur<button class="qm" data-help="aidc" aria-label="Aide : aides au pilotage du cœur">?</button></h3>
+          <table class="kv" id="aidtab">
+            <tr><td>Bore actuel</td><td class="v" id="a-cb">—</td></tr>
+            <tr><td>Bore critique <small>(R où il est)</small></td><td class="v" id="a-cbc">—</td></tr>
+            <tr><td id="a-cblab">Bore cible</td><td class="v" id="a-cbt">—</td></tr>
+            <tr><td>Position critique de R</td><td class="v" id="a-rc">—</td></tr>
+          </table>
+          <div class="invmh"><span class="lbl">Courbe 1/M</span><div class="seg mseg" data-key="invx"><button data-v="R">selon R</button><button data-v="V">selon la dilution</button></div></div>
+          <canvas class="invmc" id="c-invm" role="img" aria-label="Courbe 1/M de l'approche sous-critique : points relevés à chaque palier stabilisé et droite d'extrapolation vers la position critique ; le résultat est résumé sous le graphique" aria-describedby="invm-st"></canvas>
+          <div class="note" id="invm-st">—</div>
         </div>
 <div class="card" data-c="elec" data-t="synop">
         <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2L5 13h6l-1 9 8-11h-6z"/></svg></i>Alimentations électriques<button class="qm" data-help="elec" aria-label="Aide : alimentations électriques">?</button></h2>

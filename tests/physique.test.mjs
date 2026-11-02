@@ -9,8 +9,8 @@ const js = src('electrique.js') + '\n' + src('physique.js');
 const ctx = { console, Math, Infinity, NaN, Number, Set, Object, Array };
 vm.createContext(ctx);
 vm.runInContext("const clamp=(x,a,b)=>x<a?a:x>b?b:x;const fmt=(x,d=1)=>x.toFixed(d);const A={ctx:null};\n" + js +
-  "\nthis.M={makeState,step,trip,rhoParts,psat,tsat,DT,BETA};", ctx);
-const { makeState, step, trip, psat, tsat, DT, BETA } = ctx.M;
+  "\nthis.M={makeState,step,trip,rhoParts,psat,tsat,DT,BETA,cbCrit,rCrit,volRea};", ctx);
+const { makeState, step, trip, psat, tsat, DT, BETA, cbCrit, rCrit, volRea } = ctx.M;
 
 let fails = 0;
 const check = (name, ok, info) => { console.log((ok ? 'ok   ' : 'ÉCHEC') + ' ' + name + (info ? ' — ' + info : '')); if (!ok) fails++; };
@@ -18,6 +18,13 @@ const run = (s, sec) => { for (let i = 0; i < sec / DT; i++) step(s); };
 const near = (x, y, tol) => Math.abs(x - y) <= tol;
 const P100 = { P: 1, xe: 1, R: 180, G: 225, coupled: true, modeR: 'auto', modeG: 'auto' };
 
+{ const s = makeState({ P: 0, critR: 170, R: 0, G: 'cal', SD: 225, coupled: false, xe: 0, modeR: 'man', modeG: 'man' });
+  check('Aides cœur : position critique de R = 170 pas à l\'état de divergence', near(rCrit(s), 170, 0.5), rCrit(s).toFixed(1));
+  check('Aides cœur : bore critique à R = 170 pas = bore du moment', near(cbCrit(s, 170), s.Cb, 0.5), `${cbCrit(s, 170).toFixed(1)} / ${s.Cb.toFixed(1)}`);
+  check('Aides cœur : R inséré, bore critique plus bas (dilution)', cbCrit(s) < s.Cb - 50 && volRea(s.Cb, cbCrit(s)).mode === 'dil', cbCrit(s).toFixed(0));
+  const v = volRea(1000, 1000 * Math.exp(-1 / 270)); check('Aides cœur : 1 m³ de dilution, formule cohérente avec le modèle REA', near(v.v, 1, 1e-6), v.v.toFixed(4));
+  const s2 = makeState({ P: 0, critR: 170, R: 0, G: 'cal', SD: 225, coupled: false, xe: 0, modeR: 'man', modeG: 'man' }); s2.rea = { mode: 'dil', q: 10, vt: 1, v: 0, run: true };
+  const c0 = s2.Cb; run(s2, 900); check('Aides cœur : dilution de 1 m³ dans le modèle ≈ prévision', near(s2.Cb, c0 * Math.exp(-s2.volDil / 270), 0.3), `${s2.Cb.toFixed(2)} pour ${s2.volDil.toFixed(2)} m³`); }
 check('β = 600 pcm', near(BETA * 1e5, 600, 1), (BETA * 1e5).toFixed(1));
 check('Tsat(155 bar) ≈ 345 °C', near(tsat(155), 345, 1.5), tsat(155).toFixed(1));
 check('Psat(273 °C) ≈ 57,5 bar', near(psat(273), 57.5, 1.5), psat(273).toFixed(1));

@@ -87,7 +87,7 @@ function themeApply(m){
   const mt=document.querySelector('meta[name="theme-color"]'); if(mt) mt.content=dark?'#10161a':'#e4eaee';
   $$('.seg[data-key="theme"] button').forEach(b=>b.classList.toggle('on',b.dataset.v===m));
   const tb=$('#themeBtn'); if(tb){ tb.innerHTML=dark?'<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>':'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'; tb.setAttribute('aria-label','Thème : '+{auto:'automatique',light:'clair',dark:'sombre'}[m]+' (changer)'); }
-  readCols(); drawCharts(); drawDI(); drawPT();
+  readCols(); drawCharts(); drawDI(); drawPT(); drawInvM();
 }
 
 /* ================= Fenêtre « Pourquoi l'AAR ? » ================= */
@@ -300,7 +300,7 @@ function initFold(){
     if(F[cd.dataset.c]) cd.classList.add('folded');
   });
 }
-function toggleFold(cd){ cd.classList.toggle('folded'); const F=store('fold')||{}; F[cd.dataset.c]=cd.classList.contains('folded')?1:0; store('fold',F); if(!cd.classList.contains('folded')){ setTimeout(()=>{ drawCharts(); drawDI(); drawPT(); },30); } }
+function toggleFold(cd){ cd.classList.toggle('folded'); const F=store('fold')||{}; F[cd.dataset.c]=cd.classList.contains('folded')?1:0; store('fold',F); if(!cd.classList.contains('folded')){ setTimeout(()=>{ drawCharts(); drawDI(); drawPT(); drawInvM(); },30); } }
 
 /* ================= Tendances ================= */
 let COL={};
@@ -374,3 +374,67 @@ const ovFoc=o=>[...o.querySelectorAll(OV_FOC)].filter(e=>e.getClientRects().leng
     else if(e.shiftKey&&ae===a){ e.preventDefault(); z.focus(); }
     else if(!e.shiftKey&&ae===z){ e.preventDefault(); a.focus(); } });
 })();
+
+/* ================= Réactivité : aides au pilotage du cœur ================= */
+/* Ce qu'une salle de commande met sous les yeux de l'opérateur pour le cœur : bore critique calculé, bore à viser,
+   position critique estimée du groupe R (le « calcul prévisionnel » avant une divergence) et la courbe 1/M tracée
+   palier après palier pendant l'approche sous-critique. Les calculs viennent de physique.js (cbCrit, rCrit, volRea). */
+const HT=(id,v)=>{ const e=document.getElementById(id); if(e&&e._h!==v){ e._h=v; e.innerHTML=v; } };
+const volTxt=(C0,C1)=>{ const r=volRea(C0,C1); if(!r.mode) return 'déjà atteint'; const v=r.v; return (r.mode==='dil'?'diluer ':'borer ')+(v<1?fmt(Math.round(v*1000/10)*10,0)+' L':fmt(v,v<10?1:0)+' m³'); };
+const cbLine=(s,cb)=>fmt(cb,0)+' ppm<small>écart '+sgn(cb-s.Cb,0)+' ppm · '+volTxt(s.Cb,cb)+'</small>';
+function updAides(s){
+  HT('a-cb',fmt(s.Cb,0)+' ppm<small>'+(s.Qdil>0?'dilution en cours':s.Qbor>0?'borication en cours':'appoint à l\'arrêt')+'</small>');
+  const tripped=s.tripped||s.rods.SD.p<220;
+  if(tripped){ HT('a-cbc','—<small>grappes d\'arrêt insérées : sans objet</small>'); }
+  else HT('a-cbc',cbLine(s,cbCrit(s)));
+  const crit=A.scn&&A.scn.init&&A.scn.init.critR!=null&&!s.coupled?A.scn.init.critR:null;
+  const Rt=s.coupled?190:(crit??170);
+  T('a-cblab',s.coupled?'Bore pour R à 190 pas':'Bore pour diverger à R = '+Rt+' pas');
+  HT('a-cbt',tripped?'—<small>réarmer et extraire les groupes d\'arrêt d\'abord</small>':cbLine(s,cbCrit(s,Rt))+(s.coupled?'<small>milieu de la bande de manœuvre</small>':''));
+  if(tripped) HT('a-rc','—<small>grappes d\'arrêt insérées</small>');
+  else { const rc=rCrit(s);
+    HT('a-rc',rc==null?'au-delà de 225 pas<small>même R sorti, le cœur reste sous-critique : il faut diluer</small>'
+      :rc<=0?'R inséré<small>le cœur est critique même R en bas</small>'
+      :'≈ '+fmt(rc,0)+' pas<small>'+(crit!=null?'prévision de la séance : '+crit+' ± 25 pas':'au bore et à la température du moment')+'</small>'); }
+}
+/* courbe 1/M : un point par palier stabilisé (R, GCP et appoint immobiles, |Td| > 8 min pendant 20 s) */
+const IM={s:null,pts:[],c0:null,st:0,t:0,V0:0,x:'R'};
+function invmTrack(){
+  const s=A.s; if(!s) return;
+  if(IM.s!==s) Object.assign(IM,{s,pts:[],c0:null,st:0,t:s.t,V0:s.volDil});
+  const dt=s.t-IM.t; IM.t=s.t; if(dt<=0) return;
+  if(s.tripped){ IM.pts=[]; IM.c0=null; IM.st=0; IM.V0=s.volDil; return; }
+  const gs=!s.srInhib&&s.n<1e-6;
+  const calme=Math.abs(s.rods.R.tg-s.rods.R.p)<0.3&&Math.abs(s.rods.G.tg-s.rods.G.p)<0.3&&!(s.Qdil>0)&&!(s.Qbor>0);
+  if(!gs||!calme||Math.abs(s.rate)>=0.0015){ IM.st=0; return; }
+  IM.st+=dt; if(IM.st<20) return;
+  const cps=s.n*1e10; if(IM.c0==null) IM.c0=cps;
+  const p={R:s.rods.R.p,V:s.volDil-IM.V0,y:IM.c0/cps}, L=IM.pts[IM.pts.length-1];
+  if(L&&Math.abs(L.R-p.R)<0.5&&Math.abs(L.V-p.V)<0.02) Object.assign(L,p); else { IM.pts.push(p); if(IM.pts.length>40) IM.pts.shift(); }
+}
+function invmExtrap(){ const P=IM.pts, k=IM.x; for(let i=P.length-1;i>0;i--){ const b=P[i]; for(let j=i-1;j>=0;j--){ const a=P[j]; if(Math.abs(b[k]-a[k])>(k==='R'?0.5:0.02)){ const sl=(b.y-a.y)/(b[k]-a[k]); return sl<0?{a,b,xc:b[k]-b.y/sl}:null; } } } return null; }
+function drawInvM(){
+  const s=A.s; if(!s) return; const cv=$('#c-invm'); if(!cv) return; const P=prepCanvas(cv); if(!P) return; const {g,w,h}=P; const k=IM.x;
+  const ex=invmExtrap(), live=!s.tripped&&!s.srInhib&&s.n<1e-6&&IM.c0!=null?{R:s.rods.R.p,V:s.volDil-IM.V0,y:IM.c0/(s.n*1e10)}:null;
+  let x1=225; if(k==='V'){ x1=1; for(const p of IM.pts) x1=Math.max(x1,p.V); if(live) x1=Math.max(x1,live.V); if(ex&&ex.xc<x1*3) x1=Math.max(x1,ex.xc); x1*=1.15; }
+  const L=36,Rr=10,Tt=10,B=30, X=v=>L+clamp(v/x1,0,1)*(w-L-Rr), Y=v=>Tt+(1-clamp(v,0,1.1)/1.1)*(h-Tt-B);
+  g.font='10px '+getComputedStyle(document.body).getPropertyValue('--f-num'); g.strokeStyle=COL.line; g.fillStyle=COL.mute; g.lineWidth=1;
+  for(const [v,lb] of [[0,'0'],[.25,'0,25'],[.5,'0,5'],[.75,'0,75'],[1,'1']]){ const y=Y(v); g.globalAlpha=.5; g.beginPath(); g.moveTo(L,y); g.lineTo(w-Rr,y); g.stroke(); g.globalAlpha=1; g.textAlign='right'; g.fillText(lb,L-4,y+3); }
+  const xt=k==='R'?[0,50,100,150,200]:[0,1,2,3,4,5].map(i=>i*Math.max(1,Math.ceil(x1/5))).filter(v=>v<=x1);
+  for(const v of xt){ const x=X(v); g.globalAlpha=.35; g.beginPath(); g.moveTo(x,Tt); g.lineTo(x,h-B); g.stroke(); g.globalAlpha=1; g.textAlign='center'; g.fillText(String(v),x,h-B+12); }
+  g.textAlign='center'; g.fillText(k==='R'?'position du groupe R (pas extraits)':'eau pure injectée depuis le début (m³)',L+(w-L-Rr)/2,h-4);
+  if(ex){ g.strokeStyle=COL.warn; g.setLineDash([5,4]); g.lineWidth=1.5; g.beginPath(); g.moveTo(X(ex.a[k]),Y(ex.a.y)); g.lineTo(X(ex.xc),Y(0)); g.stroke(); g.setLineDash([]);
+    g.fillStyle=COL.warn; g.beginPath(); g.moveTo(X(ex.xc),Y(0)); g.lineTo(X(ex.xc)-5,Y(0)-9); g.lineTo(X(ex.xc)+5,Y(0)-9); g.closePath(); g.fill(); }
+  if(IM.pts.length){ g.strokeStyle=COL.accent; g.lineWidth=1.6; g.beginPath(); IM.pts.forEach((p,i)=>{ i?g.lineTo(X(p[k]),Y(p.y)):g.moveTo(X(p[k]),Y(p.y)); }); g.stroke();
+    g.fillStyle=COL.accent; for(const p of IM.pts){ g.beginPath(); g.arc(X(p[k]),Y(p.y),3.6,0,7); g.fill(); } }
+  if(live){ g.strokeStyle=COL.fg; g.lineWidth=1.5; g.beginPath(); g.arc(X(live[k]),Y(live.y),4.5,0,7); g.stroke(); }
+  let st;
+  if(s.tripped) st='AAR : la courbe repartira à la prochaine approche.';
+  else if(!IM.pts.length) st=s.srInhib||s.n>=1e-6?'1/M ne sert que sous-critique, gamme source en service. Il se trace pendant une divergence (leçon ou exercice).':'Attendez la stabilisation du comptage (20 s sans mouvement) : le premier point fixe la référence, 1/M = 1.';
+  else { const last=IM.pts[IM.pts.length-1];
+    st=IM.pts.length+' palier'+(IM.pts.length>1?'s':'')+' · dernier 1/M = '+fmt(last.y,2)+(live&&Math.abs(live.y-last.y)>0.01?' · en cours '+fmt(live.y,2):'');
+    if(ex) st+=k==='R'?' · cote critique extrapolée ≈ '+fmt(ex.xc,0)+' pas':' · criticité extrapolée après ≈ '+fmt(ex.xc,1)+' m³ (encore '+fmt(Math.max(0,ex.xc-(s.volDil-IM.V0)),1)+' m³)';
+    else if(IM.pts.length===1) st+=' · un deuxième palier permettra d\'extrapoler';
+    if(s.srInhib) st+=' · gamme source inhibée : courbe figée'; }
+  T('invm-st',st);
+}
