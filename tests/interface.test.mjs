@@ -31,10 +31,10 @@ lesson('l-xe',{1:{pre:s=>{act('ramp','10');s.LtSet=.5;}},
   3:{pre:s=>{act('ramp','5');s.LtSet=1;},t:3600,each:s=>{ if(!s.rea.run&&s.Tavg-s.Tref>1){ act('reaMode','bor');act('reaQ','5');act('reaV','0.1');act('reaStart'); } }},
   4:{pre:s=>act('aar'),t:37000}});
 lesson('l-prot',{1:{pre:s=>{act('sprayMode','man');s.sprayMan=.4;}},2:{pre:s=>act('sprayMode','auto')}});
-lesson('l-div',{1:{pre:s=>{act('rodSel','R');act('rod','100');}},2:{pre:s=>act('rod','40')},3:{pre:s=>act('rod','20')},
-  4:{each:(()=>{ let l=0; return s=>{ if(s.t-l>40&&s.Td>300){ act('rod','2'); l=s.t; } }; })()},
-  5:{each:s=>{ if(s.n>1e-7&&!s.srInhib) act('srInhib'); }},
-  6:{t:7200,each:(()=>{ let l=0; return s=>{ if(s.t-l<25) return; l=s.t; const lo=Math.LN2/900, td=s.rate>0?Math.LN2/s.rate:1e9;
+lesson('l-div',{2:{pre:s=>{act('rodSel','R');act('rod','100');}},3:{pre:s=>act('rod','40')},4:{pre:s=>act('rod','20')},
+  5:{each:(()=>{ let l=0; return s=>{ if(s.t-l>40&&s.Td>300){ act('rod','2'); l=s.t; } }; })()},
+  6:{each:s=>{ if(s.n>1e-7&&!s.srInhib) act('srInhib'); }},
+  7:{t:7200,each:(()=>{ let l=0; return s=>{ if(s.t-l<25) return; l=s.t; const lo=Math.LN2/900, td=s.rate>0?Math.LN2/s.rate:1e9;
     if(s.n<0.006){ if(td>120) act('rod','1'); else if(td<50) act('rod','-1'); } else if(s.n>0.025&&s.rate>-lo) act('rod','-1'); else if(s.n<0.012&&s.rate<lo) act('rod','1');
     else if(s.n>=0.012&&s.n<=0.025){ if(s.rate>Math.LN2/400) act('rod','-1'); else if(s.rate<-Math.LN2/400) act('rod','1'); } }; })()}});
 return out; })()`;
@@ -392,6 +392,31 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
   check('Visite : parcours « L\'essentiel » de 12 chapitres, de la centrale à la salle de commande', vz.debut && vz.ch === 'La réaction en chaîne' && vz.fin === 'La salle de commande' && vz.fait && vz.essIds, JSON.stringify(vz));
   check('Visite : chaque chapitre a son « À retenir », chaque « Essayer » mène à une séance existante', vz.retenir && vz.essai === 'l-cin' && !vz.manque.length && vz.essaisValides, JSON.stringify(vz.manque));
   check('Visite : chapitres lus mémorisés, « Reprendre » rouvre le dernier chapitre', vz.vus === 12 && vz.reprendre && vz.reprise === 'La salle de commande', JSON.stringify(vz));
+  const dv = await pg.evaluate(() => {
+    launch('l-div'); document.querySelector('#brief').hidden = true; A.paused = true; const s = A.s, c = A.ctx; act('rodSel', 'R');
+    const run = sec => { for (let i = 0; i < sec / DT; i++) { step(s); evalAlarms(s); tick(s, c); if (i % 20 === 0) invmTrack(); } };
+    run(30); enterStep(1); run(2); const chk = c.stepOk; enterStep(2); act('rod', 100); run(200); enterStep(3); act('rod', 40); run(170); enterStep(4); act('rod', 20); run(280); enterStep(5);
+    const avantP6 = gardeTxt(A.scn, s, c); for (let k = 0; k < 6 && s.n <= 1e-7; k++) { act('rod', 2); run(45); }
+    renderMission(true); updateUI();
+    const o = { chk, avantP6, p6: s.n > 1e-7, garde: !!document.querySelector('#mis-body .coach.garde'), trip: s.tripped, pts: IM.pts.length, rc: document.querySelector('#a-rc').textContent, cbc: document.querySelector('#a-cbc').textContent };
+    act('srInhib'); renderMission(true); o.gardeApres = !!document.querySelector('#mis-body .coach.garde'); return o; });
+  check('Divergence guidée : alerte « P6 » affichée dès l\'apparition de P6, quelle que soit l\'étape, puis effacée après l\'inhibition', dv.chk && !dv.avantP6 && dv.p6 && dv.garde && !dv.gardeApres && !dv.trip, JSON.stringify(dv));
+  check('Réactivité : position critique de R, bore critique et points 1/M relevés à chaque palier', /170 pas/.test(dv.rc) && /ppm/.test(dv.cbc) && dv.pts >= 4, JSON.stringify(dv));
+  const rp = await pg.evaluate(() => { const ex = SCN.filter(x => x.kind === 'exo'); const sans = ex.filter(x => !RAPPELS[x.id]).map(x => x.id);
+    const liens = Object.values(RAPPELS).flatMap(r => r.ch).filter(k => !TOUR.some(c => c.id === k));
+    launch('div'); const box = document.querySelector('#briefBox .rappels'); const n = box ? box.querySelectorAll('[data-tourgo]').length : 0; document.querySelector('#brief').hidden = true; return { sans, liens, box: !!box, n }; });
+  check('Exercices : chaque présentation a ses rappels, avec des liens vers des chapitres existants', !rp.sans.length && !rp.liens.length && rp.box && rp.n === 3, JSON.stringify(rp));
+  const dd = await pg.evaluate(() => {
+    launch('divdil'); document.querySelector('#brief').hidden = true; A.paused = true; const s = A.s, c = A.ctx;
+    const run = sec => { for (let i = 0; i < sec / DT; i++) { step(s); evalAlarms(s); tick(s, c); if (i % 20 === 0) invmTrack(); } };
+    const o = { cb0: Math.round(s.Cb), cbc: Math.round(cbCrit(s, 200)), sub: s.rho.tot < 0 || rhoParts(s).tot < 0, axe: IM.x };
+    for (const v of [3, 3, 1, 1, 0.3, 0.3, 0.3, 0.3, 0.3, 0.1, 0.1, 0.1]) { if (s.n > 1e-7) break; act('reaMode', 'dil'); act('reaQ', '10'); act('reaV', String(v)); act('reaStart'); run(Math.ceil(v * 360) + 5); run(120); }
+    for (let k = 0; k < 600 && s.n <= 1e-7; k++) run(1);
+    act('srInhib'); o.cbP6 = Math.round(s.Cb); o.pts = IM.pts.length; o.trip = s.tripped; o.axe = IM.x;
+    act('rodSel', 'G'); syncAll(); o.sel = document.querySelector('[data-c="rods"]').dataset.sel; o.col = getComputedStyle(document.querySelector('#c-sel')).color !== getComputedStyle(document.querySelector('.rodmvh')).color;
+    return o; });
+  check('Divergence par dilution : bore critique prévu 1 088 ppm, criticité dans la fourchette, 1/M tracé selon le volume', dd.cb0 === 1128 && dd.cbc === 1088 && Math.abs(dd.cbP6 - 1088) <= 15 && dd.pts >= 4 && dd.axe === 'V' && !dd.trip, JSON.stringify(dd));
+  check('Grappes : le groupe sélectionné colore la ligne de déplacement', dd.sel === 'G' && dd.col, JSON.stringify(dd));
   check('1520 × 810 : aucune erreur JavaScript', !errs.length, errs.join(' | '));
   await pg.close();
 }

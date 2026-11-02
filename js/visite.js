@@ -494,6 +494,16 @@ INSET.etats=()=>{ const S=[['APR','cuve ouverte',0],['API','froid',0],['AN/RRA',
   S.forEach((x,i)=>{ const X=14+i*108, Y=222-i*46; s+='<rect class="stb'+(x[2]?' sim':'')+'" x="'+X+'" y="'+Y+'" width="100" height="54" rx="8"/><text class="nt" x="'+(X+50)+'" y="'+(Y+24)+'" text-anchor="middle">'+x[0]+'</text><text class="ax" x="'+(X+50)+'" y="'+(Y+42)+'" text-anchor="middle">'+x[1]+'</text>';
     if(i<S.length-1) s+='<path class="arw" d="M'+(X+100)+' '+(Y+20)+' Q'+(X+108)+' '+(Y+8)+' '+(X+112)+' '+(Y-6)+'"/>'; });
   return s+'<text class="ax lb" x="16" y="40">température, pression et puissance ↑</text><rect class="stb sim" x="300" y="268" width="18" height="12" rx="3"/><text class="ax" x="324" y="278">états simulés</text></svg>'; };
+/* temps de doublement selon la réactivité : équation de Nordheim (inhour) avec les six groupes de neutrons retardés du simulateur,
+   dans l'approximation du saut prompt utilisée par le modèle (temps de génération négligé) */
+const tdOf=pcm=>{ const r=pcm*1e-5, f=w=>BI.reduce((a,b,i)=>a+b*w/(w+LI[i]),0)-r; let lo=1e-7,hi=50; if(f(hi)<0) return 0; for(let k=0;k<80;k++){ const m=Math.sqrt(lo*hi); if(f(m)<0) lo=m; else hi=m; } return Math.LN2/Math.sqrt(lo*hi); };
+INSET.tdoubl=()=>{ const pts=[]; for(let p=8;p<=300;p+=2) pts.push([p,tdOf(p)]);
+  const rAt=T=>{ let lo=1,hi=590; for(let k=0;k<50;k++){ const m=(lo+hi)/2; if(tdOf(m)>T) lo=m; else hi=m; } return (lo+hi)/2; };
+  const r60=rAt(60), r20=rAt(20), q=v=>Math.round(tdOf(v));
+  return svgChart({x0:0,x1:300,y0:0,y1:400,xt:[[0,'0'],[50,'50'],[100,'100'],[150,'150'],[200,'200'],[250,'250'],[300,'300']],yt:[[0,'0'],[60,'60'],[120,'120'],[200,'200'],[300,'300'],[400,'400 s']],xlab:'réactivité (pcm)',ylab:'temps de doublement (s)',
+   bands:[[0,r60,'ok'],[r60,r20,'warn'],[r20,300,'crit']],
+   series:[{pts,c:'accent'}],
+   notes:[[30,q(30)+18,'+30 pcm : '+q(30)+' s','start'],[100,q(100)+28,'+100 : '+q(100)+' s','start'],[200,q(200)+30,'+200 : '+q(200)+' s','start'],[r60/2,385,'calme','middle'],[(r60+r20)/2,385,'vigilance','middle'],[(r20+300)/2,385,'trop rapide','middle']]}); };
 INSET.invm=()=>{ const curve=[[0,1],[40,.9],[80,.72],[100,.57],[120,.4],[140,.2],[150,.12],[160,.05],[166,0]];
   return svgChart({x0:0,x1:200,y0:0,y1:1.05,xt:[[0,'0'],[50,'50'],[100,'100'],[150,'150'],[200,'200']],yt:[[0,'0'],[.25,'0,25'],[.5,'0,5'],[.75,'0,75'],[1,'1']],xlab:'position du groupe R (pas extraits)',ylab:'1/M',
    series:[{pts:[[100,.57],[162,0]],c:'warn',dash:1,lab:'1re prédiction ≈ 162',lp:[162,0],ta:'start',dx:4,dy:-24},{pts:[[140,.2],[167,0]],c:'ok',dash:1,lab:'2e ≈ 167',lp:[167,0],ta:'start',dx:6,dy:-6},{pts:curve,c:'accent',lab:'mesures',lp:[60,.82],ta:'start',dx:8,dy:-8}],

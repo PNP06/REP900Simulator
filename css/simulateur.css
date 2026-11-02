@@ -365,6 +365,7 @@ table.kv td{padding:3px 0;font-size:13px}
 .subl li.done::before{background:var(--ok);border-color:var(--ok)}
 .hintb,.coach{column-span:all;margin:8px 0;padding:8px 10px;border-radius:7px;background:color-mix(in srgb,var(--accent) 9%,var(--bg));border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));font-size:13.5px}
 .coach{background:color-mix(in srgb,var(--ok) 8%,var(--bg));border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.coach.garde{background:color-mix(in srgb,var(--warn) 12%,var(--bg));border-color:color-mix(in srgb,var(--warn) 55%,var(--line))}
 .hintb b,.coach b{color:var(--accent)}.coach b{color:var(--ok)}
 .aft{column-span:all;margin-top:8px;padding:8px 10px;border-radius:7px;background:color-mix(in srgb,var(--ok) 8%,var(--bg));border:1px solid color-mix(in srgb,var(--ok) 35%,var(--line))}
 .aft p{margin:4px 0 0}
@@ -1144,3 +1145,31 @@ details.eclair.ecd:not([open]){padding-block:4px}
 .essai .btn{display:inline-flex;align-items:center;gap:8px;text-align:left;white-space:normal}
 .essai .pic{flex:none;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 #tvPath{white-space:nowrap}
+
+/* Réactivité : aides au pilotage du cœur (bore critique, position critique de R, courbe 1/M) */
+.aidh{display:flex;align-items:center;gap:6px;margin:12px 0 4px}
+#aidtab td.v{white-space:normal}
+#aidtab td.v small{display:block;color:var(--mute);font-size:11.5px;line-height:1.35}
+.invmh{display:flex;align-items:center;gap:8px;margin:10px 0 6px;flex-wrap:wrap}
+.invmh .mseg{margin-left:auto}
+.invmc{width:100%;height:190px;display:block;background:var(--bg);border:1px solid var(--line);border-radius:6px}
+#invm-st{font-family:var(--f-num);font-size:11.5px}
+@media (min-width:1080px){ .views .invmc{flex:1 1 0;min-height:150px;height:auto} }
+/* rappels dans la présentation des exercices */
+.eclair.rappels summary{cursor:pointer}
+.eclair.rappels ul{margin:6px 0 4px;padding-left:18px}
+.eclair.rappels li{margin:3px 0}
+.eclair.rappels .rev{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px;font-size:13px;color:var(--mute)}
+.eclair.rappels .rev .btn{white-space:normal;text-align:left}
+/* grappes : une couleur par groupe (mêmes couleurs que les tendances : R bleu, GCP ambre ; arrêt rouge, comme la sûreté) ;
+   la ligne de déplacement prend la couleur du groupe sélectionné */
+.bank[data-bank="SD"],[data-c="rods"][data-sel="SD"]{--bk:var(--crit)}
+.bank[data-bank="G"],[data-c="rods"][data-sel="G"]{--bk:var(--warn)}
+.bank[data-bank="R"],[data-c="rods"][data-sel="R"]{--bk:var(--accent)}
+.bank{border-top:3px solid var(--bk)}
+.bank .k{color:color-mix(in srgb,var(--bk) 75%,var(--fg))}
+.bank .bar i{background:var(--bk)}
+.bank.sel{border-color:var(--bk);box-shadow:inset 0 0 0 1px var(--bk);background:color-mix(in srgb,var(--bk) 12%,var(--bg))}
+.rodmvh #c-sel{color:var(--bk)}
+.rodmv .btn:not(.amber){border-color:color-mix(in srgb,var(--bk) 60%,var(--line));color:color-mix(in srgb,var(--bk) 70%,var(--fg))}
+.rodmv{padding:6px;border-radius:8px;background:color-mix(in srgb,var(--bk) 8%,transparent)}

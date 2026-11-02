@@ -33,6 +33,7 @@ function showBrief(){
   if(scn.kind==='alea') h+=INTRO_ALEA+(scn.id==='rodwd'?"<p>État : réacteur tout juste critique à puissance nulle (GI ≈ 10⁻⁸ A), turbine découplée, groupes en manuel. Restez à ×1.</p>":'');
   else if(scn.kind==='libre') h+="<p>Aucun objectif imposé : manœuvrez librement. "+(A.ctx.rnd?'Des aléas aléatoires surviendront pendant le pilotage. ':'')+"Le bouton <kbd>Terminer</kbd> affiche un bilan.</p>";
   else h+=scn.brief||'';
+  if(scn.kind==='exo') h+=rappelsBox(scn);
   if(scn.kind==='histo') h+='<div class="row"><span class="lbl">Instruments</span><div class="seg" data-key="era"><button data-v="79">Salle de 1979</button><button data-v="now">Après TMI</button></div></div><p class="note">Salle de 1979 : le voyant de la soupape montre l\'ordre envoyé, pas sa position, et la marge à la saturation n\'est pas affichée. Après TMI : position réelle et marge à la saturation, comme aujourd\'hui.</p>';
   if(scn.obj){ h+='<h3>Objectifs</h3><ul class="crit">'+scn.obj.map(o=>'<li><span class="i">○</span><span>'+o.t+(o.w?'<small>'+o.w+'</small>':'')+'</span></li>').join('')+'</ul>'; }
   if(scn.tips) h+='<p class="note" style="font-size:14px">'+scn.tips+'</p>';
@@ -225,6 +226,7 @@ document.addEventListener('click',e=>{
     else if(key==='win'){ A.win=+v; syncAll(); drawCharts(); }
     else if(key==='mwin'){ A.mwin=+v; syncAll(); drawCharts(); }
     else if(key==='ptz'){ A.ptZoom=v==='1'; syncAll(); drawPT(); }
+    else if(key==='invx'){ IM.x=v; syncAll(); drawInvM(); }
     else if(key==='theme'){ themeApply(v); }
     else act(key,v);
     return; }
@@ -265,7 +267,7 @@ function applyVues(){
   $$('#views>.card,#col3>.card').forEach(c=>c.classList.toggle('von',on.has(c.dataset.c)));
   document.body.classList.toggle('c3v',vs.every(col3));
   $$('#vtabs button').forEach(b=>b.classList.toggle('on',vs.includes(b.dataset.vue)));
-  setTimeout(()=>{ drawCharts(); drawDI(); drawPT(); },30);
+  setTimeout(()=>{ drawCharts(); drawDI(); drawPT(); drawInvM(); },30);
 }
 /* largeur du centre : le synoptique est limité par la hauteur, donc le centre prend juste sa largeur (ou celle des onglets des vues)
    et le reste va à la colonne de droite (consigne, commandes). Recalculé au redimensionnement seulement, pour que rien ne bouge en cours de partie. */
@@ -276,7 +278,7 @@ function setZoom(z){
   z=ZOOMS.reduce((a,b)=>Math.abs(b-z)<Math.abs(a-z)?b:a,1); A.zoom=z; store('zoom',z);
   document.documentElement.style.setProperty('--uiz',z); const v=$('#zmV'); if(v) v.textContent=Math.round(z*100)+' %';
   const m=$('#zmM'), p=$('#zmP'); if(m) m.disabled=z<=ZOOMS[0]; if(p) p.disabled=z>=ZOOMS[ZOOMS.length-1];
-  fitPoste(); requestAnimationFrame(()=>{ fitPoste(); fitBand(); drawCharts(); drawDI(); drawPT(); drawBand(); });
+  fitPoste(); requestAnimationFrame(()=>{ fitPoste(); fitBand(); drawCharts(); drawDI(); drawPT(); drawInvM(); drawBand(); });
 }
 const uiz=()=>desk()?(A.zoom||1):1;
 function fitPoste(){
@@ -336,7 +338,7 @@ function openCard(k){
 function syncSeg(key,val){ $$('.seg[data-key="'+key+'"] button').forEach(b=>b.classList.toggle('on',b.dataset.v===String(val))); }
 function syncAll(){
   const s=A.s;
-  syncSeg('speed',A.speed); syncSeg('win',A.win); syncSeg('mwin',A.mwin); syncSeg('ptz',A.ptZoom?'1':'0');
+  syncSeg('speed',A.speed); syncSeg('win',A.win); syncSeg('mwin',A.mwin); syncSeg('ptz',A.ptZoom?'1':'0'); syncSeg('invx',IM.x);
   $('#pauseBtn').innerHTML=A.paused?'▶<span class="lab"> Reprendre</span>':'❚❚<span class="lab"> Pause</span>'; $('#pauseBtn').setAttribute('aria-label',A.paused?'Reprendre':'Pause'); $('#pauseBtn').classList.toggle('on',A.paused); $('#spdSel').value=String(A.speed);
   if(!s) return;
   syncSeg('modeR',s.modeR); syncSeg('modeG',s.modeG);
@@ -345,6 +347,7 @@ function syncAll(){
   syncSeg('ramp',s.ramp); syncSeg('areMode',s.areMode); syncSeg('heatMode',s.heatMode); syncSeg('sprayMode',s.sprayMode); syncSeg('chgMode',s.chgMode);
   $$('.bank').forEach(b=>b.classList.toggle('sel',b.dataset.bank===s.rodSel));
   $('#c-sel').textContent={SD:'Groupes d\'arrêt',G:'GCP',R:'Groupe R'}[s.rodSel];
+  { const rc=$('[data-c="rods"]'); if(rc&&rc.dataset.sel!==s.rodSel) rc.dataset.sel=s.rodSel; }
   $('#c-reaiso').textContent=s.reaIsol?'Rétablir l\'appoint REA':'Isoler l\'appoint REA';
   $('#c-spri').textContent=s.sprayIsol?'Rétablir aspersion':'Isoler aspersion';
   $('#c-ldi').textContent=s.ldIsolMan?'Rétablir décharge':'Isoler décharge';
@@ -402,6 +405,7 @@ function updateUI(){
   for(const k of ['rods','bore','mod','dop','xe','exc']){ T('r-'+k,sgn(rp[k],0)); rb('rb-'+k,rp[k]); }
   T('r-am','(α '+fmt(rp.am,1)+' pcm/°C)');
   T('r-tot',sgn(rp.tot,0)+' pcm'+(rp.tot<-500?' · marge d\'arrêt '+fmt(-rp.tot,0):''));
+  updAides(s);
   /* commandes */
   for(const [b,id] of [['SD','sd'],['G','g'],['R','r']]){ const p=s.rods[b].p; T('c-'+id,fmt(p,0)+(Math.abs(s.rods[b].tg-p)>0.4?(s.rods[b].tg>p?' ▲':' ▼'):'')); document.getElementById('cb-'+id).style.width=(p/225*100)+'%'; }
   T('c-rodmsg',s.tripped?'AAR : grappes en bas, réarmement nécessaire.':(s.n>1.03||s.dropped||s.dtMargin<3)?'Extraction bloquée.':(!s.coupled&&(s.modeR==='auto'||s.modeG==='auto'))?'Auto inactif : turbine découplée.':'');
@@ -451,6 +455,7 @@ function renderMission(force){
   const s=A.s,c=A.ctx,scn=A.scn; if(!s||!c) return;
   if(A.demo){ if(!force&&A.demo.v===A.demo.rv){ const il=document.getElementById('mis-info'); const iv=curInfo(scn,c,s); if(il&&iv!=null) il.innerHTML=iv; return; } A.demo.rv=A.demo.v; $$('.focus').forEach(e=>e.classList.remove('focus','focus-sm')); A.ptrT=[]; demoMission(); return; }
   if(!force&&scn.steps){ const stp=scn.steps[c.step]; if(stp.sub&&!c.stepOk){ const m=stp.sub.map(x=>{ try{ return x[1](s,c,c.sk)?1:0; }catch(e){ return 0; } }).join(''); if(m!==c.subM){ c.subM=m; c.dirty=true; } } }
+  if(!force&&scn.steps&&GARDE[scn.id]){ const t=gardeTxt(scn,s,c); if(t!==c.garde){ c.garde=t; c.dirty=true; } }
   if(!force&&scn.kind==='exo'&&COACH[scn.id]){ const t=(COACH[scn.id].find(x=>{ try{ return x[0](s,c); }catch(e){ return false; } })||[])[1]||''; if(t!==c.coach){ c.coach=t; c.dirty=true; } }
   if(!force&&!c.dirty&&!c.liveInfo&&c.lastFire===c.fired){ /* only refresh live info line */ const il=document.getElementById('mis-info'); const iv=curInfo(scn,c,s); if(il&&iv!=null) il.innerHTML=iv; return; }
   c.dirty=false; c.lastFire=c.fired;
@@ -463,7 +468,8 @@ function renderMission(force){
     const sub=stp.sub&&!c.stepOk?'<ul class="subl">'+stp.sub.map(x=>{ let d=false; try{ d=x[1](s,c,c.sk); }catch(e){} return '<li class="'+(d?'done':'')+'">'+x[0]+'</li>'; }).join('')+'</ul>':'';
     const okb=c.stepOk?'<div class="aft"><div class="stepok">✓ Étape réalisée</div>'+(c.after?'<p>'+c.after+'</p>':'')+'</div>':'';
     const hb=stp.hint&&!c.stepOk?(c.showHint?'<div class="hintb"><b>Comment faire :</b> '+stp.hint+'</div>':''):'';
-    body=(isDeb()&&stp.e?ecBox(stp.e):'')+stp.h+sub+hb+(inf!=null?'<div class="info" id="mis-info">'+inf+'</div>':'')+okb;
+    c.garde=gardeTxt(scn,s,c);
+    body=(c.garde?'<div class="coach garde"><b>Attention :</b> '+c.garde+'</div>':'')+(isDeb()&&stp.e?ecBox(stp.e):'')+stp.h+sub+hb+(inf!=null?'<div class="info" id="mis-info">'+inf+'</div>':'')+okb;
     foot='<div class="prog"><i style="width:'+((c.step+1)/scn.steps.length*100)+'%"></i></div>';
     if(stp.tab&&innerWidth<1080&&A.tab!==stp.tab) foot+='<button class="btn sm" id="tTab">Ouvrir '+({synop:'Surveiller',cmd:'Agir',trend:'Tendances',alarm:'Suivre'}[stp.tab])+'</button>';
     if(stp.hint&&!c.stepOk&&!c.showHint) foot+='<button class="btn sm" id="tHint"><span class="lg2">Comment faire ?</span><span class="sh2">Aide</span></button>';
