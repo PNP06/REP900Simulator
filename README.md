@@ -89,4 +89,4 @@ Ce sont des scripts classiques partagés : un fichier ne peut appeler, au charge
 
 ## Droits d'auteur
 
-© 2026 David Devesa. Tous droits réservés. Ce dépôt est public pour consultation uniquement : aucune réutilisation n'est autorisée sans l'accord écrit de l'auteur. Voir [LICENSE](LICENSE).
+© 2026 David Devesa. Tous droits réservés. Ce dépôt est public pour consultation uniquement : aucune réutilisation n'est autorisée sans l'accord écrit de l'auteur. Voir [LICENSE](LICENSE). Contact : repsimulator@proton.me.
