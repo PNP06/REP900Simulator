@@ -347,6 +347,7 @@ function syncAll(){
   syncSeg('ramp',s.ramp); syncSeg('areMode',s.areMode); syncSeg('heatMode',s.heatMode); syncSeg('sprayMode',s.sprayMode); syncSeg('chgMode',s.chgMode);
   $$('.bank').forEach(b=>b.classList.toggle('sel',b.dataset.bank===s.rodSel));
   $('#c-sel').textContent={SD:'Groupes d\'arrêt',G:'GCP',R:'Groupe R'}[s.rodSel];
+  { const rc=$('[data-c="rods"]'); if(rc&&rc.dataset.sel!==s.rodSel) rc.dataset.sel=s.rodSel; }
   $('#c-reaiso').textContent=s.reaIsol?'Rétablir l\'appoint REA':'Isoler l\'appoint REA';
   $('#c-spri').textContent=s.sprayIsol?'Rétablir aspersion':'Isoler aspersion';
   $('#c-ldi').textContent=s.ldIsolMan?'Rétablir décharge':'Isoler décharge';

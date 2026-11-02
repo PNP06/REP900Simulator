@@ -76,6 +76,7 @@ function makeState(o){
   const rSave=s.rods.R.p; if(o.critR!=null) s.rods.R.p=o.critR;
   let Cb=1000; for(let i=0;i<50;i++){ s.Cb=Cb; const r=rhoParts(s); Cb=(r.tot-r.bore)/K.KB; }
   s.Cb=Cb; s.rods.R.p=s.rods.R.tg=rSave;
+  if(o.dCb) s.Cb+=o.dCb; /* bore volontairement au-dessus du critique : divergence par dilution */
   if(o.critR!=null && P<1e-6){ const r=rhoParts(s).tot*1e-5; s.n=r<-1e-6?K.SRC/(-r):1e-9; s.D=BI.map(()=>s.n); }
   s.lnPrev=Math.log(s.n); s.srInhib=s.n>1e-7; s.p10=s.n>0.10; s.lowBlk=s.p10;
   s.Tthot=s.Tavg; s.Thot=s.Tavg+18.5*P; s.Tcold=s.Tavg-18.5*P; s.Tg=s.Thot+30*P; s.TgMax=s.Tg; s.Ttc=s.Thot;

@@ -142,6 +142,7 @@ const STEPX={
  ],
  'l-div':[
   {f:['[data-c="instr"]']},
+  {f:['[data-c="react"]'],hint:"La vue Réactivité s'ouvre avec l'onglet « Réactivité » sous la vue centrale. Le bore critique et la position critique de R sont dans le bloc « Aides au pilotage du cœur » ; la marge d'arrêt, c'est −ρ total."},
   {f:['[data-bank="R"]','[data-act="rod"][data-v="10"]','#rd-td'],hint:"Touchez « Groupe R », puis « +10 » dix fois (ou « Tout ext. » puis « Stop » à 100). Passez en ×10 et attendez que le temps de doublement (bandeau, case Réactivité) redevienne « ∞ ». Le comptage et 1/M s'affichent dans la ligne de mesures.",sub:[['R ≥ 100 pas',s=>s.rods.R.p>=99.5],['Comptage stabilisé',(s,c,k)=>(k.st||0)>5]],
    after:(s,c,k)=>`1/M = ${fmt(c.k.c0/s.n,3)} à 100 pas. Notez-le : c'est votre premier point.`},
   {f:['[data-act="rod"][data-v="10"]','#rd-td'],hint:"« +10 » quatre fois, puis attendez la stabilisation.",sub:[['R ≥ 140 pas',s=>s.rods.R.p>=139.5],['Comptage stabilisé',(s,c,k)=>(k.st||0)>5]],
@@ -258,6 +259,7 @@ const ECLAIR={
  ],
  'l-div':[
   "Le réacteur est à l'arrêt, <b>sous-critique</b> : chaque chaîne de réactions finit par s'éteindre. Mais une source de neutrons en relance sans cesse, donc les compteurs comptent quelque chose.<br>Plus on approche de la criticité, plus chaque chaîne dure longtemps et plus le comptage monte. On s'en sert comme d'un détecteur d'approche : <b>1/M</b> descend vers 0 à mesure qu'on s'approche du point critique.",
+  "Avant de démarrer, on vérifie que tout est dans l'état prévu : comme une check-list avant le décollage. Les grappes de sécurité doivent être en haut, prêtes à tomber, et le bore doit être celui que l'on attendait.",
   "Remontez R par paliers. Après chaque palier, attendez que le comptage se stabilise : plus il est élevé, plus vous êtes proche.",
   "Avec deux mesures, on trace une droite et on la prolonge jusqu'à 1/M = 0 : on obtient une estimation de la position critique. C'est comme estimer la distance d'un obstacle pour ralentir à temps.",
   "Plus près de la criticité, le comptage met plus longtemps à se stabiliser : soyez patient. L'estimation devient plus précise.",
@@ -305,9 +307,23 @@ $$('.lvlseg button').forEach(b=>{ b.classList.toggle('on',b.dataset.lvl===LVL.v)
 
 /* Formateur pour les exercices : premier conseil applicable */
 const COACH={
+ divdil:[
+  [(s,c)=>s.tripped,"AAR : relisez le débriefing. Le plus souvent, la gamme source n'a pas été inhibée, ou la dilution a continué trop longtemps."],
+  [(s,c)=>s.n>1e-7&&!s.srInhib,"P6 est franchi : inhibez la gamme source maintenant (Agir › Protection › Inhiber GS), sinon l'AAR tombera vers 10⁵ c/s."],
+  [(s,c)=>s.Qdil>0&&s.rate>Math.LN2/300&&!s.srInhib,"Un temps de doublement apparaît alors que la dilution continue : arrêtez l'appoint (Agir › Bore › « Arrêter ») ! L'eau pure déjà injectée continue d'ajouter de la réactivité."],
+  [(s,c)=>s.Td<40&&s.n>1e-9,"Temps de doublement court : insérez R de 1 ou 2 pas. Visez 60 s ou plus."],
+  [(s,c)=>s.n>0.03,"Au-dessus de 3 % : insérez R de 1 ou 2 pas. Le Doppler fera le reste."],
+  [(s,c)=>s.n>=0.01&&s.n<=0.03,"Vous êtes dans la plage. Ajustez R par pas de 1 jusqu'à un temps de doublement « stable », puis attendez 2 minutes."],
+  [(s,c)=>s.srInhib&&s.rate<Math.LN2/600&&s.n<0.01,"Puissance quasi stable mais trop basse : extrayez R de 1 ou 2 pas pour reprendre une montée lente."],
+  [(s,c)=>s.srInhib&&s.n<0.01,"Gamme source inhibée : laissez la puissance monter vers 1 % avec un temps de doublement de 60 à 120 s. N'ajoutez plus d'eau pure ; ajustez avec R, par pas de 1."],
+  [(s,c)=>!s.srInhib&&s.Cb<1095&&!s.rea.run,"Vous approchez du bore critique prévu : lots de 100 à 300 L, et attendez la stabilisation à chaque fois."],
+  [(s,c)=>s.rea.run,"Appoint en cours. Quand il s'arrête, attendez que le comptage se stabilise (Td « stable ») avant de relever 1/M."],
+  [(s,c)=>true,"Agir › Bore : mode Dilution, 10 ou 20 m³/h, volume 3 m³, puis « Lancer l'appoint ». La vue Réactivité trace 1/M selon le volume injecté."],
+ ],
  div:[
   [(s,c)=>s.tripped,"AAR : relisez le débriefing. Le plus souvent, la gamme source n'a pas été inhibée, ou l'extraction a été trop rapide."],
   [(s,c)=>s.n>1e-7&&!s.srInhib,"P6 est franchi : inhibez la gamme source maintenant (Agir › Protection › Inhiber GS), sinon l'AAR tombera vers 10⁵ c/s."],
+  [(s,c)=>!s.srInhib&&s.n<1e-7&&s.rods.R.p>195,"R dépasse la fourchette prévue (170 ± 25 pas) sans que le réacteur soit critique : arrêtez d'extraire. En salle de commande, on s'arrêterait ici pour comprendre l'écart (bore, grappes, calcul) avant d'aller plus loin."],
   [(s,c)=>s.Td<40&&s.n>1e-9,"Temps de doublement court : arrêtez d'extraire, voire insérez 1 ou 2 pas. Visez 60 s ou plus."],
   [(s,c)=>s.n>0.03,"Au-dessus de 3 % : insérez R de 1 ou 2 pas. Le Doppler fera le reste."],
   [(s,c)=>s.n>=0.01&&s.n<=0.03,"Vous êtes dans la plage. Ajustez par pas de 1 jusqu'à un temps de doublement « stable », puis attendez 2 minutes."],
@@ -389,6 +405,12 @@ const RAPPELS={
   "<b>Temps de doublement</b> : viser 60 à 120 s une fois critique, <b>jamais sous 20 s</b>. Juste après un mouvement de grappes, il est faussé quelques secondes.",
   "<b>P6</b> (GI > 10⁻¹⁰ A, vers 10³ c/s) : inhiber la gamme source <b>aussitôt</b> (Agir › Protection). Sinon AAR à 10⁵ c/s, deux décades plus haut : quelques minutes à Td 60 s, bien moins à ×10.",
   "<b>Arrivée</b> : vers 1 % le Doppler freine seul la montée ; stabiliser entre 1 et 3 % par pas de 1. Le seuil bas (25 %) ne se bloque qu'à P10, pendant la montée en charge."],
+  ch:['comptage','doublement','diverg']},
+ divdil:{l:[
+  "<b>Principe</b> : le groupe R est déjà à sa cote de divergence (200 pas) et n'en bouge pas pendant l'approche ; c'est la <b>baisse du bore</b> qui rapproche la criticité. Bore critique prévu : <b>1 088 ppm ± 15</b>, environ 10 m³ d'eau pure.",
+  "<b>Par lots</b> : diluer, <b>arrêter l'appoint</b>, attendre la stabilisation du comptage, relever 1/M selon le volume injecté (vue Réactivité, « selon la dilution »). Lots décroissants : 3 m³, 1 m³, puis 300 et 100 L.",
+  "<b>Règle d'or</b> : jamais de dilution en cours quand un temps de doublement apparaît. L'eau pure déjà injectée continue d'agir ; on arrête l'appoint et on corrige avec R si besoin.",
+  "<b>Une fois critique</b> : P6 → inhiber la gamme source ; Td entre 60 et 120 s, jamais sous 20 s ; stabiliser entre 1 et 3 % avec quelques pas de R."],
   ch:['comptage','doublement','diverg']},
  montee:{l:[
   "<b>Couplage</b> : turbine découplée, au moins 6 % de puissance. Après le couplage, monter la charge vers 13–14 % pour égaler la puissance du réacteur avant de passer en automatique.",

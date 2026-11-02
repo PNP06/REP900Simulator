@@ -395,13 +395,13 @@ function updAides(s){
   else { const rc=rCrit(s);
     HT('a-rc',rc==null?'au-delà de 225 pas<small>même R sorti, le cœur reste sous-critique : il faut diluer</small>'
       :rc<=0?'R inséré<small>le cœur est critique même R en bas</small>'
-      :'≈ '+fmt(rc,0)+' pas<small>'+(crit!=null?'prévision de la séance : '+crit+' ± 25 pas':'au bore et à la température du moment')+'</small>'); }
+      :'≈ '+fmt(rc,0)+' pas<small>'+(crit!=null?(A.scn.init.dCb?'R reste à '+crit+' pas : ici, la prévision porte sur le bore':'prévision de la séance : '+crit+' ± 25 pas'):'au bore et à la température du moment')+'</small>'); }
 }
 /* courbe 1/M : un point par palier stabilisé (R, GCP et appoint immobiles, |Td| > 8 min pendant 20 s) */
 const IM={s:null,pts:[],c0:null,st:0,t:0,V0:0,x:'R'};
 function invmTrack(){
   const s=A.s; if(!s) return;
-  if(IM.s!==s) Object.assign(IM,{s,pts:[],c0:null,st:0,t:s.t,V0:s.volDil});
+  if(IM.s!==s){ Object.assign(IM,{s,pts:[],c0:null,st:0,t:s.t,V0:s.volDil}); if(A.scn&&A.scn.id==='divdil'){ IM.x='V'; if(typeof syncAll==='function') syncAll(); } }
   const dt=s.t-IM.t; IM.t=s.t; if(dt<=0) return;
   if(s.tripped){ IM.pts=[]; IM.c0=null; IM.st=0; IM.V0=s.volDil; return; }
   const gs=!s.srInhib&&s.n<1e-6;
