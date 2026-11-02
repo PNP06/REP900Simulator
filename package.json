@@ -1,6 +1,8 @@
 {
   "name": "rep900-simulator",
   "private": true,
+  "author": "David Devesa",
+  "license": "UNLICENSED",
   "type": "module",
   "scripts": {
     "test": "node tests/physique.test.mjs && node tests/interface.test.mjs",

@@ -53,10 +53,20 @@ for (const [w, h, scheme] of [[1440, 900, 'dark'], [390, 844, 'light'], [320, 70
   }
   await pg.evaluate(() => openTour(0));
   const nT = await pg.evaluate(() => TOUR.length); for (let i = 0; i < nT; i++) { await pg.evaluate(i => tourGo(i), i); await pg.waitForTimeout(120); }
-  check(`${w}px : visite en 8 thèmes`, await pg.evaluate(() => new Set(TOUR.map(c => c.th)).size === 8));
+  check(`${w}px : visite en ${await pg.evaluate(() => THEMES.length)} thèmes, chacun dans une partie`, await pg.evaluate(() => new Set(TOUR.map(c => c.th)).size === THEMES.length && THEMES.every(t => PARTIES.some(p => p[0] === t[3]))));
   const vk = await pg.evaluate(() => { const ids = TOUR.map(c => c.id), keys = THEMES.flatMap(t => t[2]);
     return { manque: keys.filter(k => !ids.includes(k)), double: ids.filter((k, i) => ids.indexOf(k) !== i), n: ids.length, nk: keys.length }; });
   check(`${w}px : chaque chapitre de THEMES existe et n'apparaît qu'une fois`, !vk.manque.length && !vk.double.length && vk.n === vk.nk, `${vk.n} chapitres ; manquants : ${vk.manque.join(', ') || 'aucun'}`);
+  const som = await pg.evaluate(() => { tourGo(5); document.querySelector('#tvSom').click(); const n = document.querySelectorAll('#tsom [data-tv]').length, vis = !document.querySelector('#tsom').hidden;
+    document.querySelector('#tsom [data-tv="12"]').click(); return { n, vis, i: TV.i }; });
+  await pg.waitForTimeout(50);
+  check(`${w}px : sommaire de la visite (tous les chapitres, clic = aller au chapitre)`, som.vis && som.n === (await pg.evaluate(() => TOUR.length)) && som.i === 12 && await pg.evaluate(() => document.querySelector('#tsom').hidden));
+  const sr = await pg.evaluate(() => { const q = document.querySelector('#tq'); q.value = 'xenon'; q.dispatchEvent(new Event('input'));
+    const n = document.querySelectorAll('#tsom .tqres [data-tv]').length, first = document.querySelector('#tsom .tqres [data-tv]'), t = first && TOUR[+first.dataset.tv].t;
+    q.value = ''; q.dispatchEvent(new Event('input')); return { n, t, ferme: document.querySelector('#tsom').hidden }; });
+  check(`${w}px : recherche dans la formation (« xenon » sans accent trouve les chapitres du xénon)`, sr.n >= 2 && /xénon/i.test(sr.t || '') && sr.ferme, JSON.stringify(sr));
+  const tz = await pg.evaluate(() => { setTourZoom(1.2); const z = getComputedStyle(document.documentElement).getPropertyValue('--tz').trim(); setTourZoom(1); return z; });
+  check(`${w}px : taille du texte de la visite réglable`, tz === '1.2', tz);
   await pg.evaluate(() => { document.querySelector('#about').hidden = false; document.querySelector('#about [data-lim]').click(); });
   check(`${w}px : « Limites et méthode » s'ouvre depuis À propos`, await pg.evaluate(() => !document.querySelector('#limov').hidden && document.querySelectorAll('#limov .limt tbody tr').length >= 10));
   const limW = await pg.evaluate(() => document.querySelector('#limov').scrollWidth);
@@ -76,6 +86,11 @@ for (const [w, h] of [[1280, 720], [1440, 900], [1920, 1080]]) {
   const pg = await browser.newPage({ viewport: { width: w, height: h } }); const errs = []; pg.on('pageerror', e => errs.push(e.message));
   await pg.goto(url); await pg.evaluate(() => { store('about', 1); document.querySelector('#about').hidden = true; launch('libre'); document.querySelector('#goBtn').click(); });
   await pg.waitForTimeout(400);
+  const mc = await pg.evaluate(() => { const prev = A.mcharts.slice(); A.mcharts = ['pw']; buildMini();
+    document.querySelector('#mchips [data-ch="dp"]').click(); document.querySelector('#mchips [data-ch="pw"]').click();
+    const r = { keys: A.mcharts.join(','), canv: [...document.querySelectorAll('#mcharts canvas')].map(c => c.id).join(','), stored: (store('mcharts') || []).join(',') };
+    document.querySelector('#mchips [data-ch="dp"]').click(); A.mcharts = prev; store('mcharts', prev); buildMini(); return r; });
+  check('Courbes clés : choix des courbes (Doppler seul)', mc.keys === 'dp' && mc.canv === 'mc-dp' && mc.stored === 'dp', JSON.stringify(mc));
   const r = await pg.evaluate(() => {
     const vis = s => { const e = document.querySelector(s); return !!e && inView(e); }, o = {};
     o.noScroll = document.documentElement.scrollHeight <= innerHeight + 1 && document.documentElement.scrollWidth <= innerWidth;
@@ -283,7 +298,7 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
     renderMission(true); const mb = q('#mis-body').textContent;
     const ch = c.k.chain || [], pv = ch.find(x => x.id === 'porv');
     o.chaine = /Chaîne des événements/.test(mb) && ch[0] && ch[0].id === 'tpa' && !!pv && /indique « fermée »/.test(pv.q) && ch.length >= 5;
-    o.visite = ['tmichaine', 'tmivoir', 'tmidiff', 'tmiapres'].every(k => TOUR.some(ch => ch.inset === k && ch.th === 'surete'));
+    o.visite = ['tmichaine', 'tmivoir', 'tmidiff', 'tmiapres'].every(k => TOUR.some(ch => ch.inset === k && ch.th === 'histo'));
     o.masque = q('#b-sat').textContent === '—' && /1979/.test(q('#s-sat').textContent);
     act('porvIsol'); act('asgV');
     for (let i = 0; i < 600 / DT; i++) { step(s); evalAlarms(s); tick(s, c); }
@@ -298,7 +313,7 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
   check(`${w}px : TMI : la soupape reste bloquée ouverte et le primaire se dépressurise`, r.soupape);
   check(`${w}px : TMI : marge à la saturation masquée en salle de 1979`, r.masque);
   check(`${w}px : TMI : chaîne des événements et de leurs conséquences affichée en direct`, r.chaine);
-  check(`${w}px : TMI : quatre chapitres dans le thème Sûreté de la visite`, r.visite);
+  check(`${w}px : TMI : quatre chapitres dans le thème « Accidents historiques » (partie Sûreté) de la visite`, r.visite);
   check(`${w}px : TMI : isolement de la soupape`, r.isole);
   check(`${w}px : TMI : débriefing comparé à 1979`, r.debrief);
   check(`${w}px : TMI : retour au pilotage libre sans trace du scénario`, r.retour);

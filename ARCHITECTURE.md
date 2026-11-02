@@ -48,7 +48,7 @@ Un nouveau fichier se place juste après ce dont il a besoin au chargement, et s
 
 **Ajouter un scénario.** Une entrée dans `SCN` (scenarios.js) : `id`, `kind` (`lecon`, `exo`, `alea`, `histo`, `libre`, `tuto`), `title`, `desc`, `init`, puis selon le type `steps`, `fire`, `update`, `end`, `evaluate`. Les textes d'accompagnement vont dans lecons.js, la correction commentée dans `DM` (corrections.js).
 
-**Ajouter un chapitre de visite.** Une entrée dans `NEWCH` (visite-chapitres.js) avec sa clé, `t`, `inset` et `h` ; ajouter la clé à sa place dans `THEMES`. Le schéma va dans `INSET` ou l'animation dans `ANIM` (visite.js). Un test vérifie que chaque clé de `THEMES` existe.
+**Ajouter un chapitre de visite.** Une entrée dans `NEWCH` (visite-chapitres.js) avec sa clé, `t`, `inset` et `h` ; ajouter la clé à sa place dans `THEMES` (chaque thème est rangé dans une des trois `PARTIES` : Comprendre, Piloter, Sûreté ; le sommaire de la visite se construit seul). Le schéma va dans `INSET` ou l'animation dans `ANIM` (visite.js). Un test vérifie que chaque clé de `THEMES` existe.
 
 **Ajouter du style.** Classes globales déjà prises, à ne pas réutiliser pour autre chose : `.prog`, `.crit`, `.tag`, `.chip`, `.sec`. Les couleurs passent par les variables CSS des thèmes clair et sombre.
 
