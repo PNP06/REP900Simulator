@@ -457,7 +457,7 @@ function renderMission(force){
   if(!force&&scn.steps){ const stp=scn.steps[c.step]; if(stp.sub&&!c.stepOk){ const m=stp.sub.map(x=>{ try{ return x[1](s,c,c.sk)?1:0; }catch(e){ return 0; } }).join(''); if(m!==c.subM){ c.subM=m; c.dirty=true; } } }
   if(!force&&scn.steps&&GARDE[scn.id]){ const t=gardeTxt(scn,s,c); if(t!==c.garde){ c.garde=t; c.dirty=true; } }
   if(!force&&scn.kind==='exo'&&GAMME[scn.id]){ const i=gammeIdx(scn,s,c); if(i!==c.gI){ c.gI=i; c.dirty=true; } }
-  if(!force&&scn.kind==='exo'&&COACH[scn.id]){ const t=(COACH[scn.id].find(x=>{ try{ return x[0](s,c); }catch(e){ return false; } })||[])[1]||''; if(t!==c.coach){ c.coach=t; c.dirty=true; } }
+  if(!force&&scn.kind==='exo'&&COACH[scn.id]){ const x=COACH[scn.id].find(x=>{ try{ return x[0](s,c); }catch(e){ return false; } }), t=x?(typeof x[1]==='function'?x[1](s,c):x[1]):''; if(t!==c.coach){ c.coach=t; c.dirty=true; } }
   if(!force&&!c.dirty&&!c.liveInfo&&c.lastFire===c.fired){ /* only refresh live info line */ const il=document.getElementById('mis-info'); const iv=curInfo(scn,c,s); if(il&&iv!=null) il.innerHTML=iv; return; }
   c.dirty=false; c.lastFire=c.fired;
   const tagTxt={tuto:'Tutoriel',lecon:'Leçon',exo:'Exercice',alea:'Aléa',libre:'Libre',histo:'Histoire'}[scn.kind];

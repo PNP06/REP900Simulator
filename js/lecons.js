@@ -353,6 +353,10 @@ function gammeBox(scn,s,c){ const g=GAMME[scn.id]; if(!g) return ''; const i=gam
    +(cur&&c.gHint?'<div class="hintb"><b>Comment faire :</b> '+cur.h+'</div>':'')
    +(cur?'<button class="btn sm" id="gHint" aria-expanded="'+(c.gHint?'true':'false')+'">'+(c.gHint?'Masquer l\'aide':'Comment faire ?')+'</button>':'')+'</div>'; }
 
+/* R trop haut au-dessus de quelques % (avant couplage) : écart chiffré, comme le ferait un formateur */
+const trHaut=s=>!s.tripped&&!s.coupled&&s.n>0.03&&s.rods.R.p-rRetour(s,27)>=4;
+const trHautTxt=s=>{ const x=Math.round(rRetour(s,27)/2)*2, fb=Math.round(-((s.rho.dop||0)+(s.rho.mod||0))/5)*5;
+  return "R est trop haut : la puissance ("+fmt(s.n*100,0)+" %) ne se stabilise que parce que le Doppler et le modérateur retiennent environ "+fb+" pcm. Pour revenir entre 1 et 3 %, insérez R jusque vers <b>"+x+" pas</b> (soit "+Math.round(s.rods.R.p-x)+" pas : « −10 » puis « −1 »), puis ajustez au pas près en attendant chaque fois."; };
 const COACH={
  demarr:[
   [(s,c)=>s.tripped,"AAR : relisez la cause dans le journal et le débriefing."],
@@ -364,6 +368,7 @@ const COACH={
   [(s,c)=>!s.srInhib&&c.k.cps0&&c.k.cps0/(s.n*1e10)<0.25,"1/M sous 0,25 : vous approchez. Pas de 1 ou 2, et attendez à chaque fois la stabilisation."],
   [(s,c)=>!s.srInhib,"Continuez par paliers plus petits (5 à 10 pas) et regardez la cote extrapolée dans la vue Réactivité."],
   [(s,c)=>!s.coupled&&c.o.p2==null&&s.n<0.01,"Laissez monter vers 1 % avec un temps de doublement de 60 à 120 s. Le Doppler va freiner la montée."],
+  [(s,c)=>c.o.p2==null&&trHaut(s),trHautTxt],
   [(s,c)=>!s.coupled&&c.o.p2==null&&s.n>0.03,"Au-dessus de 3 % trop tôt : insérez R de 1 ou 2 pas et posez-vous entre 1 et 3 % une minute."],
   [(s,c)=>!s.coupled&&c.o.p2==null,"Palier d'échauffement : ajustez R par pas de 1 jusqu'à une puissance quasi stable entre 1 et 3 %, et tenez une minute."],
   [(s,c)=>!s.coupled&&s.n<0.10&&s.rods.R.p>=200&&!s.rea.run,"R approche du haut : pour continuer à monter, diluez par lots de 1 m³ (Agir › Bore, 10 m³/h). Attendez l'effet entre deux lots."],
@@ -374,6 +379,7 @@ const COACH={
   [(s,c)=>s.n>1e-7&&!s.srInhib,"P6 est franchi : inhibez la gamme source maintenant (Agir › Protection › Inhiber GS), sinon l'AAR tombera vers 10⁵ c/s."],
   [(s,c)=>s.Qdil>0&&s.rate>Math.LN2/300&&!s.srInhib,"Un temps de doublement apparaît alors que la dilution continue : arrêtez l'appoint (Agir › Bore › « Arrêter ») ! L'eau pure déjà injectée continue d'ajouter de la réactivité."],
   [(s,c)=>s.Td<40&&s.n>1e-9,"Temps de doublement court : insérez R de 1 ou 2 pas. Visez 60 s ou plus."],
+  [(s,c)=>trHaut(s),trHautTxt],
   [(s,c)=>s.n>0.03,"Au-dessus de 3 % : insérez R de 1 ou 2 pas. Le Doppler fera le reste."],
   [(s,c)=>s.n>=0.01&&s.n<=0.03,"Vous êtes dans la plage. Ajustez R par pas de 1 jusqu'à un temps de doublement « stable », puis attendez 2 minutes."],
   [(s,c)=>s.srInhib&&s.rate<Math.LN2/600&&s.n<0.01,"Puissance quasi stable mais trop basse : extrayez R de 1 ou 2 pas pour reprendre une montée lente."],
@@ -387,6 +393,7 @@ const COACH={
   [(s,c)=>s.n>1e-7&&!s.srInhib,"P6 est franchi : inhibez la gamme source maintenant (Agir › Protection › Inhiber GS), sinon l'AAR tombera vers 10⁵ c/s."],
   [(s,c)=>!s.srInhib&&s.n<1e-7&&s.rods.R.p>195,"R dépasse la fourchette prévue (170 ± 25 pas) sans que le réacteur soit critique : arrêtez d'extraire. En salle de commande, on s'arrêterait ici pour comprendre l'écart (bore, grappes, calcul) avant d'aller plus loin."],
   [(s,c)=>s.Td<40&&s.n>1e-9,"Temps de doublement court : arrêtez d'extraire, voire insérez 1 ou 2 pas. Visez 60 s ou plus."],
+  [(s,c)=>trHaut(s),trHautTxt],
   [(s,c)=>s.n>0.03,"Au-dessus de 3 % : insérez R de 1 ou 2 pas. Le Doppler fera le reste."],
   [(s,c)=>s.n>=0.01&&s.n<=0.03,"Vous êtes dans la plage. Ajustez par pas de 1 jusqu'à un temps de doublement « stable », puis attendez 2 minutes."],
   [(s,c)=>s.srInhib&&s.rate<Math.LN2/600&&s.n<0.01,"Puissance quasi stable mais trop basse : extrayez R de 2 ou 3 pas pour reprendre une montée lente."],
@@ -452,10 +459,11 @@ const GARDE={
  'l-div':[
   [s=>!s.tripped&&s.n>1e-7&&!s.srInhib,"<b>P6 est apparu</b> : inhibez la gamme source maintenant (Agir › Protection › « Inhiber GS »), même si l'étape en cours parle d'autre chose. Sinon l'AAR tombera à 10⁵ c/s."],
   [s=>!s.tripped&&s.p10&&!s.lowBlk,"<b>P10 est franchi</b> : la puissance dépasse 10 %, c'est trop pour cette leçon. Insérez R de quelques pas ; si vous voulez monter, bloquez le seuil bas (Agir › Protection), sinon l'AAR tombera à 25 %."],
+  [s=>trHaut(s),s=>"<b>Au-dessus de 3 %</b> : "+trHautTxt(s)],
   [s=>!s.tripped&&s.Td<30&&s.n>1e-9&&s.n<0.5,"<b>Temps de doublement court</b> : arrêtez d'extraire, voire insérez 1 ou 2 pas. On vise une à deux minutes."],
  ],
 };
-const gardeTxt=(scn,s,c)=>{ const g=scn&&GARDE[scn.id]; if(!g) return ''; const x=g.find(e=>{ try{ return e[0](s,c); }catch(er){ return false; } }); return x?x[1]:''; };
+const gardeTxt=(scn,s,c)=>{ const g=scn&&GARDE[scn.id]; if(!g) return ''; const x=g.find(e=>{ try{ return e[0](s,c); }catch(er){ return false; } }); return x?(typeof x[1]==='function'?x[1](s,c):x[1]):''; };
 
 /* Rappels affichés dans la présentation des exercices : l'essentiel des seuils, des gestes et des repères,
    avec les chapitres de la visite à revoir (ouverts par-dessus la présentation, la séance reste en pause). */

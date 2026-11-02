@@ -41,6 +41,11 @@ function rhoParts(s){
 function rhoAt(s,o){ const q=Object.assign({},s,{rods:Object.assign({},s.rods)}); if(o.Cb!=null) q.Cb=o.Cb; if(o.R!=null) q.rods.R={p:o.R,tg:o.R}; return rhoParts(q).tot; }
 function cbCrit(s,R){ let Cb=s.Cb; for(let i=0;i<40;i++){ const r=rhoAt(s,{Cb,R}), r2=rhoAt(s,{Cb:Cb+1,R}), d=r2-r; if(Math.abs(d)<1e-6) break; const nx=clamp(Cb-r/d,0,4000); if(Math.abs(nx-Cb)<0.01){ Cb=nx; break; } Cb=nx; } return Cb; }
 function rCrit(s){ const f=R=>rhoAt(s,{R}); if(f(225)<0) return null; if(f(0)>=0) return 0; let lo=0,hi=225; for(let i=0;i<40;i++){ const m=(lo+hi)/2; if(f(m)<0) lo=m; else hi=m; } return (lo+hi)/2; }
+/* position de R qui ramènerait la puissance vers ~2 % : la contre-réaction actuelle (Doppler + modérateur) est rendue,
+   puis on cherche la cote où il reste « cible » pcm (≈ 2 % de puissance au Doppler, à l'arrêt à chaud) */
+function rRetour(s,cible){ const fb=-((s.rho.dop||0)+(s.rho.mod||0)), r0=s.rods.R.p, base=rhoAt(s,{R:r0});
+  const f=x=>rhoAt(s,{R:x})-base+fb; let lo=0,hi=r0; if(f(r0)<=cible) return r0; if(f(0)>cible) return 0;
+  for(let i=0;i<40;i++){ const m=(lo+hi)/2; if(f(m)>cible) hi=m; else lo=m; } return (lo+hi)/2; }
 function volRea(C0,C1){ if(!(C0>0)||Math.abs(C1-C0)<0.05) return {mode:'',v:0}; if(C1<C0) return {mode:'dil',v:270*Math.log(C0/Math.max(C1,0.5))}; return {mode:'bor',v:270*Math.log((7700-C0)/(7700-Math.min(C1,7690)))}; }
 
 /* ================= Etat initial ================= */
