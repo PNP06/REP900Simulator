@@ -1,8 +1,9 @@
 /* Interface : application, boucle, actions opérateur, synchronisation, mission, débriefing, menu (corrections : js/corrections.js ; aide : js/aide.js ; bandeau : js/bandeau.js). */
 'use strict';
 /* ================= Application ================= */
-const A={mwin:1800,s:null,scn:null,ctx:null,speed:1,paused:true,acc:0,done:false,win:1800,charts:['pw','tp','pp','lv'],tab:'synop'};
+const A={mwin:1800,s:null,scn:null,ctx:null,speed:1,paused:true,acc:0,done:false,win:1800,charts:['pw','tp','pp','lv'],mcharts:['pw','tp','pp','lv'],tab:'synop'};
 { const c=store('charts'); if(Array.isArray(c)&&c.length) A.charts=c; }
+{ const c=store('mcharts'); if(Array.isArray(c)&&c.length) A.mcharts=c; }
 
 function newCtx(scn,s){
   const st={maxN:s.n,minTd:Infinity,tw:0,tT:0,tDI:0,tR:0,aar:null,isT:null,turbTrip:null,rLow:false,rVeryLow:false,rampViol:false,sebim:false};

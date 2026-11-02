@@ -653,11 +653,29 @@ Object.assign(ANIM,{
  },
 });
 
+/* --- sommaire : tous les chapitres, rangés par partie et par thème --- */
+function tourSommaire(open){
+  const el=$('#tsom'), b=$('#tvSom'); if(open!=null){ el.hidden=!open; if(b){ b.setAttribute('aria-expanded',String(open)); } }
+  if(el.hidden) return;
+  const seen=TV.seen||new Set(), esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  el.innerHTML='<div class="tsomh"><b>Sommaire</b><span>'+TOUR.length+' chapitres · '+seen.size+' lus</span></div><div class="tsomg">'+PARTIES.map(([pid,pname])=>'<section class="tsomp"><h3>'+pname+'</h3>'+THEMES.filter(t=>t[3]===pid).map(([id,name])=>'<h4>'+name+'</h4><ol>'+TOUR.map((x,j)=>x.th===id?'<li><button class="tsomc'+(j===TV.i?' on':'')+(seen.has(j)?' seen':'')+'" data-tv="'+j+'" data-som="1">'+esc(x.t)+'</button></li>':'').join('')+'</ol>').join('')+'</section>').join('')+'</div>';
+  const on=el.querySelector('.tsomc.on'); if(on&&open){ const y=on.offsetTop-el.offsetTop; el.scrollTop=y+on.offsetHeight>el.clientHeight-8?Math.max(0,y-el.clientHeight/2):0; }
+}
+/* taille du texte et des schémas de la visite, réglée à part de celle du poste */
+const TZOOMS=[0.8,0.9,1,1.1,1.2,1.3,1.4,1.5];
+function setTourZoom(z){
+  z=TZOOMS.reduce((a,b)=>Math.abs(b-z)<Math.abs(a-z)?b:a,1); TV.zoom=z; store('tzoom',z);
+  document.documentElement.style.setProperty('--tz',z); const v=$('#tzV'); if(v) v.textContent=Math.round(z*100)+' %';
+  const m=$('#tzM'), p=$('#tzP'); if(m) m.disabled=z<=TZOOMS[0]; if(p) p.disabled=z>=TZOOMS[TZOOMS.length-1];
+  if(TV.i!=null&&!$('#tour').hidden&&TOUR[TV.i].inset&&ANIM[TOUR[TV.i].inset]) requestAnimationFrame(()=>tourGo(TV.i));
+}
 /* --- navigation par thèmes --- */
 function tourThemes(i){
   const c=TOUR[i], idx=TOUR.map((x,j)=>[x,j]).filter(p=>p[0].th===c.th), pos=idx.findIndex(p=>p[1]===i);
   const seen=TV.seen||(TV.seen=new Set()); if(!seen.has(i)){ seen.add(i); store('tourVu',[...seen].map(j=>TOUR[j].id)); }
-  $('#tthemes').innerHTML=THEMES.map(([id,name])=>{ const first=TOUR.findIndex(x=>x.th===id), all=TOUR.map((x,j)=>x.th===id?j:-1).filter(j=>j>=0), done=all.every(j=>seen.has(j)); return '<button class="tth'+(id===c.th?' on':'')+(done?' done':'')+'" data-tv="'+first+'">'+name+'<small>'+all.length+'</small></button>'; }).join('');
+  /* thèmes regroupés par partie (Comprendre, Piloter, Sûreté) */
+  $('#tthemes').innerHTML=PARTIES.map(([pid,pname])=>'<div class="tpart"><span class="tpn">'+pname+'</span>'+THEMES.filter(t=>t[3]===pid).map(([id,name])=>{ const first=TOUR.findIndex(x=>x.th===id), all=TOUR.map((x,j)=>x.th===id?j:-1).filter(j=>j>=0), done=all.every(j=>seen.has(j)); return '<button class="tth'+(id===c.th?' on':'')+(done?' done':'')+'" data-tv="'+first+'">'+name+'<small>'+all.length+'</small></button>'; }).join('')+'</div>').join('');
+  if(!$('#tsom').hidden) tourSommaire();
   $('#tdots').innerHTML=idx.map(([x,j])=>'<button class="tdot'+(j===i?' on':seen.has(j)?' seen':'')+'" data-tv="'+j+'" aria-label="'+x.t.replace(/"/g,'&quot;')+'" title="'+x.t.replace(/"/g,'&quot;')+'"></button>').join('');
   T('tk',c.k+' · '+(pos+1)+' / '+idx.length+'   —   chapitre '+(i+1)+' sur '+TOUR.length);
   const tho=$('#tthemes .tth.on'), thb=$('#tthemes'); if(tho&&thb&&thb.scrollWidth>thb.clientWidth) thb.scrollLeft=tho.offsetLeft-thb.offsetLeft-(thb.clientWidth-tho.offsetWidth)/2;

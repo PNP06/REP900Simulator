@@ -373,7 +373,7 @@ function step(s){
   s.t+=dt;
   if(s.t>=s.histNext){
     s.histNext=s.t+1;
-    s.hist.push({t:s.t,th:s.Thot,pn:n*100,pt:Qt*100,ta:s.Tavg,tr:s.Tref,pp:s.Ppzr,lp:s.Lpzr,lg:s.Lsg,r:R.R.p,g:R.G.p,cb:s.Cb,xe:rp.xe,di:s.DI,dr:-1.5*n,sg:s.Psg});
+    s.hist.push({t:s.t,th:s.Thot,pn:n*100,pt:Qt*100,ta:s.Tavg,tr:s.Tref,pp:s.Ppzr,lp:s.Lpzr,lg:s.Lsg,r:R.R.p,g:R.G.p,cb:s.Cb,xe:rp.xe,dp:rp.dop,mo:rp.mod,di:s.DI,dr:-1.5*n,sg:s.Psg});
     if(s.hist.length>30000) s.hist.splice(0,2000);
   }
 }

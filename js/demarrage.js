@@ -30,6 +30,10 @@ $('#tvPath').onclick=()=>{ TV.path=null; tourGo(TV.i); };
 $('#ttx').addEventListener('click',e=>{ const b=e.target.closest('[data-essai]'); if(!b) return; TV.auto=false; clearTimeout(TV.tm); cancelAnimationFrame(tourRAF); $('#tour').hidden=true; launch(b.dataset.essai); });
 $('#tvAuto').onclick=()=>{ TV.auto=!TV.auto; tourTimer(); };
 $('#tvClose').onclick=closeTour;
+$('#tvSom').onclick=()=>tourSommaire($('#tsom').hidden);
+$('#tsom').addEventListener('click',e=>{ if(e.target.closest('[data-som]')) setTimeout(()=>tourSommaire(false),0); });
+$('#tzM').onclick=()=>setTourZoom((TV.zoom||1)-0.1); $('#tzP').onclick=()=>setTourZoom((TV.zoom||1)+0.1); $('#tzV').onclick=()=>setTourZoom(1);
+setTourZoom(+store('tzoom')||1);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#fb').hidden){ closeFB(); return; } if(e.key==='Escape'&&!$('#aarw').hidden){ aarClose(); return; } if($('#tour').hidden) return; if(e.key==='ArrowRight'){ TV.auto=false; const j=tourNext(1); if(j!=null) tourGo(j); } else if(e.key==='ArrowLeft'){ TV.auto=false; const j=tourNext(-1); if(j!=null) tourGo(j); } else if(e.key==='Escape') closeTour(); });
 function sndPop(open){ const p=$('#sndPop'), b=$('#sndBtn'); if(open==null) open=p.hidden; p.hidden=!open; b.setAttribute('aria-expanded',open?'true':'false'); b.classList.toggle('act',open);
   if(open){ const r=b.getBoundingClientRect(); const w=p.offsetWidth; p.style.top=(r.bottom+6)+'px'; p.style.left=Math.max(8,Math.min(innerWidth-w-8,r.right-w))+'px'; } }

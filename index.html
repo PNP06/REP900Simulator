@@ -61,6 +61,7 @@
       </div>
 <div class="card" data-c="crv" data-t="synop">
         <h2><i class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 8-9"/><path d="M3 21h18"/></svg></i>Courbes clés<div class="seg mseg" data-key="mwin"><button data-v="300">5 min</button><button data-v="1800">30 min</button><button data-v="7200">2 h</button></div></h2>
+        <div class="chips mchips" id="mchips" role="group" aria-label="Courbes affichées"></div>
         <div id="mcharts"></div>
       </div>
 <div class="card" data-c="di" data-t="synop">
@@ -311,8 +312,9 @@
 <div class="ptr" id="ptr" hidden><span class="pa2" id="ptra">▼</span><span class="pl" id="ptrl"></span></div>
 <div class="tour" id="tour" hidden role="dialog" aria-label="Visite de la centrale">
  <div class="tw">
-  <div class="th"><div><div class="tk" id="tk"></div><h2 class="tt" id="tt"></h2></div><div class="row"><button class="btn sm" id="tvPath" hidden>Passer à la visite complète</button><button class="ib" id="tvClose" aria-label="Fermer la visite">✕</button></div></div>
+  <div class="th"><div><div class="tk" id="tk"></div><h2 class="tt" id="tt"></h2></div><div class="row"><button class="btn sm" id="tvPath" hidden>Passer à la visite complète</button><button class="btn sm" id="tvSom" aria-expanded="false" aria-controls="tsom">Sommaire</button><div class="zm tzm" role="group" aria-label="Taille du texte de la visite"><button class="ib" id="tzM" aria-label="Réduire le texte de la visite" title="Réduire">−</button><button class="ib zmv" id="tzV" aria-label="Taille du texte : revenir à 100 %" title="Revenir à 100 %">100 %</button><button class="ib" id="tzP" aria-label="Agrandir le texte de la visite" title="Agrandir">+</button></div><button class="ib" id="tvClose" aria-label="Fermer la visite">✕</button></div></div>
   <div class="tthemes" id="tthemes" role="navigation" aria-label="Thèmes de la visite"></div>
+  <div class="tsom" id="tsom" hidden role="navigation" aria-label="Sommaire de la visite"></div>
   <div class="tb"><div class="tstage"><div id="tplant"></div><div id="tinset" hidden></div></div><div class="ttx" id="ttx"></div></div>
   <div class="tprog" id="tprog"><i></i></div>
   <div class="tf"><button class="btn" id="tvPrev">Précédent</button><div class="tdots" id="tdots"></div><button class="btn" id="tvAuto">Lecture auto</button><button class="btn pri" id="tvNext">Suivant</button></div>
