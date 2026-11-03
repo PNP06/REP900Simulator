@@ -1,0 +1,10 @@
+// Hébergement Cloudflare (Workers, fichiers statiques) : la racine du dépôt est publiée telle quelle,
+// sans étape de construction. Les fichiers exclus sont listés dans .assetsignore.
+{
+  "name": "rep900simulator",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": ".",
+    "not_found_handling": "404-page"
+  }
+}

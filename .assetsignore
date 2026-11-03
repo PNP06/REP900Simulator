@@ -1,0 +1,12 @@
+# Fichiers du dépôt à ne pas publier sur Cloudflare
+.git
+.github
+node_modules
+tests
+package.json
+package-lock.json
+netlify.toml
+wrangler.jsonc
+ARCHITECTURE.md
+.gitignore
+.nojekyll
